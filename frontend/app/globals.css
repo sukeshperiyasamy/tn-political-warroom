@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-paper: #F8FAFC;
+    --card-surface: #FFFFFF;
+    --card-surface-subtle: #F1F5F9;
+    --border-subtle: #E2E8F0;
+    --border-strong: #CBD5E1;
+    --text-ink: #0F172A;
+    --text-muted: #475569;
+    --text-subtle: #64748B;
+    --accent-cobalt: #1D4ED8;
+    --accent-emerald: #059669;
+    --accent-crimson: #DC2626;
+    --accent-amber: #D97706;
+  }
+
+  body {
+    background-color: #F8FAFC;
+    color: #0F172A;
+    font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+.font-tamil {
+  font-family: var(--font-tamil), "Noto Sans Tamil", system-ui, sans-serif;
+}
+
+/* Custom scrollbars - subtle editorial style */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}

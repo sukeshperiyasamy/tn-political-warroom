@@ -14,6 +14,7 @@ coverage/
 # Environment, secrets & credentials
 .env
 .env.*
+!.env.example
 *.env
 *.pem
 *.key
