@@ -7,18 +7,19 @@ Enforces parameter translation (? -> %s), unified DBRow access, and connection l
 import os
 import sqlite3
 from contextlib import contextmanager
+import re
 from typing import Any, List, Optional, Tuple, Dict, Union
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "warroom.db")
 
 
 def get_database_url() -> Optional[str]:
-    """Retrieves the active PostgreSQL connection URL if configured, stripping rogue newlines or spaces."""
+    """Retrieves the active PostgreSQL connection URL if configured, stripping rogue non-ASCII or whitespace characters."""
     raw = os.getenv("DIRECT_URL") or os.getenv("DATABASE_URL")
     if not raw:
         return None
-    # Strip accidental newlines, spaces, or tabs often introduced by copy-pasting in UI dashboards
-    cleaned = "".join(raw.split()).strip()
+    # Strip accidental newlines, spaces, tabs, and invisible non-ASCII/Unicode characters (e.g. \u00a0, \u200b)
+    cleaned = re.sub(r'[^a-zA-Z0-9_\-\.:/=?&%@+~]', '', raw).strip()
     return cleaned if cleaned else None
 
 

@@ -288,6 +288,8 @@ class SourceRegistry:
                     name TEXT NOT NULL,
                     tamil_name TEXT NOT NULL,
                     category TEXT NOT NULL,
+                    source_type TEXT NOT NULL DEFAULT 'NEWS_MEDIA',
+                    platform TEXT NOT NULL DEFAULT 'web',
                     url TEXT NOT NULL,
                     rss_url TEXT NOT NULL,
                     language TEXT NOT NULL DEFAULT 'ta',
@@ -339,6 +341,8 @@ class SourceRegistry:
                     processing_attempts INTEGER DEFAULT 1,
                     last_seen_at TEXT,
                     first_seen_at TEXT NOT NULL,
+                    source_type TEXT NOT NULL DEFAULT 'NEWS_MEDIA',
+                    platform TEXT NOT NULL DEFAULT 'web',
                     FOREIGN KEY (source_id) REFERENCES sources(id)
                 )
             """)
@@ -384,7 +388,13 @@ class SourceRegistry:
                 )
             """)
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_briefs_lookup ON intelligence_briefs(data_status, period, evidence_hash, config_version)")
+            conn.commit()
 
+        # Run automated schema migrations and backfill first to guarantee all columns exist
+        self._migrate_db()
+
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
             # Seed any missing default sources
             now_str = datetime.now().isoformat()
             for src in DEFAULT_SOURCES:
@@ -411,9 +421,6 @@ class SourceRegistry:
                         src["total_articles_fetched"], now_str
                     ))
             conn.commit()
-
-        # Run automated schema migrations and backfill
-        self._migrate_db()
 
     def _migrate_db(self):
         import hashlib
