@@ -4,13 +4,9 @@ import React from "react";
 import {
   ExternalLink,
   Sparkles,
-  Share2,
+  ArrowRight,
   Eye,
   Calendar,
-  Smile,
-  Meh,
-  Frown,
-  ArrowRight,
 } from "lucide-react";
 import { NewsArticle } from "../types/political";
 
@@ -18,6 +14,14 @@ interface ArticleCardProps {
   article: NewsArticle;
   onOpenIntelligence: (article: NewsArticle) => void;
   onCreateCard: (article: NewsArticle) => void;
+}
+
+function cleanExcerpt(text: string): string {
+  if (!text) return "";
+  // Strip promotional RSS noise
+  return text
+    .replace(/(?:Watch Live|Click here to subscribe|Follow us on|For latest updates|Subscribe to our channel)[^.]*\.?/gi, "")
+    .trim();
 }
 
 export function ArticleCard({
@@ -44,81 +48,82 @@ export function ArticleCard({
   const dateFormatted = new Date(published_at).toLocaleDateString("en-IN", {
     month: "short",
     day: "numeric",
-    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 
+  const cleanedSummary = cleanExcerpt(summary || "");
+  const hasDistinctEnglish = Boolean(
+    title &&
+    tamil_title &&
+    title.trim() !== tamil_title.trim() &&
+    !title.match(/[\u0B80-\u0BFF]/)
+  );
+
   return (
-    <article className="group bg-white hover:bg-slate-50/50 border border-slate-200/90 hover:border-slate-300 rounded-xl p-5 sm:p-6 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+    <article className="group bg-white border border-[#E8E8E2] hover:border-zinc-400 rounded-lg p-4 sm:p-5 transition-colors flex flex-col justify-between shadow-2xs">
       <div>
-        {/* Header Metadata Bar: Source, Date, Sentiment, Status */}
-        <div className="flex flex-wrap items-center justify-between gap-2.5 mb-3.5 pb-2.5 border-b border-slate-100">
-          <div className="flex items-center gap-2.5">
-            <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200">
+        {/* Masthead / Source Row */}
+        <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-[#F0F0EB] text-[11px]">
+          <div className="flex items-center gap-2">
+            <span className="font-bold tracking-wider text-zinc-900 font-mono">
               {source}
             </span>
-            <span className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-              <Calendar className="w-3.5 h-3.5 text-slate-400" />
+            <span className="text-zinc-300">•</span>
+            <span className="text-zinc-500 font-mono">
               {dateFormatted}
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Sentiment Pill */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {/* Polarity Indicator as a Quiet Secondary Detail */}
             <span
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
+              className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${
                 sentiment === "positive"
-                  ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                  ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
                   : sentiment === "negative"
-                  ? "bg-rose-50 text-rose-800 border-rose-200"
-                  : "bg-slate-100 text-slate-700 border-slate-200"
+                  ? "bg-rose-50 text-rose-800 border border-rose-200"
+                  : "bg-zinc-100 text-zinc-700 border border-zinc-200"
               }`}
             >
-              {sentiment === "positive" ? (
-                <Smile className="w-3.5 h-3.5" />
-              ) : sentiment === "negative" ? (
-                <Frown className="w-3.5 h-3.5" />
-              ) : (
-                <Meh className="w-3.5 h-3.5" />
-              )}
-              <span className="capitalize">{sentiment}</span>
-              <span className="font-mono">({sentiment_score > 0 ? `+${sentiment_score}` : sentiment_score})</span>
+              {sentiment.toUpperCase()} ({sentiment_score > 0 ? `+${sentiment_score}` : sentiment_score})
             </span>
 
-            {/* Data Status Indicator */}
             {data_status === "live_rss" ? (
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-50 text-emerald-800 uppercase border border-emerald-200 font-bold flex items-center gap-1 shadow-2xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">
                 LIVE RSS
               </span>
             ) : (
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-100 text-slate-700 uppercase border border-slate-200 font-bold">
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-zinc-100 text-zinc-600 font-bold border border-zinc-200">
                 SEEDED DEMO
               </span>
             )}
           </div>
         </div>
 
-        {/* Primary Tamil Headline - Prominent Editorial Lead */}
-        <h3 className="text-lg sm:text-xl font-bold text-slate-900 font-tamil leading-[1.45] tracking-tight group-hover:text-blue-700 transition-colors mb-2.5">
-          {tamil_title}
+        {/* Primary Tamil Headline */}
+        <h3 className="font-tamil text-base sm:text-lg font-bold text-zinc-900 leading-[1.5] group-hover:text-zinc-700 transition-colors mb-2 line-clamp-3">
+          {tamil_title || title}
         </h3>
 
-        {/* English Context Headline */}
-        <p className="text-xs sm:text-sm font-semibold text-slate-700 leading-normal mb-2.5 line-clamp-2">
-          {title}
+        {/* Secondary English Headline only when distinct and helpful */}
+        {hasDistinctEnglish && (
+          <p className="text-xs font-semibold text-zinc-600 mb-2 line-clamp-2">
+            {title}
+          </p>
+        )}
+
+        {/* Editorial Summary */}
+        <p className="text-xs text-zinc-600 leading-relaxed mb-3.5 line-clamp-3">
+          {cleanedSummary}
         </p>
 
-        {/* Clean Editorial Summary */}
-        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4.5 line-clamp-3">
-          {summary}
-        </p>
-
-        {/* Focused Entity Tags Strip */}
-        <div className="flex flex-wrap items-center gap-2 mb-4 pt-1">
+        {/* Metadata Entity Strip */}
+        <div className="flex flex-wrap items-center gap-1.5 mb-2">
           {party_codes.map((code) => (
             <span
               key={code}
-              className="px-2.5 py-1 rounded-md text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200"
+              className="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[#F4F4F0] text-zinc-800 border border-[#E4E4DE]"
             >
               #{code}
             </span>
@@ -127,7 +132,7 @@ export function ArticleCard({
           {leader_names.slice(0, 2).map((name) => (
             <span
               key={name}
-              className="px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200"
+              className="px-2 py-0.5 rounded text-[11px] font-medium bg-[#F4F4F0] text-zinc-700 border border-[#E4E4DE]"
             >
               {name}
             </span>
@@ -136,66 +141,56 @@ export function ArticleCard({
           {topics.slice(0, 1).map((t) => (
             <span
               key={t}
-              className="px-2.5 py-1 rounded-md text-xs text-slate-600 bg-slate-50 border border-slate-200 font-medium"
+              className="px-2 py-0.5 rounded text-[11px] text-zinc-500 bg-[#F9F9F7] border border-[#EAEAE5]"
             >
               {t}
             </span>
           ))}
         </div>
 
-        {/* NLP Attribution Notice */}
-        <div className="flex items-center gap-1.5 text-[11px] text-slate-400 italic mb-2">
-          <Sparkles className="w-3 h-3 text-amber-500 shrink-0" />
-          <span>Automated NLP Entity & Sentiment Attribution</span>
+        {/* Micro Attribution Notice */}
+        <div className="text-[10px] text-zinc-400 font-mono mb-2">
+          Automated NLP Entity & Sentiment Attribution
         </div>
       </div>
 
       {/* Footer Metrics & Actions */}
-      <div className="pt-3.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
-        {/* Estimated Engagement */}
-        <div className="flex items-center gap-3.5 text-xs text-slate-600 font-mono font-medium">
-          <span className="flex items-center gap-1.5" title="Estimated Audience Reach">
-            <Eye className="w-4 h-4 text-slate-400" />
-            {(engagement_estimated.reach / 1000).toFixed(1)}k
-          </span>
-          <span className="flex items-center gap-1.5" title="Estimated Social Shares">
-            <Share2 className="w-4 h-4 text-slate-400" />
-            {engagement_estimated.shares}
-          </span>
-          <span className="text-[11px] text-slate-400 italic">(est.)</span>
+      <div className="pt-3 border-t border-[#F0F0EB] flex items-center justify-between gap-2 mt-auto">
+        {/* Estimated Reach */}
+        <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 font-mono">
+          <Eye className="w-3.5 h-3.5 text-zinc-400" />
+          <span>{(engagement_estimated.reach / 1000).toFixed(1)}k views (est.)</span>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2">
-          {/* Open AI Intelligence Drawer */}
+        {/* Action Controls */}
+        <div className="flex items-center gap-1.5">
           <button
             onClick={() => onOpenIntelligence(article)}
-            className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-all cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-800 transition-colors cursor-pointer"
             title="Inspect AI Tamil summaries and variations"
           >
-            <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+            <Sparkles className="w-3 h-3 text-zinc-600" />
             <span>AI Insights</span>
           </button>
 
-          {/* Open in News Card Studio */}
           <button
             onClick={() => onCreateCard(article)}
-            className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all shadow-2xs cursor-pointer"
-            title="Create 1080x1080 Tamil News Card"
+            className="flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white transition-colors cursor-pointer"
+            title="Open in 1080x1080 Tamil News Card Studio"
           >
-            <span>Create Card</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <span>Studio</span>
+            <ArrowRight className="w-3 h-3" />
           </button>
 
-          {/* Original Source Link */}
           <a
             href={source_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition-colors"
-            title="Open original media article"
+            className="p-1 rounded text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 transition-colors"
+            title="Open original article"
+            aria-label="Open original article"
           >
-            <ExternalLink className="w-4 h-4" />
+            <ExternalLink className="w-3.5 h-3.5" />
           </a>
         </div>
       </div>

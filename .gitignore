@@ -22,6 +22,9 @@ coverage/
 *.crt
 *credentials*.json
 secrets.*
+*.db
+*.sqlite
+*.sqlite3
 
 # Claude & Tool Backups / Local State
 *.bak

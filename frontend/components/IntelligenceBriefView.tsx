@@ -128,76 +128,69 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
   };
 
   return (
-    <div className="space-y-6 sm:space-y-8 animate-fade-in">
+    <div className="space-y-6">
       {/* Header Banner & Controls */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="bg-white rounded-lg border border-[#E8E8E2] shadow-2xs p-4 sm:p-5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-[#F0F0EB]">
           <div>
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-blue-50 text-blue-700 rounded-lg border border-blue-200">
-                <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 uppercase">
-                    Political Intelligence Brief
-                  </h1>
-                  <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-blue-100 text-blue-900 border border-blue-200">
-                    v1.0 Synthesis
-                  </span>
-                  {brief?.is_cached ? (
-                    <span className="text-[11px] px-2 py-0.5 rounded-full font-bold bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1">
-                      <ShieldCheck className="w-3 h-3 text-emerald-600" /> Cached Evidence
-                    </span>
-                  ) : (
-                    <span className="text-[11px] px-2 py-0.5 rounded-full font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-emerald-600" /> Freshly Generated
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs sm:text-sm text-slate-500 font-tamil mt-1">
-                  தமிழ்நாடு அரசியல் ஊடக நுண்ணறிவுச் சுருக்கம் & உண்மைச் சான்றுகள்
-                </p>
-              </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 font-serif">
+                Political Intelligence Brief
+              </h1>
+              <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-[#F4F4F0] text-zinc-700 border border-[#E2E2DC]">
+                v1.0 Synthesis
+              </span>
+              {brief?.is_cached ? (
+                <span className="text-[10px] px-2 py-0.5 rounded font-mono font-semibold bg-zinc-100 text-zinc-600 border border-zinc-200 flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3 text-emerald-700" /> Cached Evidence
+                </span>
+              ) : (
+                <span className="text-[10px] px-2 py-0.5 rounded font-mono font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                  <Clock className="w-3 h-3 text-emerald-700" /> Fresh
+                </span>
+              )}
             </div>
+            <p className="text-xs text-zinc-500 font-tamil mt-1">
+              தமிழ்நாடு அரசியல் ஊடக நுண்ணறிவுச் சுருக்கம் & உண்மைச் சான்றுகள்
+            </p>
           </div>
 
           {/* Action Toolbar */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
             {/* Period Selector */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs font-bold">
+            <div className="flex items-center bg-[#F4F4F0] p-0.5 rounded border border-[#E2E2DC] text-xs">
               <button
                 onClick={() => setPeriod("24h")}
-                className={`px-3 py-1.5 rounded-md transition-all cursor-pointer ${
-                  period === "24h" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
+                className={`px-2.5 py-1 rounded text-xs transition-all cursor-pointer font-semibold ${
+                  period === "24h" ? "bg-zinc-900 text-white shadow-2xs" : "text-zinc-600 hover:text-zinc-900"
                 }`}
               >
-                24 Hours (24 மணி)
+                24 Hours
               </button>
               <button
                 onClick={() => setPeriod("7d")}
-                className={`px-3 py-1.5 rounded-md transition-all cursor-pointer ${
-                  period === "7d" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
+                className={`px-2.5 py-1 rounded text-xs transition-all cursor-pointer font-semibold ${
+                  period === "7d" ? "bg-zinc-900 text-white shadow-2xs" : "text-zinc-600 hover:text-zinc-900"
                 }`}
               >
-                7 Days (7 நாட்கள்)
+                7 Days
               </button>
             </div>
 
             {/* Language Switcher */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs font-bold">
+            <div className="flex items-center bg-[#F4F4F0] p-0.5 rounded border border-[#E2E2DC] text-xs">
               <button
                 onClick={() => setLanguage("en")}
-                className={`px-3 py-1.5 rounded-md transition-all cursor-pointer ${
-                  language === "en" ? "bg-blue-600 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+                className={`px-2.5 py-1 rounded text-xs transition-all cursor-pointer font-semibold ${
+                  language === "en" ? "bg-zinc-900 text-white shadow-2xs" : "text-zinc-600 hover:text-zinc-900"
                 }`}
               >
                 English
               </button>
               <button
                 onClick={() => setLanguage("ta")}
-                className={`px-3 py-1.5 rounded-md transition-all cursor-pointer ${
-                  language === "ta" ? "bg-blue-600 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+                className={`px-2.5 py-1 rounded text-xs font-tamil transition-all cursor-pointer font-semibold ${
+                  language === "ta" ? "bg-zinc-900 text-white shadow-2xs" : "text-zinc-600 hover:text-zinc-900"
                 }`}
               >
                 தமிழ்
@@ -208,9 +201,9 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
             <button
               onClick={() => loadData(true)}
               disabled={loading || regenerating}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-xs font-bold rounded-lg shadow-sm transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white text-xs font-semibold rounded shadow-2xs transition-colors cursor-pointer"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${regenerating ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-3 h-3 ${regenerating ? "animate-spin" : ""}`} />
               <span>{regenerating ? "Synthesizing..." : "Regenerate Brief"}</span>
             </button>
           </div>
@@ -218,19 +211,19 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
 
         {/* Telemetry & Reporting Window Badge */}
         {brief && (
-          <div className="mt-4 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs text-zinc-600">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold text-slate-700">Reporting Window (IST):</span>
-              <span className="font-mono bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
+              <span className="font-semibold text-zinc-700">Reporting Window (IST):</span>
+              <span className="font-mono bg-[#F9F9F7] px-2 py-0.5 rounded border border-[#E2E2DC]">
                 {formatDate(brief.window_start)} → {formatDate(brief.window_end)}
               </span>
-              <span className="text-slate-400">•</span>
+              <span className="text-zinc-300">•</span>
               <span>
-                Evidence Base: <strong className="text-slate-900">{brief.sample_size}</strong> verified reports across{" "}
-                <strong className="text-slate-900">{brief.publisher_count}</strong> Tamil newsrooms
+                Evidence Base: <strong className="text-zinc-900 font-mono">{brief.sample_size}</strong> reports across{" "}
+                <strong className="text-zinc-900 font-mono">{brief.publisher_count}</strong> media outlets
               </span>
             </div>
-            <div className="text-[11px] text-slate-500 font-mono">
+            <div className="text-[11px] text-zinc-600 font-mono">
               Generated: {formatDate(brief.generated_at)}
             </div>
           </div>
@@ -239,27 +232,27 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
 
       {/* Error Notice */}
       {error && (
-        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+        <div className="p-3.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm flex items-start gap-2.5">
+          <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
           <div>
             <p className="font-bold">Error loading intelligence brief</p>
-            <p className="mt-0.5">{error}</p>
+            <p className="mt-0.5 text-xs">{error}</p>
           </div>
         </div>
       )}
 
       {/* Insufficient Data Banner */}
       {brief?.status === "insufficient_data" && (
-        <div className="p-6 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-sm">
+        <div className="p-5 rounded-lg bg-[#FDFBF7] border border-[#E8E0D5] text-zinc-800 text-sm">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-bold text-base">Insufficient Article Evidence</h3>
-              <p className="mt-1 text-xs sm:text-sm leading-relaxed">
+              <h3 className="font-bold text-sm">Insufficient Article Evidence</h3>
+              <p className="mt-1 text-xs leading-relaxed text-zinc-600">
                 {language === "ta" ? brief.brief_tamil : brief.brief_english}
               </p>
-              <p className="mt-2 text-xs text-amber-700">
-                Tip: Switch reporting period to <strong>7 Days</strong> or trigger a live RSS ingestion to accumulate sufficient verified reports.
+              <p className="mt-2 text-xs text-zinc-500">
+                Switch reporting period to <strong>7 Days</strong> or trigger a live RSS poll to gather more articles.
               </p>
             </div>
           </div>
@@ -268,70 +261,70 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
 
       {/* Loading State */}
       {loading && (
-        <div className="p-12 text-center bg-white rounded-xl border border-slate-200 shadow-sm">
-          <RefreshCw className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-3" />
-          <p className="text-sm font-bold text-slate-800">Synthesizing Political Intelligence Brief...</p>
-          <p className="text-xs text-slate-500 mt-1">Aggregating topic trends, party sentiment, and article evidence</p>
+        <div className="p-12 text-center bg-white rounded-lg border border-[#E8E8E2] shadow-2xs">
+          <RefreshCw className="w-6 h-6 animate-spin text-zinc-800 mx-auto mb-2" />
+          <p className="text-xs font-bold text-zinc-800">Synthesizing Political Intelligence Brief...</p>
+          <p className="text-[11px] text-zinc-500 mt-0.5">Aggregating topic trends, party sentiment, and article evidence</p>
         </div>
       )}
 
       {!loading && brief && brief.status === "sufficient_data" && (
         <>
-          {/* SECTION A: EXECUTIVE BRIEF & LANDMARK DEVELOPMENTS */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          {/* SECTION A: EXECUTIVE BRIEF & KEY DEVELOPMENTS */}
+          <div className="bg-white rounded-lg border border-[#E8E8E2] shadow-2xs p-4 sm:p-6 space-y-5">
+            <div className="flex items-center justify-between border-b border-[#F0F0EB] pb-3">
               <div className="flex items-center gap-2">
-                <Compass className="w-5 h-5 text-blue-600" />
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 uppercase tracking-tight">
+                <Compass className="w-4 h-4 text-zinc-700" />
+                <h2 className="text-sm sm:text-base font-bold text-zinc-900 uppercase tracking-tight">
                   {language === "ta" ? "முதன்மை அரசியல் சுருக்கம்" : "Executive Intelligence Brief"}
                 </h2>
               </div>
-              <span className="text-xs text-slate-500">
-                Attribution: Verified Tamil Media Feeds
+              <span className="text-xs text-zinc-600 font-mono">
+                Source: Verified Regional Feeds
               </span>
             </div>
 
             {/* Narrative Summary */}
-            <div className="p-4 sm:p-5 rounded-lg bg-slate-50 border border-slate-200/80">
-              <div className="prose prose-slate max-w-none text-xs sm:text-sm leading-relaxed whitespace-pre-line text-slate-800 font-medium">
+            <div className="p-4 rounded bg-[#F9F9F7] border border-[#E8E8E2]">
+              <div className="prose prose-zinc max-w-none text-xs sm:text-sm leading-relaxed whitespace-pre-line text-zinc-800 font-normal">
                 {language === "ta" ? brief.brief_tamil : brief.brief_english}
               </div>
             </div>
 
-            {/* Landmark Key Developments */}
+            {/* Key Developments */}
             <div className="space-y-3">
-              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <Layers className="w-4 h-4 text-slate-700" />
+              <h3 className="text-xs font-bold text-zinc-800 uppercase tracking-wider flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-zinc-600" />
                 <span>
                   {language === "ta" ? "முக்கிய அரசியல் நகர்வுகள் & உண்மைச் சான்றுகள்" : "Key Developments & Verified Claims"}
                 </span>
               </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 {brief.key_developments.map((kd, idx) => (
                   <div
                     key={idx}
-                    className="p-4 rounded-xl border border-slate-200 bg-white hover:border-blue-300 transition-all flex flex-col justify-between space-y-3"
+                    className="p-3.5 rounded-lg border border-[#E8E8E2] bg-white hover:border-zinc-400 transition-colors flex flex-col justify-between space-y-2.5"
                   >
                     <div>
                       <div className="flex items-start justify-between gap-2">
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200 font-bold">
+                        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#F4F4F0] text-zinc-800 border border-[#E2E2DC] font-bold">
                           Item #{idx + 1}
                         </span>
-                        <span className="text-[10px] font-medium text-slate-500">
+                        <span className="text-[10px] text-zinc-600 font-mono">
                           {kd.supporting_article_ids.length} citations
                         </span>
                       </div>
-                      <h4 className="text-sm font-bold text-slate-900 mt-2 leading-snug">
+                      <h4 className="text-xs sm:text-sm font-bold text-zinc-900 mt-1.5 leading-snug">
                         {language === "ta" ? kd.headline_ta : kd.headline_en}
                       </h4>
-                      <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                      <p className="text-xs text-zinc-600 mt-1 leading-relaxed">
                         {language === "ta" ? kd.summary_ta : kd.summary_en}
                       </p>
                     </div>
 
-                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                      <span className="text-[11px] text-slate-500 font-medium italic">
+                    <div className="pt-2 border-t border-[#F0F0EB] flex items-center justify-between text-xs">
+                      <span className="text-[11px] text-zinc-600 italic">
                         {kd.impact_assessment}
                       </span>
                       {kd.supporting_article_urls[0] && (
@@ -339,7 +332,7 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                           href={kd.supporting_article_urls[0]}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-blue-700 hover:text-blue-900 font-bold hover:underline shrink-0"
+                          className="inline-flex items-center gap-1 text-xs text-zinc-800 hover:text-black font-semibold hover:underline shrink-0"
                         >
                           <span>Original</span>
                           <ExternalLink className="w-3 h-3" />
@@ -352,22 +345,22 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
             </div>
           </div>
 
-          {/* SECTION B: TOPIC TRENDS & MEDIA ACCELERATION */}
+          {/* SECTION B: TOPIC TRENDS & COVERAGE ACCELERATION */}
           {trends && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div className="bg-white rounded-lg border border-[#E8E8E2] shadow-2xs p-4 sm:p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#F0F0EB] pb-3">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-emerald-600" />
-                  <h2 className="text-base sm:text-lg font-bold text-slate-900 uppercase tracking-tight">
+                  <TrendingUp className="w-4 h-4 text-zinc-700" />
+                  <h2 className="text-sm sm:text-base font-bold text-zinc-900 uppercase tracking-tight">
                     Topic Trends & Coverage Acceleration
                   </h2>
                 </div>
-                <div className="text-xs text-slate-500">
-                  Compared against prior {period === "24h" ? "24 hours" : "7 days"}
+                <div className="text-xs text-zinc-600 font-mono">
+                  Benchmark: Prior {period === "24h" ? "24 hours" : "7 days"}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {trends.topics.map((item) => {
                   const isGaining = item.status === "gaining";
                   const isLosing = item.status === "losing";
@@ -377,73 +370,72 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                   return (
                     <div
                       key={item.topic}
-                      className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-slate-300 transition-all flex flex-col justify-between"
+                      className="p-3.5 rounded-lg border border-[#E8E8E2] bg-[#FBFBFA] hover:bg-white hover:border-zinc-400 transition-colors flex flex-col justify-between"
                     >
                       <div>
-                        <div className="flex items-center justify-between gap-2 mb-2">
-                          <span className="text-xs font-bold text-slate-900 uppercase tracking-tight">
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                          <span className="text-xs font-bold text-zinc-900 uppercase tracking-tight truncate">
                             {item.topic}
                           </span>
                           {isGaining && (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
                               <TrendingUp className="w-3 h-3" /> Gaining
                             </span>
                           )}
                           {isLosing && (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-50 text-rose-800 border border-rose-200">
                               <TrendingDown className="w-3 h-3" /> Losing
                             </span>
                           )}
                           {isEmerging && (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
-                              New Emerging
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                              Emerging
                             </span>
                           )}
                           {isSingle && (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-700 border border-zinc-200">
                               Single Report
                             </span>
                           )}
                         </div>
 
-                        <div className="flex items-baseline gap-2 mt-2">
-                          <span className="text-2xl font-black text-slate-900">{item.current_count}</span>
-                          <span className="text-xs text-slate-500 font-medium">reports (prior: {item.prior_count})</span>
+                        <div className="flex items-baseline gap-2 mt-1">
+                          <span className="text-xl font-bold font-mono text-zinc-900">{item.current_count}</span>
+                          <span className="text-xs text-zinc-500 font-mono">(prior: {item.prior_count})</span>
                         </div>
 
                         <div className="text-xs font-semibold mt-1">
                           {item.net_change > 0 ? (
-                            <span className="text-emerald-700">+{item.net_change} reports</span>
+                            <span className="text-emerald-800 font-mono">+{item.net_change} reports</span>
                           ) : item.net_change < 0 ? (
-                            <span className="text-rose-700">{item.net_change} reports</span>
+                            <span className="text-rose-800 font-mono">{item.net_change} reports</span>
                           ) : (
-                            <span className="text-slate-500">No net change</span>
+                            <span className="text-zinc-500 font-mono">0 net change</span>
                           )}
                           {item.pct_change !== null && (
-                            <span className="text-slate-500 ml-1.5 font-normal">
-                              ({item.pct_change > 0 ? "+" : ""}
-                              {item.pct_change}%)
+                            <span className="text-zinc-500 ml-1.5 font-normal font-mono">
+                              ({item.pct_change > 0 ? "+" : ""}{item.pct_change}%)
                               {item.is_low_sample && " *"}
                             </span>
                           )}
                         </div>
 
                         {/* Distinct Publishers */}
-                        <div className="mt-3 text-[11px] text-slate-600">
-                          <span className="font-semibold text-slate-700">Covered by: </span>
+                        <div className="mt-2.5 text-[11px] text-zinc-600">
+                          <span className="font-semibold text-zinc-700">Outlets: </span>
                           <span>{item.distinct_publishers.join(", ") || "None"}</span>
                         </div>
                       </div>
 
                       {/* Supporting Articles Links */}
                       {item.supporting_articles.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs">
-                          <span className="text-[11px] text-slate-500">
-                            {item.supporting_articles.length} verified evidence articles
+                        <div className="mt-3 pt-2.5 border-t border-[#E8E8E2] flex items-center justify-between text-xs">
+                          <span className="text-[10px] text-zinc-600 font-mono">
+                            {item.supporting_articles.length} evidence items
                           </span>
                           <button
                             onClick={() => setActiveArticleModal(item.supporting_articles[0])}
-                            className="text-blue-700 hover:text-blue-900 font-bold hover:underline flex items-center gap-1"
+                            className="text-zinc-900 hover:text-black font-semibold flex items-center gap-1 cursor-pointer"
                           >
                             <span>Inspect</span>
                             <ArrowRight className="w-3 h-3" />
@@ -455,28 +447,28 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                 })}
               </div>
 
-              <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-2">
-                <Info className="w-3.5 h-3.5 text-slate-400" />
+              <div className="text-[11px] text-zinc-600 flex items-center gap-1.5 mt-2">
+                <Info className="w-3.5 h-3.5 text-zinc-600" />
                 <span>
-                  * Asterisk indicates low historical sample size (prior window &lt; 3 articles). Single report tags indicate isolated stories not yet reflective of a statewide trend.
+                  * Asterisk denotes low prior sample baseline (&lt; 3 articles). Single report tags indicate isolated reports not yet establishing a broad trend.
                 </span>
               </div>
             </div>
           )}
 
-          {/* SECTION C: PARTY & LEADER MEDIA COVERAGE */}
+          {/* SECTION C: PARTY MEDIA PRESENCE & EDITORIAL POLARITY */}
           {coverage && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-6">
-              <div className="border-b border-slate-100 pb-3">
+            <div className="bg-white rounded-lg border border-[#E8E8E2] shadow-2xs p-4 sm:p-6 space-y-5">
+              <div className="border-b border-[#F0F0EB] pb-3">
                 <div className="flex items-center gap-2">
-                  <Building2 className="w-5 h-5 text-indigo-600" />
-                  <h2 className="text-base sm:text-lg font-bold text-slate-900 uppercase tracking-tight">
+                  <Building2 className="w-4 h-4 text-zinc-700" />
+                  <h2 className="text-sm sm:text-base font-bold text-zinc-900 uppercase tracking-tight">
                     Party & Leader Media Presence vs Editorial Sentiment
                   </h2>
                 </div>
                 {/* Mandatory Disclaimer */}
-                <div className="mt-2 p-2.5 bg-amber-50 rounded-lg border border-amber-200 text-amber-950 text-xs flex items-start gap-2">
-                  <Info className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                <div className="mt-2 p-2.5 bg-[#F9F9F7] rounded border border-[#E8E8E2] text-zinc-700 text-xs flex items-start gap-2">
+                  <Info className="w-3.5 h-3.5 text-zinc-500 shrink-0 mt-0.5" />
                   <div>
                     <strong>Data Integrity Notice:</strong> {coverage.attribution_caveat}
                   </div>
@@ -484,127 +476,120 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
               </div>
 
               {/* Parties Grid */}
-              <div>
-                <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                  <Users className="w-3.5 h-3.5 text-slate-600" />
-                  <span>Political Parties in Tamil Nadu Newsrooms</span>
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {coverage.parties.map((p) => (
-                    <div
-                      key={p.code}
-                      className="p-4 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-all flex flex-col justify-between"
-                    >
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-extrabold text-sm text-slate-900">{p.code}</span>
-                          <span className="text-[11px] text-slate-500 font-tamil truncate max-w-[120px]">
-                            {p.tamil_name}
-                          </span>
-                        </div>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-2xl font-black text-slate-900">{p.current_count}</span>
-                          <span className="text-xs text-slate-500">
-                            reports ({p.net_change > 0 ? `+${p.net_change}` : p.net_change})
-                          </span>
-                        </div>
-
-                        {/* Sentiment Tone Breakdown */}
-                        <div className="mt-3">
-                          <div className="flex items-center justify-between text-[11px] text-slate-600 font-semibold mb-1">
-                            <span>Media Sentiment:</span>
-                            <span className="font-mono">Avg: {p.average_sentiment_score > 0 ? `+${p.average_sentiment_score}` : p.average_sentiment_score}</span>
-                          </div>
-                          <div className="flex h-2 rounded-full overflow-hidden bg-slate-100 gap-0.5">
-                            <div
-                              style={{ width: `${(p.sentiment_distribution.positive / Math.max(1, p.current_count)) * 100}%` }}
-                              className="bg-emerald-500"
-                              title={`Positive: ${p.sentiment_distribution.positive}`}
-                            />
-                            <div
-                              style={{ width: `${(p.sentiment_distribution.neutral / Math.max(1, p.current_count)) * 100}%` }}
-                              className="bg-slate-300"
-                              title={`Neutral: ${p.sentiment_distribution.neutral}`}
-                            />
-                            <div
-                              style={{ width: `${(p.sentiment_distribution.negative / Math.max(1, p.current_count)) * 100}%` }}
-                              className="bg-rose-500"
-                              title={`Negative: ${p.sentiment_distribution.negative}`}
-                            />
-                          </div>
-                          <div className="flex justify-between text-[10px] text-slate-500 mt-1">
-                            <span className="text-emerald-700">+{p.sentiment_distribution.positive}</span>
-                            <span className="text-slate-500">{p.sentiment_distribution.neutral} neu</span>
-                            <span className="text-rose-700">-{p.sentiment_distribution.negative}</span>
-                          </div>
-                        </div>
-
-                        {/* Top Topics */}
-                        {p.top_topics.length > 0 && (
-                          <div className="mt-3 text-[11px] text-slate-600">
-                            <span className="font-semibold text-slate-700">Top topic: </span>
-                            <span>{p.top_topics[0].topic}</span>
-                          </div>
-                        )}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                {coverage.parties.map((p) => (
+                  <div
+                    key={p.code}
+                    className="p-3.5 rounded-lg border border-[#E8E8E2] bg-white hover:border-zinc-400 transition-colors flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="font-bold text-sm text-zinc-900">{p.code}</span>
+                        <span className="text-[11px] text-zinc-500 font-tamil truncate max-w-[120px]">
+                          {p.tamil_name}
+                        </span>
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-xl font-bold font-mono text-zinc-900">{p.current_count}</span>
+                        <span className="text-xs text-zinc-500 font-mono">
+                          reports ({p.net_change > 0 ? `+${p.net_change}` : p.net_change})
+                        </span>
                       </div>
 
-                      {p.supporting_articles.length > 0 && (
-                        <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
-                          <span className="text-[10px] text-slate-500">{p.distinct_publishers.length} outlets</span>
-                          {p.supporting_articles[0].source_url && (
-                            <a
-                              href={p.supporting_articles[0].source_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-blue-700 hover:text-blue-900 font-bold hover:underline flex items-center gap-1"
-                            >
-                              <span>Sample</span>
-                              <ExternalLink className="w-2.5 h-2.5" />
-                            </a>
-                          )}
+                      {/* Polarity Breakdown */}
+                      <div className="mt-2.5">
+                        <div className="flex items-center justify-between text-[11px] text-zinc-600 mb-1 font-mono">
+                          <span>Polarity:</span>
+                          <span>Avg: {p.average_sentiment_score > 0 ? `+${p.average_sentiment_score}` : p.average_sentiment_score}</span>
+                        </div>
+                        <div className="flex h-1.5 rounded-xs overflow-hidden bg-zinc-100">
+                          <div
+                            style={{ width: `${(p.sentiment_distribution.positive / Math.max(1, p.current_count)) * 100}%` }}
+                            className="bg-emerald-700"
+                            title={`Positive: ${p.sentiment_distribution.positive}`}
+                          />
+                          <div
+                            style={{ width: `${(p.sentiment_distribution.neutral / Math.max(1, p.current_count)) * 100}%` }}
+                            className="bg-zinc-400"
+                            title={`Neutral: ${p.sentiment_distribution.neutral}`}
+                          />
+                          <div
+                            style={{ width: `${(p.sentiment_distribution.negative / Math.max(1, p.current_count)) * 100}%` }}
+                            className="bg-rose-700"
+                            title={`Critical: ${p.sentiment_distribution.negative}`}
+                          />
+                        </div>
+                        <div className="flex justify-between text-[10px] text-zinc-500 mt-1 font-mono">
+                          <span className="text-emerald-800 font-bold">+{p.sentiment_distribution.positive}</span>
+                          <span>{p.sentiment_distribution.neutral} neu</span>
+                          <span className="text-rose-800 font-bold">-{p.sentiment_distribution.negative}</span>
+                        </div>
+                      </div>
+
+                      {/* Top Topic */}
+                      {p.top_topics.length > 0 && (
+                        <div className="mt-2.5 text-[11px] text-zinc-600">
+                          <span className="font-semibold text-zinc-700">Top topic: </span>
+                          <span className="truncate">{p.top_topics[0].topic}</span>
                         </div>
                       )}
                     </div>
-                  ))}
-                </div>
+
+                    {p.supporting_articles.length > 0 && (
+                      <div className="mt-3 pt-2 border-t border-[#F0F0EB] flex items-center justify-between text-[10px] text-zinc-500 font-mono">
+                        <span>{p.distinct_publishers.length} outlets</span>
+                        {p.supporting_articles[0].source_url && (
+                          <a
+                            href={p.supporting_articles[0].source_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-zinc-800 hover:text-black font-semibold hover:underline flex items-center gap-1"
+                          >
+                            <span>Sample</span>
+                            <ExternalLink className="w-2.5 h-2.5" />
+                          </a>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
           {/* SECTION D: EVIDENCE & SEARCH EXPLORER */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div className="bg-white rounded-lg border border-[#E8E8E2] shadow-2xs p-4 sm:p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#F0F0EB] pb-3">
               <div className="flex items-center gap-2">
-                <Search className="w-5 h-5 text-blue-600" />
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 uppercase tracking-tight">
-                  Search & Evidence Explorer
+                <Search className="w-4 h-4 text-zinc-700" />
+                <h2 className="text-sm sm:text-base font-bold text-zinc-900 uppercase tracking-tight">
+                  Evidence Search Explorer
                 </h2>
               </div>
-              <div className="text-xs text-slate-500">
+              <div className="text-xs text-zinc-500 font-mono">
                 {searchTotal} verified articles matching filter
               </div>
             </div>
 
             {/* Search and Filters Bar */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
                 <input
                   type="text"
                   placeholder="Search Tamil or English query..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-600 focus:bg-white transition-all font-medium"
+                  className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-[#F9F9F7] border border-[#E2E2DC] rounded focus:outline-hidden focus:border-zinc-500 focus:bg-white transition-all font-medium"
                 />
               </div>
 
               <select
                 value={selectedPartyFilter}
                 onChange={(e) => setSelectedPartyFilter(e.target.value)}
-                className="py-2 px-3 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-600 font-medium text-slate-700"
+                className="py-1.5 px-2.5 text-xs bg-[#F9F9F7] border border-[#E2E2DC] rounded focus:outline-hidden focus:border-zinc-500 text-zinc-800 font-medium cursor-pointer"
               >
-                <option value="">All Political Parties (அனைத்தும்)</option>
+                <option value="">All Parties</option>
                 <option value="DMK">DMK (திமுக)</option>
                 <option value="AIADMK">AIADMK (அதிமுக)</option>
                 <option value="BJP">BJP (பாஜக)</option>
@@ -617,153 +602,142 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
               <select
                 value={selectedTopicFilter}
                 onChange={(e) => setSelectedTopicFilter(e.target.value)}
-                className="py-2 px-3 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-600 font-medium text-slate-700"
+                className="py-1.5 px-2.5 text-xs bg-[#F9F9F7] border border-[#E2E2DC] rounded focus:outline-hidden focus:border-zinc-500 text-zinc-800 font-medium cursor-pointer"
               >
-                <option value="">All Topics (அனைத்து தலைப்புகள்)</option>
+                <option value="">All Topics</option>
                 <option value="2026 Assembly Election">2026 Assembly Election</option>
-                <option value="Governance">Governance</option>
-                <option value="Tamil Nadu State Politics">Tamil Nadu State Politics</option>
-                <option value="Welfare & Social Justice">Welfare & Social Justice</option>
-                <option value="Industrial & Economic Policy">Industrial & Economic Policy</option>
-                <option value="Riparian Rights & Agriculture">Riparian Rights & Agriculture</option>
+                <option value="Industrial Development">Industrial Development</option>
+                <option value="Kalaignar Magalir Urimai Thogai">Kalaignar Magalir Urimai Thogai</option>
+                <option value="Power Tariffs">Power Tariffs</option>
+                <option value="Youth Politics">Youth Politics</option>
+                <option value="Central Schemes">Central Schemes</option>
+                <option value="Cauvery Water Dispute">Cauvery Water Dispute</option>
               </select>
             </div>
 
             {/* Results Table */}
-            <div className="border border-slate-200 rounded-xl overflow-hidden overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
-                    <th className="py-2.5 px-4">Article Headline</th>
-                    <th className="py-2.5 px-3">Publisher</th>
-                    <th className="py-2.5 px-3">Parties</th>
-                    <th className="py-2.5 px-3">Tone</th>
-                    <th className="py-2.5 px-3">Published At</th>
-                    <th className="py-2.5 px-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {searching ? (
+            {searching ? (
+              <div className="p-8 text-center text-xs text-zinc-500">
+                Searching evidence articles...
+              </div>
+            ) : searchResults.length === 0 ? (
+              <div className="p-8 text-center text-xs text-zinc-500 bg-[#F9F9F7] rounded border border-[#E8E8E2]">
+                No verified articles matched your query.
+              </div>
+            ) : (
+              <div className="overflow-x-auto border border-[#E8E8E2] rounded">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#F4F4F0] border-b border-[#E8E8E2] text-zinc-600 font-mono uppercase text-[10px]">
                     <tr>
-                      <td colSpan={6} className="py-6 text-center text-slate-400 font-medium">
-                        Searching articles...
-                      </td>
+                      <th className="py-2 px-3">Date</th>
+                      <th className="py-2 px-3">Outlet</th>
+                      <th className="py-2 px-3">Headline</th>
+                      <th className="py-2 px-3">Parties</th>
+                      <th className="py-2 px-3">Tone</th>
+                      <th className="py-2 px-3 text-right">Action</th>
                     </tr>
-                  ) : searchResults.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="py-6 text-center text-slate-400 font-medium">
-                        No articles match the current filter criteria.
-                      </td>
-                    </tr>
-                  ) : (
-                    searchResults.map((art) => (
-                      <tr key={art.id} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="py-2.5 px-4 max-w-sm">
-                          <p className="font-bold text-slate-900 truncate">{art.title}</p>
-                          {art.tamil_title && art.tamil_title !== art.title && (
-                            <p className="text-[11px] text-slate-500 font-tamil truncate mt-0.5">{art.tamil_title}</p>
-                          )}
+                  </thead>
+                  <tbody className="divide-y divide-[#F0F0EB]">
+                    {searchResults.map((art) => (
+                      <tr key={art.id} className="hover:bg-[#F9F9F7] transition-colors">
+                        <td className="py-2.5 px-3 font-mono text-[11px] text-zinc-500 whitespace-nowrap">
+                          {formatDate(art.published_at)}
                         </td>
-                        <td className="py-2.5 px-3 whitespace-nowrap text-slate-700 font-medium">
-                          {art.source_name || art.source || "News"}
+                        <td className="py-2.5 px-3 font-bold text-zinc-800 whitespace-nowrap">
+                          {art.source_name || art.source}
                         </td>
-                        <td className="py-2.5 px-3 whitespace-nowrap">
-                          {art.party_codes?.map((p: string) => (
-                            <span key={p} className="inline-block mr-1 px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 font-mono font-bold text-[10px]">
-                              {p}
-                            </span>
-                          )) || "-"}
+                        <td className="py-2.5 px-3 font-tamil font-medium text-zinc-900 max-w-md">
+                          {art.tamil_title || art.title}
+                        </td>
+                        <td className="py-2.5 px-3 font-mono text-[11px] text-zinc-600 whitespace-nowrap">
+                          {Array.isArray(art.party_codes) ? art.party_codes.join(", ") : art.party_codes}
                         </td>
                         <td className="py-2.5 px-3 whitespace-nowrap">
                           <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            className={`px-1.5 py-0.2 rounded text-[10px] font-mono font-bold capitalize ${
                               art.sentiment === "positive"
-                                ? "bg-emerald-100 text-emerald-800"
+                                ? "text-emerald-700 bg-emerald-50"
                                 : art.sentiment === "negative"
-                                ? "bg-rose-100 text-rose-800"
-                                : "bg-slate-100 text-slate-700"
+                                ? "text-rose-700 bg-rose-50"
+                                : "text-zinc-600 bg-zinc-100"
                             }`}
                           >
                             {art.sentiment}
                           </span>
                         </td>
-                        <td className="py-2.5 px-3 whitespace-nowrap text-slate-500 font-mono text-[11px]">
-                          {formatDate(art.published_at)}
-                        </td>
-                        <td className="py-2.5 px-3 whitespace-nowrap text-right">
+                        <td className="py-2.5 px-3 text-right whitespace-nowrap">
                           <a
                             href={art.source_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-blue-700 hover:text-blue-900 font-bold hover:underline"
+                            className="inline-flex items-center gap-1 text-zinc-700 hover:text-black font-semibold"
                           >
                             <span>Open</span>
                             <ExternalLink className="w-3 h-3" />
                           </a>
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </>
       )}
 
-      {/* Article Detail Inspection Modal */}
+      {/* Supporting Article Modal */}
       {activeArticleModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Supporting Article Citation
-              </span>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="bg-white rounded-lg border border-[#E8E8E2] max-w-xl w-full p-5 space-y-4 shadow-xl">
+            <div className="flex items-start justify-between gap-3 border-b border-[#F0F0EB] pb-3">
+              <div>
+                <span className="text-[10px] font-mono font-bold text-zinc-500 uppercase">
+                  Verified Evidence Citation #{activeArticleModal.id}
+                </span>
+                <h3 className="text-sm font-bold font-tamil text-zinc-900 mt-1 leading-snug">
+                  {activeArticleModal.tamil_title || activeArticleModal.title}
+                </h3>
+              </div>
               <button
                 onClick={() => setActiveArticleModal(null)}
-                className="text-slate-400 hover:text-slate-700 text-sm font-bold cursor-pointer"
+                className="text-zinc-400 hover:text-zinc-700 p-1 cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
-            <div>
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-800 font-mono">
-                {activeArticleModal.id}
-              </span>
-              <h3 className="text-base font-bold text-slate-900 mt-2">
-                {activeArticleModal.title}
-              </h3>
-              {activeArticleModal.tamil_title && activeArticleModal.tamil_title !== activeArticleModal.title && (
-                <p className="text-sm font-tamil text-slate-600 mt-1">
-                  {activeArticleModal.tamil_title}
-                </p>
-              )}
+            <div className="space-y-2 text-xs text-zinc-600 font-mono">
+              <div>
+                <strong className="text-zinc-800">Publisher:</strong> {activeArticleModal.source}
+              </div>
+              <div>
+                <strong className="text-zinc-800">Published:</strong> {formatDate(activeArticleModal.published_at)}
+              </div>
             </div>
 
-            <div className="text-xs text-slate-600 space-y-1 bg-slate-50 p-3 rounded-lg border border-slate-100">
-              <p><strong>Publisher:</strong> {activeArticleModal.source}</p>
-              <p><strong>Published At:</strong> {formatDate(activeArticleModal.published_at)}</p>
-              <p><strong>Sentiment Tone:</strong> {activeArticleModal.sentiment}</p>
-              <p><strong>Parties Identified:</strong> {activeArticleModal.party_codes?.join(", ") || "General"}</p>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="pt-3 border-t border-[#F0F0EB] flex items-center justify-end gap-2">
               <button
                 onClick={() => setActiveArticleModal(null)}
-                className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer"
+                className="px-3 py-1.5 rounded text-xs text-zinc-600 hover:bg-zinc-100 cursor-pointer"
               >
                 Close
               </button>
-              <a
-                href={activeArticleModal.source_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg cursor-pointer shadow-sm"
-              >
-                <span>Read Original Article</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+              {activeArticleModal.source_url && (
+                <a
+                  href={activeArticleModal.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded text-xs font-semibold bg-zinc-900 text-white hover:bg-zinc-800 inline-flex items-center gap-1.5"
+                >
+                  <span>Open Original Story</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
             </div>
           </div>
         </div>

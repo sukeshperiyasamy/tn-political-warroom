@@ -50,8 +50,8 @@ import {
   RefreshCw,
   Sparkles,
   Radio,
-  Layers,
   FlaskConical,
+  ExternalLink,
 } from "lucide-react";
 
 export default function WarRoomDashboard() {
@@ -141,6 +141,11 @@ export default function WarRoomDashboard() {
     setActiveTab("news");
   };
 
+  const handleSelectTopicFromMetrics = (topic: string) => {
+    setFilters((prev) => ({ ...prev, topic: prev.topic === topic ? "" : topic }));
+    setActiveTab("news");
+  };
+
   const handleOpenDrawer = (article: NewsArticle) => {
     setDrawerArticle(article);
   };
@@ -169,8 +174,8 @@ export default function WarRoomDashboard() {
   const isLive = (filters.mode || "live") === "live";
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col w-full overflow-x-hidden min-w-0">
-      {/* Top Navigation */}
+    <div className="min-h-screen bg-[#FBFBFA] text-zinc-900 flex flex-col w-full overflow-x-hidden min-w-0">
+      {/* Editorial Navigation */}
       <Navbar
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -182,55 +187,57 @@ export default function WarRoomDashboard() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-7">
-        {/* Sub-header Banner */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-7 pb-5 border-b border-slate-200">
+      <main className="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-6 sm:py-8">
+        {/* Compact Editorial Header */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-[#E8E8E2]">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-3">
-              <span>TN 2026 Assembly War Room Intelligence</span>
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 font-serif">
+                TN 2026 Assembly War Room Intelligence
+              </h1>
               {isLive ? (
-                <span className="text-xs px-3 py-1 rounded-full bg-emerald-50 text-emerald-900 border border-emerald-300 font-mono font-bold flex items-center gap-1.5 shadow-2xs">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
                   Real Tamil Media Stream ({articles.length} reports)
                 </span>
               ) : (
-                <span className="text-xs px-3 py-1 rounded-full bg-slate-100 text-slate-800 border border-slate-300 font-mono font-bold flex items-center gap-1.5 shadow-2xs">
-                  <FlaskConical className="w-3.5 h-3.5 text-slate-600" />
-                  Curated Demo Mode (8 reports)
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-zinc-100 text-zinc-700 border border-zinc-200">
+                  <FlaskConical className="w-3 h-3 text-zinc-500" />
+                  Curated Demo Mode ({articles.length} reports)
                 </span>
               )}
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 font-tamil mt-1.5">
+            </div>
+            <p className="text-xs text-zinc-500 font-tamil mt-1">
               {isLive
-                ? "நேரடி தமிழ் செய்தி ஊடகங்களின் அரசியல் பகுப்பாய்வு, கட்சி மனநிலை தரவுகள் & 1080p செய்தி அட்டை ஸ்டுடியோ"
+                ? "தமிழ்நாட்டு அரசியல் செய்திகள், கட்சி ஊடகப் பங்கீடு மற்றும் 1080p செய்தி அட்டை ஸ்டுடியோ"
                 : "2026 தமிழ்நாடு சட்டமன்ற தேர்தல் காட்சி மாதிரி தரவுத்தொகுப்பு"}
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             {isLive && (
               <button
                 onClick={handleTriggerQuickIngest}
                 disabled={isQuickIngesting}
-                className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-lg text-xs sm:text-sm font-semibold bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
-                title="Trigger immediate RSS poll for new articles"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold bg-white hover:bg-[#F4F4F0] border border-[#E2E2DC] text-zinc-800 shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+                title="Poll registered RSS feeds for new stories"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${isQuickIngesting ? "animate-spin text-blue-600" : ""}`} />
-                <span>{isQuickIngesting ? "Polling Feeds..." : "Poll Feeds Now"}</span>
+                <RefreshCw className={`w-3.5 h-3.5 ${isQuickIngesting ? "animate-spin text-zinc-600" : ""}`} />
+                <span>{isQuickIngesting ? "Polling Feeds..." : "Poll Feeds"}</span>
               </button>
             )}
 
             <button
               onClick={() => setActiveTab("studio")}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-xs transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs transition-colors cursor-pointer"
             >
-              <Sparkles className="w-4 h-4" />
-              <span>Launch Card Studio (1080p)</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>Card Studio</span>
             </button>
           </div>
         </div>
 
-        {/* Global Filter Bar (shown on Dashboard and News tabs) */}
+        {/* Global Filter Bar (Dashboard and News tabs) */}
         {(activeTab === "dashboard" || activeTab === "news") && (
           <FilterBar
             filters={filters}
@@ -250,41 +257,42 @@ export default function WarRoomDashboard() {
                 metrics={metrics}
                 onSelectParty={handleSelectPartyFromMetrics}
                 onSelectLeader={handleSelectLeaderFromMetrics}
+                onSelectTopic={handleSelectTopicFromMetrics}
               />
             ) : (
-              <div className="p-16 text-center text-slate-500 bg-white border border-slate-200 rounded-xl">
-                <RefreshCw className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                <span className="text-sm font-medium">Loading war room intelligence...</span>
+              <div className="p-16 text-center text-zinc-500 bg-white border border-[#E8E8E2] rounded-lg">
+                <RefreshCw className="w-6 h-6 border-2 border-zinc-800 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                <span className="text-xs font-medium">Loading political intelligence...</span>
               </div>
             )}
 
             {/* Recent Key Reports Snippet */}
-            <div className="mt-10">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900">
-                  {isLive ? "Latest Ingested Media Reports" : "Top Monitored Political Reports"} ({articles.length})
-                </h3>
+            <div className="mt-8">
+              <div className="flex items-center justify-between mb-4 pb-2 border-b border-[#F0F0EB]">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
+                  {isLive ? "Latest Wire Dispatches" : "Top Monitored Reports"} ({articles.length})
+                </h2>
                 <button
                   onClick={() => setActiveTab("news")}
-                  className="text-xs sm:text-sm text-blue-700 hover:text-blue-900 font-bold cursor-pointer"
+                  className="text-xs text-zinc-600 hover:text-zinc-900 font-semibold cursor-pointer"
                 >
-                  View Full Feed & Intelligence →
+                  View Full Wire →
                 </button>
               </div>
 
               {articles.length === 0 ? (
-                <div className="p-12 text-center bg-white border border-slate-200 rounded-xl">
-                  <FileQuestion className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-                  <p className="text-sm font-semibold text-slate-700">No reports match your current filter.</p>
+                <div className="p-10 text-center bg-white border border-[#E8E8E2] rounded-lg">
+                  <FileQuestion className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
+                  <p className="text-xs font-semibold text-zinc-700">No reports match your selected criteria.</p>
                   <button
                     onClick={handleResetFilters}
-                    className="mt-3 px-4 py-2 rounded-lg text-xs font-bold bg-amber-500 text-slate-950 hover:bg-amber-400 cursor-pointer"
+                    className="mt-2.5 px-3 py-1.5 rounded text-xs font-semibold bg-zinc-900 text-white hover:bg-zinc-800 cursor-pointer"
                   >
                     Reset Filters
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-5">
                   {articles.slice(0, 8).map((art) => (
                     <ArticleCard
                       key={art.id}
@@ -303,39 +311,39 @@ export default function WarRoomDashboard() {
         {activeTab === "news" && (
           <div>
             {loading ? (
-              <div className="p-16 text-center text-slate-500 bg-white border border-slate-200 rounded-xl">
-                <RefreshCw className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                <p className="text-xs sm:text-sm font-medium">Updating political news stream...</p>
+              <div className="p-16 text-center text-zinc-500 bg-white border border-[#E8E8E2] rounded-lg">
+                <RefreshCw className="w-6 h-6 border-2 border-zinc-800 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                <p className="text-xs font-medium">Refreshing media wire...</p>
               </div>
             ) : articles.length === 0 ? (
-              <div className="p-16 text-center bg-white border border-slate-200 rounded-xl space-y-4 shadow-xs max-w-2xl mx-auto">
-                <FileQuestion className="w-12 h-12 text-slate-400 mx-auto" />
-                <h3 className="text-base font-bold text-slate-800">No articles match your filter criteria</h3>
-                <p className="text-xs sm:text-sm text-slate-500">
+              <div className="p-12 text-center bg-white border border-[#E8E8E2] rounded-lg space-y-3 max-w-xl mx-auto">
+                <FileQuestion className="w-10 h-10 text-zinc-400 mx-auto" />
+                <h3 className="text-sm font-bold text-zinc-800">No articles match your filter criteria</h3>
+                <p className="text-xs text-zinc-500">
                   {isLive
-                    ? "No live articles collected under this filter yet. You can clear filters, check the Sources & Ingestion tab, or poll active feeds."
-                    : "Try clearing the party, leader, or search filters to restore the demo media stream."}
+                    ? "No live articles collected for this filter combination. Clear your filters or check the source registry."
+                    : "Try clearing filters to display the demo scenario articles."}
                 </p>
-                <div className="flex items-center justify-center gap-3 pt-2">
+                <div className="flex items-center justify-center gap-2 pt-2">
                   <button
                     onClick={handleResetFilters}
-                    className="px-5 py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-amber-500 text-slate-950 hover:bg-amber-400 transition-colors shadow-xs cursor-pointer"
+                    className="px-3.5 py-1.5 rounded text-xs font-semibold bg-zinc-900 text-white hover:bg-zinc-800 transition-colors cursor-pointer"
                   >
                     Reset All Filters
                   </button>
                   {isLive && (
                     <button
                       onClick={() => setActiveTab("sources")}
-                      className="px-5 py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-xs cursor-pointer flex items-center gap-2"
+                      className="px-3.5 py-1.5 rounded text-xs font-semibold bg-[#F4F4F0] text-zinc-800 hover:bg-zinc-200 border border-[#E2E2DC] transition-colors cursor-pointer flex items-center gap-1.5"
                     >
-                      <Radio className="w-4 h-4" />
-                      <span>Manage News Sources</span>
+                      <Radio className="w-3.5 h-3.5" />
+                      <span>Source Registry</span>
                     </button>
                   )}
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-5">
                 {articles.map((art) => (
                   <ArticleCard
                     key={art.id}
@@ -383,19 +391,19 @@ export default function WarRoomDashboard() {
         onSelectForCard={handleCreateCardFromArticle}
       />
 
-      {/* War Room Global Footer */}
-      <footer className="border-t border-slate-200 bg-white py-6 mt-14 text-center text-xs text-slate-500">
+      {/* Editorial Footer */}
+      <footer className="border-t border-[#E8E8E2] bg-white py-5 mt-12 text-xs text-zinc-500">
         <div className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-            <span className="font-mono text-slate-700 font-semibold">
-              TN Political War Room Media Intelligence Platform ({isLive ? "Live RSS Ingestion Active" : "Demo Mode"})
+            <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
+            <span className="font-mono text-zinc-700 font-medium">
+              TN Political Media Intelligence Wire ({isLive ? "Live RSS Ingestion Active" : "Demo Mode"})
             </span>
           </div>
-          <div className="flex items-center gap-4 text-xs text-slate-500">
-            <span>Verified Feeds: News18 Tamil, Polimer News, BBC Tamil, The Hindu TN, OneIndia Tamil, Muthanmai Reporter</span>
+          <div className="flex items-center gap-3 text-[11px] text-zinc-500">
+            <span>News18 TN, Polimer News, BBC Tamil, The Hindu TN, OneIndia Tamil, Muthanmai</span>
             <span>•</span>
-            <span className="text-amber-800 font-mono font-bold">1080×1080 PNG Studio Ready</span>
+            <span className="font-mono">1080×1080 Social Studio Ready</span>
           </div>
         </div>
       </footer>

@@ -421,7 +421,7 @@ class RSSIngestionEngine:
                     continue
 
             # Case C: New article!
-            article_id = "live-" + hashlib.sha256(canonical_url.encode("utf-8")).hexdigest()[:12]
+            article_id = "art-" + hashlib.sha256(canonical_url.encode("utf-8")).hexdigest()[:12]
 
             try:
                 ai_intel = await self.ai_service.analyze_article(

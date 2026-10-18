@@ -8,21 +8,14 @@ import {
   Play,
   CheckCircle2,
   AlertCircle,
-  XCircle,
   ExternalLink,
-  Globe,
-  Database,
   Trash2,
   Check,
   Copy,
   Clock,
-  Sparkles,
   Server,
   Layers,
-  ShieldCheck,
-  FileCheck,
   Tag,
-  AlertTriangle,
 } from "lucide-react";
 import {
   NewsSource,
@@ -61,8 +54,8 @@ function getFetchStatusBadge(source: NewsSource) {
   const status = source.last_fetch_status;
   if (!source.is_enabled) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-        <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-zinc-100 text-zinc-600 border border-zinc-200">
+        <span className="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
         Disabled
       </span>
     );
@@ -70,8 +63,8 @@ function getFetchStatusBadge(source: NewsSource) {
 
   if (status === "not_modified_304") {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200" title="HTTP 304 Not Modified: Feed syndication XML unchanged on publisher server">
-        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold bg-zinc-100 text-zinc-800 border border-zinc-300" title="HTTP 304 Not Modified: Feed XML unchanged on server">
+        <span className="w-1.5 h-1.5 rounded-full bg-zinc-600"></span>
         HTTP 304 Unchanged
       </span>
     );
@@ -80,7 +73,7 @@ function getFetchStatusBadge(source: NewsSource) {
   if (status === "new_articles") {
     return (
       <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200" title="New articles persisted from latest poll">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
         Fresh Articles
       </span>
     );
@@ -88,8 +81,8 @@ function getFetchStatusBadge(source: NewsSource) {
 
   if (status === "no_new_articles") {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200" title="HTTP 200 OK: Items parsed but already persisted (duplicates skipped)">
-        <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200" title="HTTP 200 OK: Items parsed but already persisted">
+        <span className="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
         No New Articles
       </span>
     );
@@ -98,7 +91,7 @@ function getFetchStatusBadge(source: NewsSource) {
   if (status === "stale_feed") {
     return (
       <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-200" title="Feed endpoint active but newest published article is older than 72 hours">
-        <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
         Stale Feed (&gt;72h)
       </span>
     );
@@ -106,26 +99,17 @@ function getFetchStatusBadge(source: NewsSource) {
 
   if (source.health_status === "error" || status === "http_error" || status === "connection_error") {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold bg-rose-50 text-rose-800 border border-rose-200" title={source.last_fetch_error || source.last_error || "Fetch failed"}>
-        <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-        Fetch Error
-      </span>
-    );
-  }
-
-  if (source.health_status === "healthy") {
-    return (
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-        Healthy
+      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold bg-rose-50 text-rose-800 border border-rose-200" title={source.last_fetch_error || "Feed connection failed"}>
+        <span className="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+        Fetch Failed
       </span>
     );
   }
 
   return (
-    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-      <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-      Pending Poll
+    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+      Healthy
     </span>
   );
 }
@@ -135,29 +119,29 @@ export function SourceManagementView() {
   const [logs, setLogs] = useState<IngestionLog[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [ingesting, setIngesting] = useState<boolean>(false);
+  const [ingestingSourceId, setIngestingSourceId] = useState<string | null>(null);
+  const [testingSourceId, setTestingSourceId] = useState<string | null>(null);
   const [ingestStatus, setIngestStatus] = useState<string | null>(null);
 
-  // New source form state
+  // Add Source Form State
   const [showAddForm, setShowAddForm] = useState<boolean>(false);
-  const [newName, setNewName] = useState("");
-  const [newTamilName, setNewTamilName] = useState("");
-  const [newCategory, setNewCategory] = useState("Digital News");
-  const [newUrl, setNewUrl] = useState("");
-  const [newRssUrl, setNewRssUrl] = useState("");
-  const [newLanguage, setNewLanguage] = useState("ta");
-  const [formTesting, setFormTesting] = useState(false);
+  const [newName, setNewName] = useState<string>("");
+  const [newTamilName, setNewTamilName] = useState<string>("");
+  const [newCategory, setNewCategory] = useState<string>("Tamil News Portal");
+  const [newUrl, setNewUrl] = useState<string>("");
+  const [newRssUrl, setNewRssUrl] = useState<string>("");
+  const [newLanguage, setNewLanguage] = useState<string>("ta");
+  const [formTesting, setFormTesting] = useState<boolean>(false);
   const [formTestResult, setFormTestResult] = useState<SourceTestResult | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Individual test modal
+  // Active Test Result Modal / Drawer
   const [activeTestResult, setActiveTestResult] = useState<{
     sourceName: string;
     result: SourceTestResult;
   } | null>(null);
-  const [testingSourceId, setTestingSourceId] = useState<string | null>(null);
 
-  // Single ingest loading state
-  const [ingestingSourceId, setIngestingSourceId] = useState<string | null>(null);
+  // Copy notification
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
   const loadData = async () => {
@@ -180,9 +164,7 @@ export function SourceManagementView() {
   const handleToggle = async (sourceId: string) => {
     try {
       const updated = await toggleSource(sourceId);
-      setSources((prev) =>
-        prev.map((s) => (s.id === sourceId ? { ...s, is_enabled: updated.is_enabled } : s))
-      );
+      setSources((prev) => prev.map((s) => (s.id === sourceId ? updated : s)));
     } catch (err) {
       console.error("Toggle error:", err);
     }
@@ -191,8 +173,8 @@ export function SourceManagementView() {
   const handleTestSource = async (source: NewsSource) => {
     setTestingSourceId(source.id);
     try {
-      const res = await testSource(source.id);
-      setActiveTestResult({ sourceName: source.name, result: res });
+      const result = await testSource(source.id);
+      setActiveTestResult({ sourceName: source.name, result });
     } catch (err: any) {
       setActiveTestResult({
         sourceName: source.name,
@@ -246,7 +228,7 @@ export function SourceManagementView() {
   };
 
   const handleDelete = async (sourceId: string, name: string) => {
-    if (!confirm(`Are you sure you want to remove ${name} and its associated articles from the registry?`)) {
+    if (!confirm(`Are you sure you want to remove ${name} from the registry?`)) {
       return;
     }
     try {
@@ -319,192 +301,150 @@ export function SourceManagementView() {
   const healthyCount = sources.filter((s) => s.health_status === "healthy").length;
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6">
       {/* Top Header Card */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 sm:p-7 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-[#E8E8E2] rounded-lg p-4 sm:p-5 shadow-2xs">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2.5 mb-1.5">
-              <span className="p-2 rounded-lg bg-blue-50 text-blue-800 border border-blue-200">
-                <Radio className="w-5 h-5" />
-              </span>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            <div className="flex items-center gap-2 mb-1">
+              <Radio className="w-4 h-4 text-zinc-700" />
+              <h2 className="text-base sm:text-lg font-bold text-zinc-900 tracking-tight font-serif">
                 Source Management & Feed Freshness Hub
               </h2>
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 font-medium">
-              Tamil Nadu media syndication registry with conditional ETag & HTTP 304 validation, canonical deduplication, and domain AI monitoring
+            <p className="text-xs text-zinc-500 font-medium">
+              Regional media syndication registry with conditional ETag validation, HTTP 304 caching, and canonical deduplication
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 transition-all cursor-pointer shadow-2xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-800 border border-[#E2E2DC] transition-colors cursor-pointer"
             >
-              <Plus className="w-4 h-4 text-slate-700" />
-              <span>{showAddForm ? "Close Form" : "+ Add News Publisher"}</span>
+              <Plus className="w-3.5 h-3.5 text-zinc-600" />
+              <span>{showAddForm ? "Close Form" : "Add Publisher"}</span>
             </button>
 
             <button
               onClick={handleIngestAll}
               disabled={ingesting}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-all cursor-pointer shadow-xs disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
             >
-              <RefreshCw className={`w-4 h-4 ${ingesting ? "animate-spin" : ""}`} />
-              <span>{ingesting ? "Ingesting All Feeds..." : "Run Live Ingestion All"}</span>
+              <Play className={`w-3.5 h-3.5 ${ingesting ? "animate-spin" : ""}`} />
+              <span>{ingesting ? "Ingesting Feeds..." : "Ingest All Feeds"}</span>
             </button>
           </div>
         </div>
 
-        {/* Global Ingest Feedback Notification */}
+        {/* Status banner */}
         {ingestStatus && (
-          <div className="mt-4 p-3.5 rounded-lg bg-slate-900 text-white text-xs sm:text-sm font-mono flex items-center justify-between gap-3 animate-fade-in">
-            <span className="truncate">{ingestStatus}</span>
-            <button
-              onClick={() => setIngestStatus(null)}
-              className="text-slate-400 hover:text-white cursor-pointer"
-            >
+          <div className="mt-3 p-2.5 rounded bg-[#F9F9F7] border border-[#E8E8E2] text-xs font-mono text-zinc-800 flex items-center justify-between">
+            <span>{ingestStatus}</span>
+            <button onClick={() => setIngestStatus(null)} className="text-zinc-400 hover:text-zinc-700 text-xs ml-2 cursor-pointer">
               ✕
             </button>
           </div>
         )}
 
-        {/* Key Health & Capacity Metrics Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-100">
-          <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 mb-1">
-              <Server className="w-3.5 h-3.5 text-blue-600" />
-              <span>Registered Publishers</span>
+        {/* Operational Statistics */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-[#F0F0EB]">
+          <div>
+            <div className="text-[10px] font-mono uppercase text-zinc-500 font-bold">Registered Publishers</div>
+            <div className="text-xl font-bold font-mono text-zinc-900 mt-0.5">
+              {activeSourcesCount} / {sources.length}
             </div>
-            <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
-              {sources.length}
-            </div>
-            <div className="text-[11px] text-slate-500 mt-0.5">{activeSourcesCount} feeds active</div>
           </div>
-
-          <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 mb-1">
-              <Database className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Real Articles Ingested</span>
-            </div>
-            <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
-              {totalArticles}
-            </div>
-            <div className="text-[11px] text-emerald-700 font-semibold mt-0.5">SQLite warroom.db live</div>
+          <div>
+            <div className="text-[10px] font-mono uppercase text-zinc-500 font-bold">Real Articles Ingested</div>
+            <div className="text-xl font-bold font-mono text-zinc-900 mt-0.5">{totalArticles}</div>
           </div>
-
-          <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 mb-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
-              <span>Duplicates Prevented</span>
-            </div>
-            <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
-              {totalDuplicatesSkipped}
-            </div>
-            <div className="text-[11px] text-slate-500 mt-0.5">Canonical URL & content hash</div>
+          <div>
+            <div className="text-[10px] font-mono uppercase text-zinc-500 font-bold">Duplicates Prevented</div>
+            <div className="text-xl font-bold font-mono text-zinc-700 mt-0.5">{totalDuplicatesSkipped}</div>
           </div>
-
-          <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 mb-1">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Pipeline Freshness</span>
+          <div>
+            <div className="text-[10px] font-mono uppercase text-zinc-500 font-bold">Pipeline Freshness</div>
+            <div className="text-xl font-bold font-mono text-emerald-800 mt-0.5">
+              {healthyCount} / {sources.length}
             </div>
-            <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
-              {healthyCount}/{sources.length}
-            </div>
-            <div className="text-[11px] text-slate-500 mt-0.5">HTTP 304 conditional cache</div>
           </div>
         </div>
       </div>
 
-      {/* Add New Source Expandable Form */}
+      {/* Add Source Drawer / Collapsible Form */}
       {showAddForm && (
-        <div className="bg-white border-2 border-amber-300 rounded-xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <Plus className="w-4 h-4 text-amber-600" />
-              <span>Register New Tamil News Publisher</span>
+        <div className="bg-white border border-[#E8E8E2] rounded-lg p-5 shadow-sm space-y-4">
+          <div className="border-b border-[#F0F0EB] pb-2 flex items-center justify-between">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
+              Register New Tamil Media Publisher
             </h3>
-            <span className="text-xs text-slate-500">Live endpoint validation required before activation</span>
+            <button onClick={() => setShowAddForm(false)} className="text-xs text-zinc-400 hover:text-zinc-700 cursor-pointer">
+              Cancel
+            </button>
           </div>
 
           <form onSubmit={handleCreateSourceSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
                   Publisher Name (English) *
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Puthiya Thalaimurai"
+                  placeholder="e.g. Daily Thanthi"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white"
+                  className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-1.5 text-xs text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Tamil Name (தமிழ் பெயர்)
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  Publisher Name (தமிழ்)
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. புதிய தலைமுறை"
+                  placeholder="e.g. தினத்தந்தி"
                   value={newTamilName}
                   onChange={(e) => setNewTamilName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2 text-xs sm:text-sm text-slate-900 font-tamil focus:outline-none focus:border-blue-600 focus:bg-white"
+                  className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-1.5 text-xs font-tamil text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Publisher Category
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  Category
                 </label>
                 <select
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white"
+                  className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-1.5 text-xs text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white cursor-pointer"
                 >
-                  <option value="TV News">TV News (தொலைக்காட்சி)</option>
-                  <option value="Digital News">Digital News (டிஜிட்டல் ஊடகம்)</option>
-                  <option value="Daily Newspaper">Daily Newspaper (நாளிதழ்)</option>
-                  <option value="State Politics">State Politics (அரசியல் இதழ்)</option>
-                  <option value="Print / Digital">Print / Digital (அச்சு / இணையம்)</option>
-                  <option value="Govt & Party Press">Govt & Party Press (அறிக்கைகள்)</option>
+                  <option value="Tamil News Portal">Tamil News Portal</option>
+                  <option value="Television Broadcast">Television Broadcast</option>
+                  <option value="Print Daily">Print Daily</option>
+                  <option value="International Bureau">International Bureau</option>
+                  <option value="Digital Independent">Digital Independent</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Language & Script
-                </label>
-                <select
-                  value={newLanguage}
-                  onChange={(e) => setNewLanguage(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white"
-                >
-                  <option value="ta">Tamil (தமிழ்)</option>
-                  <option value="en">English</option>
-                </select>
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Publisher Website URL
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  Main Website URL
                 </label>
                 <input
                   type="url"
-                  placeholder="https://example.com"
+                  placeholder="https://www.dailythanthi.com"
                   value={newUrl}
                   onChange={(e) => setNewUrl(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white"
+                  className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-1.5 text-xs text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
                   RSS / Atom Feed URL *
                 </label>
                 <div className="flex gap-2">
@@ -513,14 +453,14 @@ export function SourceManagementView() {
                     placeholder="https://example.com/rss.xml"
                     value={newRssUrl}
                     onChange={(e) => setNewRssUrl(e.target.value)}
-                    className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2 text-xs sm:text-sm text-slate-900 font-mono focus:outline-none focus:border-blue-600 focus:bg-white"
+                    className="flex-1 bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-1.5 text-xs text-zinc-900 font-mono focus:outline-hidden focus:border-zinc-500 focus:bg-white"
                     required
                   />
                   <button
                     type="button"
                     onClick={handleTestFormUrl}
                     disabled={formTesting || !newRssUrl}
-                    className="px-4 py-2 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all cursor-pointer disabled:opacity-50"
+                    className="px-3 py-1.5 rounded text-xs font-semibold bg-[#F4F4F0] text-zinc-800 border border-[#E2E2DC] hover:bg-zinc-200 transition-colors cursor-pointer disabled:opacity-50"
                   >
                     {formTesting ? "Probing..." : "Test Endpoint"}
                   </button>
@@ -531,35 +471,35 @@ export function SourceManagementView() {
             {/* Test result box */}
             {formTestResult && (
               <div
-                className={`p-3.5 rounded-lg border text-xs ${
+                className={`p-3 rounded border text-xs ${
                   formTestResult.status === "success"
                     ? "bg-emerald-50 border-emerald-200 text-emerald-900"
                     : "bg-rose-50 border-rose-200 text-rose-900"
                 }`}
               >
-                <div className="flex items-center gap-2 font-bold mb-1">
+                <div className="flex items-center gap-1.5 font-bold mb-1">
                   {formTestResult.status === "success" ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
                   ) : (
-                    <AlertCircle className="w-4 h-4 text-rose-600" />
+                    <AlertCircle className="w-3.5 h-3.5 text-rose-700" />
                   )}
                   <span>
-                    Endpoint Probe Result: {formTestResult.status.toUpperCase()} (HTTP{" "}
+                    Endpoint Probe: {formTestResult.status.toUpperCase()} (HTTP{" "}
                     {formTestResult.status_code}, {formTestResult.latency_ms}ms)
                   </span>
                 </div>
                 {formTestResult.status === "success" ? (
-                  <p className="text-emerald-700">
+                  <p className="text-emerald-800">
                     Feed parsed successfully. Discovered {formTestResult.items_count} syndicated articles.
                   </p>
                 ) : (
-                  <p className="text-rose-700">{formTestResult.error}</p>
+                  <p className="text-rose-800">{formTestResult.error}</p>
                 )}
               </div>
             )}
 
             {formError && (
-              <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-800">
+              <div className="p-2.5 bg-rose-50 border border-rose-200 rounded text-xs text-rose-800">
                 {formError}
               </div>
             )}
@@ -568,13 +508,13 @@ export function SourceManagementView() {
               <button
                 type="button"
                 onClick={() => setShowAddForm(false)}
-                className="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer"
+                className="px-3 py-1.5 rounded text-xs text-zinc-600 hover:bg-zinc-100 cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-xs cursor-pointer"
+                className="px-4 py-1.5 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs cursor-pointer"
               >
                 Save & Activate Publisher
               </button>
@@ -584,75 +524,70 @@ export function SourceManagementView() {
       )}
 
       {/* Primary Sources Management Table */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
-        <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-white border border-[#E8E8E2] rounded-lg overflow-hidden shadow-2xs">
+        <div className="p-4 sm:p-5 border-b border-[#F0F0EB] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
-              <Server className="w-4 h-4 text-slate-700" />
-              <span>Registered Tamil News Feed Registry</span>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 flex items-center gap-2">
+              <Server className="w-3.5 h-3.5 text-zinc-700" />
+              <span>Registered Tamil Media Feeds</span>
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Distinguishing feed fetch health from NLP processing status, with HTTP 304 and publication timestamp tracking
+            <p className="text-xs text-zinc-500 mt-0.5">
+              Live status, HTTP 304 validation, timestamps, and deduplication statistics
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={loadData}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 cursor-pointer"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Refresh Registry</span>
-            </button>
-          </div>
+          <button
+            onClick={loadData}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium bg-[#F9F9F7] hover:bg-zinc-100 border border-[#E2E2DC] text-zinc-700 cursor-pointer"
+          >
+            <RefreshCw className="w-3 h-3" />
+            <span>Refresh</span>
+          </button>
         </div>
 
         {/* Sources List Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs sm:text-sm">
-            <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 uppercase text-[11px] tracking-wider">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-[#F4F4F0] text-zinc-600 font-mono border-b border-[#E8E8E2] uppercase text-[10px] tracking-wider">
               <tr>
-                <th className="py-3.5 px-5">Publisher & Endpoint</th>
-                <th className="py-3.5 px-4">Fetch Health & Status</th>
-                <th className="py-3.5 px-4">Collection Timestamps</th>
-                <th className="py-3.5 px-4">Article Processing Health</th>
-                <th className="py-3.5 px-4">Active</th>
-                <th className="py-3.5 px-5 text-right">Actions</th>
+                <th className="py-2.5 px-4">Publisher & Feed URL</th>
+                <th className="py-2.5 px-3">Fetch Health</th>
+                <th className="py-2.5 px-3">Collection Timestamps</th>
+                <th className="py-2.5 px-3">Article Processing Health</th>
+                <th className="py-2.5 px-3">Active</th>
+                <th className="py-2.5 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 font-medium">
+            <tbody className="divide-y divide-[#F0F0EB] font-medium">
               {sources.map((source) => (
-                <tr key={source.id} className="hover:bg-slate-50/70 transition-colors">
+                <tr key={source.id} className="hover:bg-[#F9F9F7] transition-colors">
                   {/* Publisher & Endpoint */}
-                  <td className="py-4 px-5">
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-800 border border-blue-200 flex items-center justify-center font-bold text-xs uppercase font-mono shrink-0 mt-0.5">
+                  <td className="py-3 px-4">
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-7 h-7 rounded bg-[#F4F4F0] text-zinc-800 border border-[#E2E2DC] flex items-center justify-center font-bold text-[10px] font-mono shrink-0 mt-0.5">
                         {source.name.slice(0, 2)}
                       </div>
                       <div className="min-w-0">
-                        <div className="font-bold text-slate-900 flex items-center gap-2">
+                        <div className="font-bold text-zinc-900 flex items-center gap-1.5">
                           <span>{source.name}</span>
-                          <span className="px-1.5 py-0.2 rounded text-[10px] bg-slate-100 text-slate-600 font-mono">
+                          <span className="px-1 py-0.2 rounded text-[9px] bg-zinc-100 text-zinc-600 font-mono">
                             {source.language.toUpperCase()}
                           </span>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-                            {source.category}
-                          </span>
                         </div>
-                        <div className="text-xs text-slate-500 font-tamil mt-0.5">{source.tamil_name}</div>
+                        <div className="text-[11px] text-zinc-500 font-tamil">{source.tamil_name}</div>
                         
-                        {/* URL + ETag info */}
-                        <div className="flex items-center gap-2 mt-1.5 text-xs text-slate-500 font-mono">
-                          <span className="truncate max-w-[240px] text-[11px] text-slate-600" title={source.rss_url}>
+                        {/* URL info */}
+                        <div className="flex items-center gap-1.5 mt-1 text-[11px] text-zinc-500 font-mono">
+                          <span className="truncate max-w-[220px]" title={source.rss_url}>
                             {source.rss_url}
                           </span>
                           <button
                             onClick={() => handleCopyUrl(source.rss_url)}
-                            className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"
+                            className="p-0.5 text-zinc-400 hover:text-zinc-700 cursor-pointer"
                             title="Copy RSS URL"
                           >
                             {copiedUrl === source.rss_url ? (
-                              <Check className="w-3 h-3 text-emerald-600" />
+                              <Check className="w-3 h-3 text-emerald-700" />
                             ) : (
                               <Copy className="w-3 h-3" />
                             )}
@@ -661,105 +596,87 @@ export function SourceManagementView() {
                             href={source.rss_url}
                             target="_blank"
                             rel="noreferrer"
-                            className="p-1 text-slate-400 hover:text-blue-600"
+                            className="p-0.5 text-zinc-400 hover:text-zinc-800"
                             title="Open XML stream"
                           >
                             <ExternalLink className="w-3 h-3" />
                           </a>
                         </div>
-
-                        {source.etag && (
-                          <div className="mt-1 flex items-center gap-1 text-[10px] text-indigo-700 font-mono">
-                            <Tag className="w-3 h-3 shrink-0" />
-                            <span className="truncate max-w-[220px]" title={`ETag: ${source.etag}`}>ETag: {source.etag}</span>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </td>
 
                   {/* Fetch Health & Status Badge */}
-                  <td className="py-4 px-4 whitespace-nowrap">
+                  <td className="py-3 px-3 whitespace-nowrap">
                     <div>
                       {getFetchStatusBadge(source)}
                     </div>
                     {source.last_fetch_error ? (
-                      <div className="text-[11px] text-rose-600 max-w-[180px] truncate mt-1.5" title={source.last_fetch_error}>
+                      <div className="text-[10px] text-rose-700 max-w-[170px] truncate mt-1" title={source.last_fetch_error}>
                         {source.last_fetch_error}
                       </div>
-                    ) : source.last_error ? (
-                      <div className="text-[11px] text-slate-500 max-w-[180px] truncate mt-1.5" title={source.last_error}>
-                        {source.last_error}
-                      </div>
                     ) : (
-                      <div className="text-[10px] text-slate-400 mt-1">Polling interval: 15 min</div>
+                      <div className="text-[10px] text-zinc-600 mt-1 font-mono">15m interval</div>
                     )}
                   </td>
 
                   {/* Collection Timestamps */}
-                  <td className="py-4 px-4 whitespace-nowrap text-xs">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1.5 text-slate-700">
-                        <span className="text-slate-400 font-medium">Last Attempt:</span>
-                        <span className="font-mono">{formatTimestamp(source.last_fetch_attempt_at || source.last_fetched_at)}</span>
+                  <td className="py-3 px-3 whitespace-nowrap font-mono text-[11px]">
+                    <div className="space-y-0.5 text-zinc-600">
+                      <div>
+                        <span className="text-zinc-600">Attempt: </span>
+                        {formatTimestamp(source.last_fetch_attempt_at || source.last_fetched_at)}
                       </div>
-                      <div className="flex items-center gap-1.5 text-slate-700">
-                        <span className="text-slate-400 font-medium">Last Success:</span>
-                        <span className="font-mono text-emerald-700 font-semibold">{formatTimestamp(source.last_successful_fetch_at || source.last_fetched_at)}</span>
+                      <div>
+                        <span className="text-zinc-600">Success: </span>
+                        <span className="text-zinc-900 font-semibold">{formatTimestamp(source.last_successful_fetch_at || source.last_fetched_at)}</span>
                       </div>
-                      <div className="flex items-center gap-1.5 text-slate-700">
-                        <span className="text-slate-400 font-medium">Latest Article Pub:</span>
-                        <span className="font-mono text-blue-700 font-semibold">{formatTimestamp(source.last_publication_at)}</span>
+                      <div>
+                        <span className="text-zinc-600">Latest Pub: </span>
+                        <span className="text-zinc-900 font-semibold">{formatTimestamp(source.last_publication_at)}</span>
                       </div>
                     </div>
                   </td>
 
                   {/* Article Processing Health */}
-                  <td className="py-4 px-4 whitespace-nowrap">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-900 font-mono">
-                          {source.current_article_count || source.total_articles_fetched || 0} total
-                        </span>
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          {source.processed_articles_count ?? source.current_article_count ?? 0} analyzed
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-[11px] font-mono text-slate-500">
-                        <span>Skipped: <strong className="text-slate-700">{source.skipped_duplicates_count || 0}</strong></span>
-                        {Number(source.failed_articles_count) > 0 && (
-                          <span className="text-rose-600 font-bold">Failed: {source.failed_articles_count}</span>
-                        )}
-                      </div>
+                  <td className="py-3 px-3 whitespace-nowrap font-mono text-[11px]">
+                    <div>
+                      <span className="font-bold text-zinc-900">
+                        {source.current_article_count || source.total_articles_fetched || 0}
+                      </span>
+                      <span className="text-zinc-500"> total</span>
+                    </div>
+                    <div className="text-zinc-500 text-[10px]">
+                      <span>Skipped dupes: {source.skipped_duplicates_count || 0}</span>
                     </div>
                   </td>
 
                   {/* Enabled Toggle Switch */}
-                  <td className="py-4 px-4 whitespace-nowrap">
+                  <td className="py-3 px-3 whitespace-nowrap">
                     <button
                       role="switch"
                       aria-checked={source.is_enabled}
                       onClick={() => handleToggle(source.id)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                        source.is_enabled ? "bg-emerald-600" : "bg-slate-300"
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-pointer ${
+                        source.is_enabled ? "bg-zinc-900" : "bg-zinc-300"
                       }`}
                       title={source.is_enabled ? "Feed active - click to pause" : "Feed paused - click to resume"}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          source.is_enabled ? "translate-x-6" : "translate-x-1"
+                        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                          source.is_enabled ? "translate-x-4.5" : "translate-x-0.5"
                         }`}
                       />
                     </button>
                   </td>
 
                   {/* Action Buttons */}
-                  <td className="py-4 px-5 text-right whitespace-nowrap">
-                    <div className="flex items-center justify-end gap-1.5">
+                  <td className="py-3 px-4 text-right whitespace-nowrap">
+                    <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => handleTestSource(source)}
                         disabled={testingSourceId === source.id}
-                        className="px-2.5 py-1.5 rounded-md text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+                        className="px-2 py-1 rounded text-xs font-semibold bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-700 transition-colors cursor-pointer"
                         title="Probe feed headers and XML response"
                       >
                         {testingSourceId === source.id ? "Probing..." : "Test"}
@@ -768,7 +685,7 @@ export function SourceManagementView() {
                       <button
                         onClick={() => handleIngestSingle(source)}
                         disabled={ingestingSourceId === source.id || !source.is_enabled}
-                        className="px-2.5 py-1.5 rounded-md text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors cursor-pointer disabled:opacity-40"
+                        className="px-2 py-1 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white transition-colors cursor-pointer disabled:opacity-40"
                         title="Fetch latest articles immediately with conditional validation"
                       >
                         {ingestingSourceId === source.id ? (
@@ -780,7 +697,7 @@ export function SourceManagementView() {
 
                       <button
                         onClick={() => handleDelete(source.id, source.name)}
-                        className="p-1.5 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                        className="p-1 rounded text-zinc-400 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
                         title="Delete source from registry"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -794,100 +711,103 @@ export function SourceManagementView() {
         </div>
       </div>
 
-      {/* Live Feed Test Details Modal / Drawer */}
+      {/* Live Feed Test Details Modal */}
       {activeTestResult && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-xl w-full border border-slate-200 shadow-xl overflow-hidden animate-scale-up">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-lg w-full border border-[#E8E8E2] shadow-xl overflow-hidden">
+            <div className="p-4 border-b border-[#F0F0EB] flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-slate-900">
+                <h3 className="text-sm font-bold text-zinc-900">
                   Endpoint Inspection: {activeTestResult.sourceName}
                 </h3>
-                <p className="text-xs text-slate-500">Live RSS/Atom XML response & conditional headers</p>
+                <p className="text-xs text-zinc-500">Live RSS/Atom XML response & conditional headers</p>
               </div>
               <button
                 onClick={() => setActiveTestResult(null)}
-                className="text-slate-400 hover:text-slate-800 cursor-pointer"
+                className="text-zinc-400 hover:text-zinc-800 cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
-            <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
-              <div className="grid grid-cols-3 gap-3">
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-center">
-                  <div className="text-xs text-slate-500">Status Code</div>
-                  <div className="text-lg font-mono font-bold text-slate-900">
+            <div className="p-4 space-y-3 max-h-[70vh] overflow-y-auto text-xs">
+              <div className="grid grid-cols-3 gap-2">
+                <div className="p-2.5 bg-[#F9F9F7] rounded border border-[#E8E8E2] text-center">
+                  <div className="text-[10px] text-zinc-500 font-mono">Status</div>
+                  <div className="text-sm font-mono font-bold text-zinc-900 mt-0.5">
                     HTTP {activeTestResult.result.status_code}
                   </div>
                 </div>
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-center">
-                  <div className="text-xs text-slate-500">Latency</div>
-                  <div className="text-lg font-mono font-bold text-blue-600">
+                <div className="p-2.5 bg-[#F9F9F7] rounded border border-[#E8E8E2] text-center">
+                  <div className="text-[10px] text-zinc-500 font-mono">Latency</div>
+                  <div className="text-sm font-mono font-bold text-zinc-900 mt-0.5">
                     {activeTestResult.result.latency_ms} ms
                   </div>
                 </div>
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-center">
-                  <div className="text-xs text-slate-500">Parsed Articles</div>
-                  <div className="text-lg font-mono font-bold text-emerald-600">
+                <div className="p-2.5 bg-[#F9F9F7] rounded border border-[#E8E8E2] text-center">
+                  <div className="text-[10px] text-zinc-500 font-mono">Parsed Items</div>
+                  <div className="text-sm font-mono font-bold text-zinc-900 mt-0.5">
                     {activeTestResult.result.items_count}
                   </div>
                 </div>
               </div>
 
               {(activeTestResult.result.etag || activeTestResult.result.last_modified) && (
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs font-mono space-y-1">
+                <div className="p-2.5 rounded bg-[#F9F9F7] border border-[#E8E8E2] text-[11px] font-mono space-y-1">
                   {activeTestResult.result.etag && (
-                    <div className="text-slate-700">
-                      <span className="font-semibold text-slate-500">ETag: </span>
-                      {activeTestResult.result.etag}
+                    <div>
+                      <span className="text-zinc-500">ETag: </span>
+                      <span className="text-zinc-800">{activeTestResult.result.etag}</span>
                     </div>
                   )}
                   {activeTestResult.result.last_modified && (
-                    <div className="text-slate-700">
-                      <span className="font-semibold text-slate-500">Last-Modified: </span>
-                      {activeTestResult.result.last_modified}
+                    <div>
+                      <span className="text-zinc-500">Last-Modified: </span>
+                      <span className="text-zinc-800">{activeTestResult.result.last_modified}</span>
                     </div>
                   )}
                 </div>
               )}
 
               {activeTestResult.result.error && (
-                <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs font-mono">
+                <div className="p-2.5 rounded bg-rose-50 border border-rose-200 text-rose-800 text-xs">
                   {activeTestResult.result.error}
                 </div>
               )}
 
-              <div>
-                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">
-                  Sample Articles from XML Stream
-                </h4>
-                <div className="space-y-2">
-                  {activeTestResult.result.sample_items.slice(0, 4).map((item, idx) => (
-                    <div key={idx} className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs">
-                      <div className="font-bold text-slate-900 font-tamil">{item.title}</div>
-                      {item.pub_date && (
-                        <div className="text-[11px] text-slate-400 mt-0.5">{item.pub_date}</div>
-                      )}
-                      <a
-                        href={item.link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-[11px] text-blue-600 hover:underline flex items-center gap-1 mt-1 font-mono truncate"
-                      >
-                        <span>{item.link}</span>
-                        <ExternalLink className="w-3 h-3 shrink-0" />
-                      </a>
-                    </div>
-                  ))}
+              {/* Sample Articles from XML Stream */}
+              {activeTestResult.result.sample_items && activeTestResult.result.sample_items.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-[#F0F0EB]">
+                  <h4 className="text-xs font-bold text-zinc-800 uppercase tracking-wider mb-2">
+                    Sample Articles from XML Stream
+                  </h4>
+                  <div className="space-y-2">
+                    {activeTestResult.result.sample_items.slice(0, 4).map((item, idx) => (
+                      <div key={idx} className="p-2.5 bg-[#F9F9F7] rounded border border-[#E8E8E2] text-xs">
+                        <div className="font-bold text-zinc-900 font-tamil leading-snug">{item.title}</div>
+                        {item.pub_date && (
+                          <div className="text-[10px] text-zinc-500 font-mono mt-0.5">{item.pub_date}</div>
+                        )}
+                        <a
+                          href={item.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[11px] text-zinc-800 hover:underline flex items-center gap-1 mt-1 font-mono truncate"
+                        >
+                          <span>{item.link}</span>
+                          <ExternalLink className="w-3 h-3 shrink-0" />
+                        </a>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+            <div className="p-3 bg-[#F9F9F7] border-t border-[#E8E8E2] flex justify-end">
               <button
                 onClick={() => setActiveTestResult(null)}
-                className="px-4 py-2 rounded-lg text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 cursor-pointer"
+                className="px-3 py-1 rounded text-xs font-semibold bg-zinc-900 text-white cursor-pointer"
               >
                 Close Inspector
               </button>
@@ -896,98 +816,68 @@ export function SourceManagementView() {
         </div>
       )}
 
-      {/* Recent Ingestion Activity Log */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-slate-700" />
-              <span>Recent Ingestion Pipeline Activity Logs</span>
+      {/* Ingestion Audit Trail Table */}
+      <div className="bg-white border border-[#E8E8E2] rounded-lg overflow-hidden shadow-2xs">
+        <div className="p-4 border-b border-[#F0F0EB] flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Clock className="w-3.5 h-3.5 text-zinc-700" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
+              Live Ingestion Audit Logs
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">HTTP status, items found, duplicates skipped, and duration per cycle</p>
           </div>
+          <span className="text-[11px] text-zinc-500 font-mono">Last 30 polling events</span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 uppercase text-[10px] tracking-wider">
+        <div className="overflow-x-auto max-h-72 overflow-y-auto">
+          <table className="w-full text-left text-xs font-mono">
+            <thead className="bg-[#F4F4F0] text-zinc-600 border-b border-[#E8E8E2] uppercase text-[10px] sticky top-0">
               <tr>
-                <th className="py-2.5 px-5">Timestamp</th>
-                <th className="py-2.5 px-4">Publisher</th>
-                <th className="py-2.5 px-4">HTTP Status</th>
-                <th className="py-2.5 px-4">Result</th>
-                <th className="py-2.5 px-4">Items Found</th>
-                <th className="py-2.5 px-4">Saved</th>
-                <th className="py-2.5 px-4">Duplicates Skipped</th>
-                <th className="py-2.5 px-4">Duration</th>
-                <th className="py-2.5 px-5">Details</th>
+                <th className="py-2 px-3">Timestamp</th>
+                <th className="py-2 px-3">Publisher</th>
+                <th className="py-2 px-3">Status</th>
+                <th className="py-2 px-3">HTTP</th>
+                <th className="py-2 px-3">Found</th>
+                <th className="py-2 px-3">New Added</th>
+                <th className="py-2 px-3">Dupes</th>
+                <th className="py-2 px-3">Latency</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 font-medium">
+            <tbody className="divide-y divide-[#F0F0EB] text-[11px]">
               {logs.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-6 text-center text-slate-400">
-                    No ingestion logs recorded yet. Run a live ingestion cycle to populate activity.
+                  <td colSpan={8} className="py-4 text-center text-zinc-400">
+                    No ingestion logs recorded yet.
                   </td>
                 </tr>
               ) : (
-                logs.slice(0, 20).map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-50/70">
-                    <td className="py-2.5 px-5 font-mono text-slate-500">
-                      {new Date(log.timestamp).toLocaleString("en-IN", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-                      })}
+                logs.map((log) => (
+                  <tr key={log.id} className="hover:bg-[#F9F9F7]">
+                    <td className="py-1.5 px-3 text-zinc-500 whitespace-nowrap">
+                      {formatTimestamp(log.timestamp)}
                     </td>
-                    <td className="py-2.5 px-4 font-bold text-slate-800">{log.source_name}</td>
-                    <td className="py-2.5 px-4 font-mono font-semibold">
-                      {log.http_status === 304 ? (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                          304
-                        </span>
-                      ) : log.http_status === 200 ? (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          200
-                        </span>
-                      ) : (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                          {log.http_status || "ERR"}
-                        </span>
-                      )}
+                    <td className="py-1.5 px-3 font-bold text-zinc-800 whitespace-nowrap">
+                      {log.source_name}
                     </td>
-                    <td className="py-2.5 px-4">
-                      {log.status === "not_modified_304" ? (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200">
-                          NOT MODIFIED
-                        </span>
-                      ) : log.status === "new_articles" || log.status === "success" ? (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                          {log.new_items_added > 0 ? "NEW ARTICLES" : "OK"}
-                        </span>
-                      ) : log.status === "no_new_articles" ? (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                          NO NEW
-                        </span>
-                      ) : (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-800 border border-rose-200">
-                          ERROR
-                        </span>
-                      )}
+                    <td className="py-1.5 px-3 whitespace-nowrap">
+                      <span
+                        className={`px-1.5 py-0.2 rounded text-[10px] ${
+                          log.status === "not_modified_304"
+                            ? "bg-zinc-100 text-zinc-700"
+                            : log.status === "new_articles"
+                            ? "bg-emerald-50 text-emerald-800"
+                            : log.status === "error"
+                            ? "bg-rose-50 text-rose-800"
+                            : "bg-zinc-100 text-zinc-600"
+                        }`}
+                      >
+                        {log.status}
+                      </span>
                     </td>
-                    <td className="py-2.5 px-4 font-mono">{log.items_found}</td>
-                    <td className="py-2.5 px-4 font-mono font-bold text-emerald-700">
-                      +{log.new_items_added}
-                    </td>
-                    <td className="py-2.5 px-4 font-mono text-slate-500">
-                      {log.skipped_duplicates ?? 0}
-                    </td>
-                    <td className="py-2.5 px-4 font-mono text-slate-500">{log.duration_ms} ms</td>
-                    <td className="py-2.5 px-5 text-slate-500 truncate max-w-xs">
-                      {log.error_message || (log.status === "not_modified_304" ? "Feed 304 unchanged" : "Completed successfully")}
-                    </td>
+                    <td className="py-1.5 px-3 text-zinc-700">{log.http_status}</td>
+                    <td className="py-1.5 px-3 text-zinc-700">{log.items_found}</td>
+                    <td className="py-1.5 px-3 text-emerald-800 font-bold">{log.new_items_added}</td>
+                    <td className="py-1.5 px-3 text-zinc-500">{log.skipped_duplicates}</td>
+                    <td className="py-1.5 px-3 text-zinc-500">{log.duration_ms}ms</td>
                   </tr>
                 ))
               )}

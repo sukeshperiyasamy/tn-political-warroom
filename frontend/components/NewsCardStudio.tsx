@@ -199,74 +199,64 @@ export function NewsCardStudio({
 
         // 4. Accent stripe
         ctx.fillStyle = activeTemplate.accent_color;
-        ctx.beginPath();
         const stripeX = textAlign === "center" ? 490 : 64;
-        if (typeof ctx.roundRect === "function") {
-          ctx.roundRect(stripeX, 260, 100, 10, 5);
-        } else {
-          ctx.rect(stripeX, 260, 100, 10);
-        }
-        ctx.fill();
+        ctx.fillRect(stripeX, 290, 100, 10);
 
-        // 5. Headline Text (Wrapped)
+        // 5. Headline Text
         ctx.fillStyle = "#FFFFFF";
+        ctx.font = `bold ${titleFontSize * 1.6}px 'Noto Sans Tamil', sans-serif`;
         ctx.textAlign = textAlign;
-        ctx.font = `800 ${titleFontSize}px sans-serif`;
-        const textX = textAlign === "center" ? 540 : 64;
-        let curY = 350;
-        curY = wrapText(ctx, headline, textX, curY, 950, titleFontSize * 1.3);
+        const headlineX = textAlign === "center" ? 540 : 64;
+        const headlineY = wrapText(ctx, headline, headlineX, 360, 952, titleFontSize * 2.0);
 
-        // 6. Subheadline Text (Wrapped)
-        curY += 40;
-        ctx.fillStyle = "rgba(226, 232, 240, 0.9)";
-        ctx.font = "24px sans-serif";
-        wrapText(ctx, subheadline, textX, curY, 950, 42);
+        // 6. Subheadline
+        ctx.fillStyle = "rgba(255, 255, 255, 0.88)";
+        ctx.font = "34px 'Noto Sans Tamil', sans-serif";
+        ctx.textAlign = textAlign;
+        wrapText(ctx, subheadline, headlineX, headlineY + 50, 952, 48);
 
-        // 7. Footer Divider
+        // 7. Footer Divider & Attribution
         ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(64, 940);
-        ctx.lineTo(1016, 940);
+        ctx.moveTo(64, 950);
+        ctx.lineTo(1016, 950);
         ctx.stroke();
 
-        // Footer Source
         ctx.textAlign = "left";
-        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-        ctx.font = "14px monospace";
-        ctx.fillText("VERIFIED EDITORIAL REPORTING:", 64, 985);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+        ctx.font = "18px monospace";
+        ctx.fillText("EDITORIAL SOURCE / ஊடகம்:", 64, 995);
 
         ctx.fillStyle = "#FFFFFF";
-        ctx.font = "bold 24px sans-serif";
-        ctx.fillText(sourceAttribution, 64, 1022);
+        ctx.font = "bold 26px 'Noto Sans Tamil', sans-serif";
+        ctx.fillText(sourceAttribution, 64, 1030);
 
-        // Footer Brand Stamp
+        // Right Branding Stamp
         ctx.textAlign = "right";
         ctx.fillStyle = "#F59E0B";
         ctx.font = "bold 22px monospace";
-        ctx.fillText("TN POLITICAL WAR ROOM", 1016, 988);
+        ctx.fillText("TN POLITICAL WAR ROOM", 1016, 995);
 
-        ctx.fillStyle = "rgba(255, 255, 255, 0.65)";
-        ctx.font = "18px sans-serif";
-        ctx.fillText("அரசியல் ஊடக நுண்ணறிவு & பகுப்பாய்வு", 1016, 1020);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+        ctx.font = "18px 'Noto Sans Tamil', sans-serif";
+        ctx.fillText("அரசியல் ஊடக நுண்ணறிவு & பகுப்பாய்வு மையம்", 1016, 1030);
 
-        // Generate PNG data URL
+        // Trigger Download
         const dataUrl = canvas.toDataURL("image/png");
-        const fileName = `tn-warroom-card-${Date.now()}.png`;
-        setDownloadSuccess(fileName);
+        const a = document.createElement("a");
+        const filename = `TN_NewsCard_${activeParty.code}_${Date.now()}.png`;
+        a.href = dataUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
 
-        const link = document.createElement("a");
-        link.download = fileName;
-        link.href = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        console.log("Card exported successfully:", fileName);
-        setTimeout(() => setDownloadSuccess(null), 30000);
+        setDownloadSuccess(filename);
       }
     } catch (err) {
-      console.error("Failed to export card image:", err);
+      console.error("Canvas export failed:", err);
+      alert("Failed to render card canvas. Please try again.");
     } finally {
       setIsExporting(false);
     }
@@ -274,70 +264,66 @@ export function NewsCardStudio({
 
   return (
     <div className="space-y-6">
-      {/* Studio Header */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs relative z-30">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-amber-50 text-amber-700 border border-amber-200">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-bold uppercase tracking-wider text-slate-900">
+      {/* Studio Header Card */}
+      <div className="bg-white border border-[#E8E8E2] rounded-lg p-4 sm:p-5 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-600" />
+              <h2 className="text-base sm:text-lg font-bold text-zinc-900 tracking-tight font-serif">
                 Tamil News Card Studio (1080×1080 Social Export)
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 font-tamil mt-0.5">
-                சமூக வலைதளங்களுக்கான பிரத்யேக 1080×1080 பிக்சல் தமிழ் நியூஸ் கார்டு தயாரிப்பு ஸ்டுடியோ
-              </p>
             </div>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              Generate native 1080×1080 square editorial graphics with verified Tamil typography for social channels
+            </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              id="export-png-btn"
-              onClick={handleExportPNG}
-              disabled={isExporting}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs sm:text-sm font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-xs transition-all disabled:opacity-50 cursor-pointer"
-            >
-              {isExporting ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Rendering 1080p PNG...</span>
-                </>
-              ) : (
-                <>
-                  <Download className="w-4 h-4" />
-                  <span>Export 1080×1080 PNG</span>
-                </>
-              )}
-            </button>
-          </div>
+          <button
+            id="export-png-btn"
+            onClick={handleExportPNG}
+            disabled={isExporting}
+            className="flex items-center gap-1.5 px-4 py-2 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+          >
+            {isExporting ? (
+              <>
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span>Exporting 1080p...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-3.5 h-3.5" />
+                <span>Export 1080×1080 PNG</span>
+              </>
+            )}
+          </button>
         </div>
 
         {downloadSuccess && (
-          <div className="mt-4 p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm flex items-center gap-2 font-medium">
-            <FileCheck className="w-4 h-4 shrink-0 text-emerald-600" />
+          <div className="mt-3 p-2.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 font-medium">
+            <FileCheck className="w-3.5 h-3.5 shrink-0 text-emerald-700" />
             <span>
-              Successfully exported <strong className="font-mono">{downloadSuccess}</strong> (1080×1080 PNG). Check your downloads!
+              Successfully exported <strong className="font-mono">{downloadSuccess}</strong> as 1080×1080 PNG. Download complete!
             </span>
           </div>
         )}
       </div>
 
       {/* Editor & Preview Split View */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Controls (5 cols on lg, 4 cols on xl) */}
-        <div className="lg:col-span-5 xl:col-span-4 space-y-5 bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Controls */}
+        <div className="lg:col-span-5 xl:col-span-4 space-y-4 bg-white border border-[#E8E8E2] rounded-lg p-4 sm:p-5 shadow-2xs">
           {/* Quick Presets */}
           <div>
-            <span className="text-xs font-mono uppercase tracking-wider text-slate-500 font-bold block mb-2">
-              Quick Preset Stories
+            <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 block mb-1.5">
+              Quick Editorial Presets
             </span>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5">
               {quickPresets.map((pr) => (
                 <button
                   key={pr.label}
                   onClick={() => handleApplyPreset(pr)}
-                  className="px-3 py-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-tamil font-semibold text-slate-700 text-left truncate transition-colors cursor-pointer"
+                  className="px-2.5 py-1.5 rounded bg-[#F9F9F7] hover:bg-zinc-100 border border-[#E8E8E2] text-[11px] font-tamil font-semibold text-zinc-700 text-left truncate transition-colors cursor-pointer"
                 >
                   {pr.label}
                 </button>
@@ -345,20 +331,20 @@ export function NewsCardStudio({
             </div>
           </div>
 
-          {/* If an article was passed with 3 Tamil variations, offer quick buttons */}
+          {/* Article Variations if present */}
           {article?.tamil_variations && article.tamil_variations.length > 0 && (
-            <div className="p-3.5 rounded-lg bg-amber-50/50 border border-amber-200">
-              <span className="text-xs font-mono uppercase tracking-wider text-amber-900 font-bold block mb-2">
+            <div className="p-3 rounded bg-[#FDFBF7] border border-[#E8E0D5]">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-700 block mb-1.5">
                 Load Article Variation:
               </span>
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 {article.tamil_variations.map((v) => (
                   <button
                     key={v.style}
                     onClick={() => handleApplyVariation(v)}
-                    className="w-full text-left p-2 rounded-lg bg-white hover:bg-amber-100/50 border border-amber-200 text-xs text-slate-800 font-tamil truncate transition-colors cursor-pointer"
+                    className="w-full text-left p-1.5 rounded bg-white hover:bg-[#F9F9F7] border border-[#E8E8E2] text-xs text-zinc-800 font-tamil truncate transition-colors cursor-pointer"
                   >
-                    <span className="text-amber-800 font-mono text-xs font-bold block">{v.style}:</span>
+                    <span className="text-zinc-600 font-mono text-[10px] font-bold block">{v.style}:</span>
                     {v.headline}
                   </button>
                 ))}
@@ -368,26 +354,25 @@ export function NewsCardStudio({
 
           {/* Template Theme Selector */}
           <div>
-            <label className="block text-xs font-mono uppercase tracking-wider text-slate-500 font-bold mb-2">
-              Card Template Theme (6 Themes)
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">
+              Design Theme (6 Styles)
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1.5">
               {templates.map((tpl) => (
                 <button
                   key={tpl.id}
                   onClick={() => setSelectedTemplateId(tpl.id)}
-                  className={`p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
+                  className={`p-2 rounded border text-left transition-all cursor-pointer ${
                     selectedTemplateId === tpl.id
-                      ? "border-amber-500 bg-amber-50 text-slate-900 shadow-2xs font-semibold"
-                      : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300"
+                      ? "border-zinc-900 bg-[#F4F4F0] text-zinc-900 font-bold"
+                      : "border-[#E8E8E2] bg-[#F9F9F7] text-zinc-600 hover:border-zinc-300"
                   }`}
                 >
                   <div
-                    className="w-full h-3 rounded mb-1.5 shadow-2xs"
+                    className="w-full h-2 rounded-xs mb-1"
                     style={{ backgroundColor: tpl.accent_color }}
                   />
-                  <div className="text-xs font-bold text-slate-800 truncate">{tpl.name}</div>
-                  <div className="text-[10px] text-slate-500 truncate">{tpl.style_category}</div>
+                  <div className="text-[11px] font-bold text-zinc-800 truncate">{tpl.name}</div>
                 </button>
               ))}
             </div>
@@ -395,22 +380,22 @@ export function NewsCardStudio({
 
           {/* Party Branding Selection */}
           <div>
-            <label className="block text-xs font-mono uppercase tracking-wider text-slate-500 font-bold mb-2">
-              Party Brand Badge
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">
+              Party Branding Badge
             </label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-4 gap-1.5">
               {parties.map((p) => (
                 <button
                   key={p.code}
                   onClick={() => setSelectedPartyCode(p.code)}
-                  className={`flex items-center gap-1.5 p-2 rounded-lg border text-xs font-semibold transition-all cursor-pointer ${
+                  className={`flex items-center gap-1.5 p-1.5 rounded border text-xs font-semibold transition-all cursor-pointer ${
                     selectedPartyCode === p.code
-                      ? "border-blue-500 bg-blue-50 text-blue-900 shadow-2xs font-bold"
-                      : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300"
+                      ? "border-zinc-900 bg-zinc-900 text-white font-bold"
+                      : "border-[#E8E8E2] bg-[#F9F9F7] text-zinc-700 hover:border-zinc-300"
                   }`}
                 >
                   <span
-                    className="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs"
+                    className="w-2 h-2 rounded-full shrink-0"
                     style={{ backgroundColor: p.color }}
                   />
                   <span>{p.code}</span>
@@ -421,47 +406,47 @@ export function NewsCardStudio({
 
           {/* Category Tag Input */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-700 mb-1">
               Top Category Tag (மேல் வரி பேட்ஜ்)
             </label>
             <input
               type="text"
               value={categoryTag}
               onChange={(e) => setCategoryTag(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-900 font-tamil focus:outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-100 transition-all font-medium"
+              className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-2.5 py-1.5 text-xs text-zinc-900 font-tamil focus:outline-hidden focus:border-zinc-500 focus:bg-white font-medium"
             />
           </div>
 
           {/* Tamil Headline Textarea */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+            <label className="block text-xs font-semibold text-zinc-700 mb-1">
               Main Tamil Headline (முக்கிய தலைப்பு)
             </label>
             <textarea
               rows={3}
               value={headline}
               onChange={(e) => setHeadline(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-900 font-tamil focus:outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-100 leading-relaxed transition-all font-medium"
+              className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-2.5 py-1.5 text-xs text-zinc-900 font-tamil focus:outline-hidden focus:border-zinc-500 focus:bg-white leading-relaxed font-medium"
             />
           </div>
 
           {/* Tamil Subheadline Textarea */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
-              Tamil Subheadline / Impact Summary (துணைத் தலைப்பு)
+            <label className="block text-xs font-semibold text-zinc-700 mb-1">
+              Subheadline / Impact (துணைத் தலைப்பு)
             </label>
             <textarea
               rows={3}
               value={subheadline}
               onChange={(e) => setSubheadline(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-900 font-tamil focus:outline-none focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-100 leading-relaxed transition-all font-medium"
+              className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-2.5 py-1.5 text-xs text-zinc-900 font-tamil focus:outline-hidden focus:border-zinc-500 focus:bg-white leading-relaxed font-medium"
             />
           </div>
 
           {/* Typography & Alignment Controls */}
-          <div className="grid grid-cols-2 gap-3 pt-2.5 border-t border-slate-100">
+          <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-[#F0F0EB]">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
                 Headline Size: {titleFontSize}px
               </label>
               <input
@@ -470,45 +455,45 @@ export function NewsCardStudio({
                 max="60"
                 value={titleFontSize}
                 onChange={(e) => setTitleFontSize(Number(e.target.value))}
-                className="w-full accent-amber-500 cursor-pointer"
+                className="w-full accent-zinc-900 cursor-pointer"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
                 Text Alignment
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-1.5">
                 <button
                   onClick={() => setTextAlign("left")}
-                  className={`flex-1 flex items-center justify-center p-2 rounded-lg border text-xs sm:text-sm font-semibold cursor-pointer ${
+                  className={`flex-1 flex items-center justify-center p-1.5 rounded border text-xs font-semibold cursor-pointer ${
                     textAlign === "left"
-                      ? "bg-slate-900 text-white border-slate-900"
-                      : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
+                      ? "bg-zinc-900 text-white border-zinc-900"
+                      : "bg-[#F9F9F7] text-zinc-600 border-[#E8E8E2] hover:border-zinc-300"
                   }`}
                 >
-                  <AlignLeft className="w-4 h-4 mr-1.5" /> Left
+                  <AlignLeft className="w-3.5 h-3.5 mr-1" /> Left
                 </button>
                 <button
                   onClick={() => setTextAlign("center")}
-                  className={`flex-1 flex items-center justify-center p-2 rounded-lg border text-xs sm:text-sm font-semibold cursor-pointer ${
+                  className={`flex-1 flex items-center justify-center p-1.5 rounded border text-xs font-semibold cursor-pointer ${
                     textAlign === "center"
-                      ? "bg-slate-900 text-white border-slate-900"
-                      : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300"
+                      ? "bg-zinc-900 text-white border-zinc-900"
+                      : "bg-[#F9F9F7] text-zinc-600 border-[#E8E8E2] hover:border-zinc-300"
                   }`}
                 >
-                  <AlignCenter className="w-4 h-4 mr-1.5" /> Center
+                  <AlignCenter className="w-3.5 h-3.5 mr-1" /> Center
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Column: Live 1080x1080 Canvas (7 cols on lg, 8 cols on xl) */}
+        {/* Right Column: Live 1080x1080 Canvas Easel */}
         <div className="lg:col-span-7 xl:col-span-8 flex flex-col items-center">
-          <div className="w-full max-w-[540px] flex items-center justify-between text-xs text-slate-500 font-medium mb-2.5 px-1">
-            <span className="font-mono">Live Studio Preview (1080×1080 Native Canvas)</span>
-            <span className="text-xs text-amber-800 font-bold font-mono">Scale: 50% Display · 100% Export</span>
+          <div className="w-full max-w-[540px] flex items-center justify-between text-xs text-zinc-500 font-medium mb-2 px-1">
+            <span className="font-mono text-[11px]">1080×1080 Native Social Canvas (1:1 Ratio)</span>
+            <span className="text-[11px] text-zinc-600 font-mono font-semibold">Scale: 50% Preview · 100% Export</span>
           </div>
 
           {/* Scaled Preview Wrapper */}
@@ -519,7 +504,7 @@ export function NewsCardStudio({
               height: "540px",
               overflow: "hidden",
             }}
-            className="rounded-2xl shadow-xl border border-slate-300 bg-black"
+            className="rounded-lg shadow-md border border-zinc-400 bg-black"
           >
             {/* The 1080x1080 Actual Node */}
             <div
@@ -539,7 +524,7 @@ export function NewsCardStudio({
               }}
               className="p-16 flex flex-col justify-between box-border select-none overflow-hidden pointer-events-none"
             >
-              {/* Background Geometric Accent Layer */}
+              {/* Background Geometric Layer */}
               <div
                 className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-20 blur-3xl"
                 style={{ backgroundColor: activeTemplate.accent_color }}
@@ -648,7 +633,7 @@ export function NewsCardStudio({
                     </span>
                   </div>
                   <span className="text-sm opacity-60 font-tamil block mt-1">
-                    அரசியல் ஊடக நுண்ணறிவு & பகுப்பாய்வு
+                    அரசியல் ஊடக நுண்ணறிவு & பகுப்பாய்வு மையம்
                   </span>
                 </div>
               </div>
@@ -656,11 +641,11 @@ export function NewsCardStudio({
           </div>
 
           {/* Export Guidance */}
-          <div className="w-full max-w-[540px] mt-4 p-3.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-600 flex items-center justify-between shadow-xs">
+          <div className="w-full max-w-[540px] mt-3 p-3 rounded bg-white border border-[#E8E8E2] text-xs text-zinc-600 flex items-center justify-between shadow-2xs">
             <span>Outputs authentic high-res 1080×1080 PNG</span>
             <button
               onClick={handleExportPNG}
-              className="text-amber-800 hover:text-amber-900 font-bold cursor-pointer"
+              className="text-zinc-900 hover:text-black font-semibold cursor-pointer"
             >
               Export Now →
             </button>

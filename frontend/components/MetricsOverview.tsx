@@ -3,13 +3,11 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import {
   TrendingUp,
-  Smile,
-  Frown,
-  Activity,
   Layers,
   Users,
-  Award,
-  Calendar,
+  Compass,
+  ChevronRight,
+  Info,
 } from "lucide-react";
 import { DashboardMetrics, DailyTrendItem } from "../types/political";
 
@@ -55,12 +53,14 @@ interface MetricsOverviewProps {
   metrics: DashboardMetrics;
   onSelectParty: (code: string) => void;
   onSelectLeader: (name: string) => void;
+  onSelectTopic?: (topic: string) => void;
 }
 
 export function MetricsOverview({
   metrics,
   onSelectParty,
   onSelectLeader,
+  onSelectTopic,
 }: MetricsOverviewProps) {
   const {
     filtered_articles,
@@ -85,12 +85,11 @@ export function MetricsOverview({
     return daily_trends;
   }, [daily_trends, timeRange]);
 
-  // Auto-scroll to the latest date on mount or when range changes
-  useEffect(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollLeft = scrollContainerRef.current.scrollWidth;
-    }
-  }, [visibleTrends, timeRange]);
+  // Leading party by article volume
+  const leadingParty = useMemo(() => {
+    if (!party_metrics || party_metrics.length === 0) return null;
+    return [...party_metrics].sort((a, b) => b.article_count - a.article_count)[0];
+  }, [party_metrics]);
 
   const maxTotal = useMemo(() => {
     if (!visibleTrends || visibleTrends.length === 0) return 1;
@@ -98,264 +97,238 @@ export function MetricsOverview({
   }, [visibleTrends]);
 
   return (
-    <div className="space-y-7 mb-10">
-      {/* Editorial Intelligence Stat Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {/* Total Articles */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs relative overflow-hidden transition-all hover:border-slate-300">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Articles Monitored
-            </span>
-            <span className="p-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-100">
-              <Activity className="w-4 h-4" />
-            </span>
-          </div>
+    <div className="space-y-6 mb-10">
+      {/* 1. Restrained Editorial Metrics Strip */}
+      <div className="bg-white border border-[#E8E8E2] rounded-lg divide-y sm:divide-y-0 sm:divide-x divide-[#E8E8E2] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 shadow-2xs">
+        {/* Metric 1: Articles Monitored */}
+        <div className="p-4 sm:p-5">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 block mb-1">
+            Articles Monitored
+          </span>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 font-mono">
+            <span className="text-3xl font-extrabold tracking-tight text-zinc-900 font-mono">
               {filtered_articles}
             </span>
-            <span className="text-xs sm:text-sm text-slate-500 font-medium">political reports</span>
+            <span className="text-xs text-zinc-500">wire reports</span>
           </div>
-          <div className="mt-3.5 flex items-center gap-2 text-xs text-emerald-800 font-semibold">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>Real-time pipeline active across 8 media portals</span>
-          </div>
+          <span className="text-[11px] text-zinc-500 block mt-1">
+            Across registered regional Tamil publishers
+          </span>
         </div>
 
-        {/* Positive Sentiment */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs relative overflow-hidden transition-all hover:border-slate-300">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Positive Sentiment
-            </span>
-            <span className="p-2 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100">
-              <Smile className="w-4 h-4" />
-            </span>
-          </div>
+        {/* Metric 2: Leading Coverage Voice */}
+        <div className="p-4 sm:p-5">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 block mb-1">
+            Top Mention Volume
+          </span>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl sm:text-4xl font-extrabold tracking-tight text-emerald-700 font-mono">
-              {sentiment_distribution.positive_pct}%
+            <span className="text-3xl font-extrabold tracking-tight text-zinc-900 font-mono">
+              {leadingParty ? leadingParty.party_code : "—"}
             </span>
-            <span className="text-xs sm:text-sm text-slate-500 font-medium">({sentiment_distribution.positive} articles)</span>
+            {leadingParty && (
+              <span className="text-xs text-zinc-500 font-mono">
+                {leadingParty.article_count} reports ({filtered_articles > 0 ? Math.round((leadingParty.article_count / filtered_articles) * 100) : 0}%)
+              </span>
+            )}
           </div>
-          <p className="mt-3.5 text-xs text-slate-500 leading-snug">
-            Favorable policy announcements and welfare rollouts
-          </p>
+          <span className="text-[11px] text-zinc-500 block mt-1 truncate">
+            {leadingParty ? leadingParty.tamil_name : "Coverage benchmark"}
+          </span>
         </div>
 
-        {/* Negative / Critical Sentiment */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs relative overflow-hidden transition-all hover:border-slate-300">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Critical / Opposition Tone
-            </span>
-            <span className="p-2 rounded-lg bg-rose-50 text-rose-700 border border-rose-100">
-              <Frown className="w-4 h-4" />
-            </span>
+        {/* Metric 3: Media Polarity Balance */}
+        <div className="p-4 sm:p-5">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 block mb-1">
+            Automated Polarity
+          </span>
+          <div className="flex items-baseline gap-3">
+            <div className="flex items-baseline gap-1 text-emerald-800 font-mono">
+              <span className="text-2xl font-bold">{sentiment_distribution.positive_pct}%</span>
+              <span className="text-[10px] text-zinc-500 uppercase">Pos</span>
+            </div>
+            <span className="text-zinc-300">/</span>
+            <div className="flex items-baseline gap-1 text-rose-800 font-mono">
+              <span className="text-2xl font-bold">{sentiment_distribution.negative_pct}%</span>
+              <span className="text-[10px] text-zinc-500 uppercase">Crit</span>
+            </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl sm:text-4xl font-extrabold tracking-tight text-rose-700 font-mono">
-              {sentiment_distribution.negative_pct}%
-            </span>
-            <span className="text-xs sm:text-sm text-slate-500 font-medium">({sentiment_distribution.negative} articles)</span>
-          </div>
-          <p className="mt-3.5 text-xs text-slate-500 leading-snug">
-            Opposition rallies, tariff critique, and whitepaper releases
-          </p>
+          <span className="text-[11px] text-zinc-500 block mt-1 font-mono">
+            Neutral share: {sentiment_distribution.neutral_pct}%
+          </span>
         </div>
 
-        {/* Leading Share of Voice */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs relative overflow-hidden transition-all hover:border-slate-300">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Leading Share of Voice
-            </span>
-            <span className="p-2 rounded-lg bg-amber-50 text-amber-700 border border-amber-100">
-              <Award className="w-4 h-4" />
-            </span>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 truncate">
-              {party_metrics[0]?.name.split(" ")[0] || "DMK"}
-            </span>
-            <span className="text-xs sm:text-sm text-slate-500 font-mono font-medium">
-              ({party_metrics[0]?.article_count || 0} items)
-            </span>
-          </div>
-          <p className="mt-3.5 text-xs text-slate-500 font-tamil truncate">
-            {party_metrics[0]?.tamil_name || "திராவிட முன்னேற்றக் கழகம்"}
+        {/* Metric 4: Methodological Scope */}
+        <div className="p-4 sm:p-5 flex flex-col justify-between">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 block mb-1">
+            Analytical Disclaimer
+          </span>
+          <p className="text-xs text-zinc-600 leading-relaxed">
+            Media frequency reflects published journalistic coverage, not electoral vote share or popularity.
           </p>
+          <span className="text-[10px] text-zinc-600 font-mono mt-1">
+            Sample size: N = {filtered_articles}
+          </span>
         </div>
       </div>
 
-      {/* Sentiment Distribution Spectrum */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+      {/* 2. Sentiment Spectrum Visualization */}
+      <div className="bg-white border border-[#E8E8E2] rounded-lg p-4 sm:p-5 shadow-2xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-2.5">
           <div>
-            <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-800">
               Tamil Nadu Media Sentiment Distribution
-            </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Aggregated editorial polarity across published political reports
+            </h2>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              Automated NLP tone categorization across published news reports (N = {filtered_articles})
             </p>
           </div>
-          <div className="flex items-center gap-5 text-xs sm:text-sm font-mono">
-            <span className="flex items-center gap-2 text-emerald-800 font-bold">
-              <span className="w-3 h-3 rounded-xs bg-emerald-600"></span>
-              Positive: {sentiment_distribution.positive_pct}%
+          <div className="flex items-center gap-4 text-xs font-mono">
+            <span className="flex items-center gap-1.5 text-emerald-800 font-medium">
+              <span className="w-2.5 h-2.5 rounded-xs bg-emerald-700"></span>
+              Positive: {sentiment_distribution.positive_pct}% ({sentiment_distribution.positive})
             </span>
-            <span className="flex items-center gap-2 text-slate-700 font-bold">
-              <span className="w-3 h-3 rounded-xs bg-slate-400"></span>
-              Neutral: {sentiment_distribution.neutral_pct}%
+            <span className="flex items-center gap-1.5 text-zinc-600 font-medium">
+              <span className="w-2.5 h-2.5 rounded-xs bg-zinc-400"></span>
+              Neutral: {sentiment_distribution.neutral_pct}% ({sentiment_distribution.neutral})
             </span>
-            <span className="flex items-center gap-2 text-rose-800 font-bold">
-              <span className="w-3 h-3 rounded-xs bg-rose-600"></span>
-              Negative: {sentiment_distribution.negative_pct}%
+            <span className="flex items-center gap-1.5 text-rose-800 font-medium">
+              <span className="w-2.5 h-2.5 rounded-xs bg-rose-700"></span>
+              Critical: {sentiment_distribution.negative_pct}% ({sentiment_distribution.negative})
             </span>
           </div>
         </div>
 
-        {/* Stacked Sentiment Spectrum Bar */}
-        <div className="w-full h-3.5 rounded-full bg-slate-100 overflow-hidden flex border border-slate-200/80 shadow-inner">
+        {/* Quiet Stacked Bar */}
+        <div className="w-full h-2.5 rounded-sm bg-zinc-100 overflow-hidden flex border border-[#E2E2DC]">
           <div
             style={{ width: `${sentiment_distribution.positive_pct}%` }}
-            className="bg-emerald-500 transition-all duration-500 relative group"
-            title={`Positive: ${sentiment_distribution.positive} articles`}
+            className="bg-emerald-700 transition-all duration-300"
+            title={`Positive: ${sentiment_distribution.positive} reports (${sentiment_distribution.positive_pct}%)`}
           />
           <div
             style={{ width: `${sentiment_distribution.neutral_pct}%` }}
-            className="bg-slate-300 transition-all duration-500 relative group"
-            title={`Neutral: ${sentiment_distribution.neutral} articles`}
+            className="bg-zinc-400 transition-all duration-300"
+            title={`Neutral: ${sentiment_distribution.neutral} reports (${sentiment_distribution.neutral_pct}%)`}
           />
           <div
             style={{ width: `${sentiment_distribution.negative_pct}%` }}
-            className="bg-rose-500 transition-all duration-500 relative group"
-            title={`Negative: ${sentiment_distribution.negative} articles`}
+            className="bg-rose-700 transition-all duration-300"
+            title={`Critical: ${sentiment_distribution.negative} reports (${sentiment_distribution.negative_pct}%)`}
           />
         </div>
       </div>
 
-      {/* Grid: Parties Breakdown & Leaders Breakdown */}
+      {/* 3. Grid: Parties Share of Voice & Key Leaders */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Parties Monitored */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs">
-          <div className="flex items-center justify-between mb-4 pb-2.5 border-b border-slate-100">
-            <div className="flex items-center gap-2.5">
-              <Layers className="w-4 h-4 text-blue-700" />
-              <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900">
+        {/* Parties Editorial Table */}
+        <div className="bg-white border border-[#E8E8E2] rounded-lg p-4 sm:p-5 shadow-2xs">
+          <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-[#F0F0EB]">
+            <div className="flex items-center gap-2">
+              <Layers className="w-3.5 h-3.5 text-zinc-600" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
                 Party Share of Voice & Sentiment
-              </h3>
+              </h2>
             </div>
-            <span className="text-xs text-slate-400 font-medium">Click party to filter</span>
+            <span className="text-[11px] text-zinc-600">Click to filter news</span>
           </div>
 
-          <div className="space-y-3">
-            {party_metrics.map((pm) => (
-              <div
-                key={pm.party_code}
-                onClick={() => onSelectParty(pm.party_code)}
-                className="group p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100/90 border border-slate-200 hover:border-slate-300 cursor-pointer transition-all"
-              >
-                <div className="flex items-center justify-between mb-2.5">
-                  <div className="flex items-center gap-2.5">
+          <div className="divide-y divide-[#F2F2ED]">
+            {party_metrics.map((pm) => {
+              const pct = filtered_articles > 0 ? Math.round((pm.article_count / filtered_articles) * 100) : 0;
+              return (
+                <div
+                  key={pm.party_code}
+                  onClick={() => onSelectParty(pm.party_code)}
+                  className="py-2.5 px-1.5 hover:bg-[#F9F9F7] rounded cursor-pointer transition-colors flex items-center justify-between gap-3 group"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
                     <span
-                      className="w-3.5 h-3.5 rounded-full shrink-0 shadow-2xs"
+                      className="w-2.5 h-2.5 rounded-full shrink-0"
                       style={{ backgroundColor: pm.color }}
                     />
-                    <span className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-700 transition-colors">
-                      {pm.party_code}
-                    </span>
-                    <span className="text-xs text-slate-500 font-tamil truncate max-w-[220px]">
-                      {pm.tamil_name}
-                    </span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-zinc-900 group-hover:text-zinc-600">
+                          {pm.party_code}
+                        </span>
+                        <span className="text-[11px] text-zinc-500 font-tamil truncate max-w-[170px] sm:max-w-[240px]">
+                          {pm.tamil_name}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2.5 font-mono text-xs sm:text-sm">
-                    <span className="text-slate-600 font-medium">{pm.article_count} items</span>
+
+                  <div className="flex items-center gap-4 shrink-0 font-mono text-xs">
+                    <span className="text-zinc-500 font-medium">
+                      {pm.article_count} reports
+                    </span>
+                    <span className="w-10 text-right font-bold text-zinc-800">
+                      {pct}%
+                    </span>
                     <span
-                      className={`px-2 py-0.5 rounded text-xs font-bold ${
-                        pm.sentiment_score >= 0.2
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                        pm.sentiment_score >= 0.15
                           ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                          : pm.sentiment_score <= -0.2
+                          : pm.sentiment_score <= -0.15
                           ? "bg-rose-50 text-rose-800 border border-rose-200"
-                          : "bg-slate-100 text-slate-700 border border-slate-200"
+                          : "bg-zinc-100 text-zinc-700 border border-zinc-200"
                       }`}
                     >
-                      Score: {pm.sentiment_score > 0 ? `+${pm.sentiment_score}` : pm.sentiment_score}
+                      {pm.sentiment_score > 0 ? `+${pm.sentiment_score}` : pm.sentiment_score}
                     </span>
                   </div>
                 </div>
-
-                {/* Micro sentiment bar */}
-                <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden flex">
-                  <div
-                    style={{ width: `${(pm.positive_count / pm.article_count) * 100}%` }}
-                    className="bg-emerald-500"
-                  />
-                  <div
-                    style={{ width: `${(pm.neutral_count / pm.article_count) * 100}%` }}
-                    className="bg-slate-300"
-                  />
-                  <div
-                    style={{ width: `${(pm.negative_count / pm.article_count) * 100}%` }}
-                    className="bg-rose-500"
-                  />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
-        {/* Leaders Monitored */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs">
-          <div className="flex items-center justify-between mb-4 pb-2.5 border-b border-slate-100">
-            <div className="flex items-center gap-2.5">
-              <Users className="w-4 h-4 text-blue-700" />
-              <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900">
+        {/* Leaders Editorial Table */}
+        <div className="bg-white border border-[#E8E8E2] rounded-lg p-4 sm:p-5 shadow-2xs">
+          <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-[#F0F0EB]">
+            <div className="flex items-center gap-2">
+              <Users className="w-3.5 h-3.5 text-zinc-600" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
                 Key Leaders in the News
-              </h3>
+              </h2>
             </div>
-            <span className="text-xs text-slate-400 font-medium">Click leader to filter</span>
+            <span className="text-[11px] text-zinc-600">Click to filter news</span>
           </div>
 
-          <div className="space-y-3">
+          <div className="divide-y divide-[#F2F2ED]">
             {leader_metrics.map((lm) => (
               <div
                 key={lm.name}
                 onClick={() => onSelectLeader(lm.name)}
-                className="group p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100/90 border border-slate-200 hover:border-slate-300 cursor-pointer transition-all flex items-center justify-between"
+                className="py-2.5 px-1.5 hover:bg-[#F9F9F7] rounded cursor-pointer transition-colors flex items-center justify-between gap-3 group"
               >
-                <div className="flex items-center gap-3.5">
-                  <div className="w-9 h-9 rounded-full bg-slate-200 text-slate-800 flex items-center justify-center text-xs font-bold font-mono">
-                    {lm.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .slice(0, 2)
-                      .join("")}
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-7 h-7 rounded bg-zinc-100 text-zinc-700 flex items-center justify-center text-[10px] font-bold font-mono shrink-0 border border-zinc-200">
+                    {lm.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-700 transition-colors">
+                      <span className="text-xs font-bold text-zinc-900 group-hover:text-zinc-600">
                         {lm.name}
                       </span>
-                      <span className="px-2 py-0.5 rounded text-xs bg-slate-200/90 text-slate-700 font-mono font-bold">
+                      <span className="px-1 py-0.2 rounded text-[9px] font-mono bg-zinc-100 text-zinc-600 border border-zinc-200">
                         {lm.party_code}
                       </span>
                     </div>
-                    <span className="text-xs text-slate-500 font-tamil">
+                    <span className="text-[11px] text-zinc-500 font-tamil block leading-tight">
                       {lm.tamil_name}
                     </span>
                   </div>
                 </div>
 
-                <div className="text-right">
-                  <span className="text-xs sm:text-sm font-bold text-slate-900 font-mono">
-                    {lm.article_count} articles
+                <div className="flex items-center gap-4 shrink-0 font-mono text-xs">
+                  <span className="text-zinc-900 font-bold">
+                    {lm.article_count} reports
                   </span>
-                  <div className="flex items-center gap-1.5 justify-end text-xs font-mono font-bold">
-                    <span className="text-emerald-700">+{lm.positive_count}</span>
-                    <span className="text-slate-400">/</span>
-                    <span className="text-rose-700">-{lm.negative_count}</span>
+                  <div className="flex items-center gap-1 text-[11px] font-bold">
+                    <span className="text-emerald-800">+{lm.positive_count}</span>
+                    <span className="text-zinc-400">/</span>
+                    <span className="text-rose-800">-{lm.negative_count}</span>
                   </div>
                 </div>
               </div>
@@ -364,240 +337,206 @@ export function MetricsOverview({
         </div>
       </div>
 
-      {/* Publishing Trend & Strategic Topics */}
+      {/* 4. Publishing Trend & Hot Topics */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Trend Graph (2 cols) */}
-        <div className="lg:col-span-2 min-w-0 bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+        {/* Coverage Trend Chart (2 cols) */}
+        <div className="lg:col-span-2 min-w-0 bg-white border border-[#E8E8E2] rounded-xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
           <div>
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-3 pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2.5">
-                <TrendingUp className="w-4 h-4 text-emerald-600" />
-                <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900">
-                  Media Coverage Trend Over Time
-                </h3>
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3 pb-2.5 border-b border-[#F0F0EB]">
+              <div>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-3.5 h-3.5 text-zinc-600" />
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
+                    Media Coverage Trend Over Time
+                  </h2>
+                </div>
+                <p className="text-[11px] text-zinc-500 mt-0.5 flex items-center gap-2">
+                  <span>Showing {visibleTrends.length} cycles (hover bar for metrics breakdown)</span>
+                  <span className="text-zinc-400 hidden sm:inline">• Peak: {maxTotal} items/day</span>
+                </p>
               </div>
 
               {/* Time Range Selector */}
-              {daily_trends.length > 7 && (
-                <div className="flex items-center bg-slate-100 p-0.5 rounded-lg text-xs font-semibold text-slate-600">
+              <div className="flex items-center bg-[#F4F4F0] p-0.5 rounded border border-[#E2E2DC] text-xs">
+                {[
+                  { label: "7 Days", value: "7d" },
+                  { label: "14 Days", value: "14d" },
+                  { label: "30 Days", value: "30d" },
+                  { label: `All (${daily_trends.length})`, value: "all" },
+                ].map((item) => (
                   <button
-                    type="button"
-                    onClick={() => setTimeRange("7d")}
-                    className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
-                      timeRange === "7d"
-                        ? "bg-white text-slate-900 shadow-2xs font-bold"
-                        : "hover:text-slate-900"
+                    key={item.value}
+                    onClick={() => setTimeRange(item.value as any)}
+                    className={`px-2 py-0.5 rounded text-[11px] font-mono font-semibold transition-all cursor-pointer ${
+                      timeRange === item.value
+                        ? "bg-zinc-900 text-white shadow-2xs font-bold"
+                        : "text-zinc-600 hover:text-zinc-900"
                     }`}
                   >
-                    7D
+                    {item.label}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setTimeRange("14d")}
-                    className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
-                      timeRange === "14d"
-                        ? "bg-white text-slate-900 shadow-2xs font-bold"
-                        : "hover:text-slate-900"
-                    }`}
-                  >
-                    14D
-                  </button>
-                  {daily_trends.length > 14 && (
-                    <button
-                      type="button"
-                      onClick={() => setTimeRange("30d")}
-                      className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
-                        timeRange === "30d"
-                          ? "bg-white text-slate-900 shadow-2xs font-bold"
-                          : "hover:text-slate-900"
-                      }`}
-                    >
-                      30D
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setTimeRange("all")}
-                    className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
-                      timeRange === "all"
-                        ? "bg-white text-slate-900 shadow-2xs font-bold"
-                        : "hover:text-slate-900"
-                    }`}
-                  >
-                    All ({daily_trends.length})
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Sub-header Inspection State */}
-            <div className="flex items-center justify-between text-xs text-slate-500 font-mono mb-4 px-1 min-h-[22px]">
-              {hoveredItem ? (
-                <div className="flex items-center gap-2 text-slate-800 font-semibold animate-fadeIn">
-                  <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-                  <span>{formatFullDate(hoveredItem.date)}:</span>
-                  <span className="font-bold text-slate-900 font-mono">{hoveredItem.total} articles</span>
-                  <span className="text-emerald-700">+{hoveredItem.positive} pos</span>
-                  <span className="text-slate-400">•</span>
-                  <span className="text-slate-600">{hoveredItem.neutral} neu</span>
-                  <span className="text-slate-400">•</span>
-                  <span className="text-rose-700">-{hoveredItem.negative} neg</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 text-slate-400">
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span>Showing {visibleTrends.length} cycles (hover bar for metrics breakdown)</span>
-                </div>
-              )}
-              <span className="text-slate-400 hidden sm:inline">
-                Peak: {maxTotal} items/day
-              </span>
-            </div>
-          </div>
-
-          {/* Chart Canvas Area */}
-          {visibleTrends.length === 0 ? (
-            <div className="h-52 flex flex-col items-center justify-center text-slate-400 gap-2 border border-dashed border-slate-200 rounded-lg">
-              <TrendingUp className="w-8 h-8 text-slate-300" />
-              <span className="text-xs font-semibold">No media coverage trend data available</span>
-            </div>
-          ) : (
-            <div
-              ref={scrollContainerRef}
-              className="w-full min-w-0 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-200"
-            >
-              <div
-                className="h-52 flex items-end gap-2 sm:gap-2.5 pt-8 pb-1 px-2"
-                style={{
-                  minWidth: visibleTrends.length > 14 ? `${visibleTrends.length * 36}px` : "100%",
-                }}
-              >
-                {visibleTrends.map((item, idx) => {
-                  const heightPct = Math.max(12, Math.min(100, Math.round((item.total / maxTotal) * 100)));
-                  const negPct = item.total > 0 ? Math.min(100, Math.round((item.negative / item.total) * 100)) : 0;
-                  
-                  // Label cadence: if <= 14 items, show all; otherwise show every Nth and the last item
-                  const step = Math.ceil(visibleTrends.length / 10);
-                  const showLabel = visibleTrends.length <= 14 || idx % step === 0 || idx === visibleTrends.length - 1;
-                  const isHovered = hoveredItem?.date === item.date;
-
-                  return (
-                    <div
-                      key={item.date}
-                      onMouseEnter={() => setHoveredItem(item)}
-                      onMouseLeave={() => setHoveredItem(null)}
-                      className="flex-1 flex flex-col items-center gap-2 relative group h-full justify-end cursor-pointer"
-                    >
-                      {/* Clamped Hover Tooltip directly above bar */}
-                      {isHovered && (
-                        <div
-                          className={`absolute -top-14 z-30 pointer-events-none bg-slate-900 text-white text-[11px] rounded-lg px-2.5 py-1.5 shadow-xl whitespace-nowrap transition-all duration-150 ${
-                            idx < 2 ? "left-0" : idx > visibleTrends.length - 3 ? "right-0" : "left-1/2 -translate-x-1/2"
-                          }`}
-                        >
-                          <div className="font-bold flex items-center gap-1.5">
-                            <span>{formatFullDate(item.date)}</span>
-                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono font-normal">
-                              {item.total} {item.total === 1 ? "report" : "reports"}
-                            </span>
-                          </div>
-                          <div className="text-slate-300 font-mono flex items-center gap-2 mt-0.5 text-[10px]">
-                            <span className="text-emerald-400">+{item.positive} Pos</span>
-                            <span className="text-slate-400">{item.neutral} Neu</span>
-                            <span className="text-rose-400">-{item.negative} Neg</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Bar Value on Hover */}
-                      <div className={`text-[10px] text-slate-700 font-mono font-bold transition-opacity ${isHovered ? "opacity-100" : "opacity-0"}`}>
-                        {item.total}
-                      </div>
-
-                      {/* Dynamic Bar Element */}
-                      <div
-                        style={{ height: `${heightPct}%` }}
-                        className={`w-full max-w-[38px] min-w-[8px] bg-gradient-to-t from-blue-700 to-indigo-600 rounded-t-md relative flex flex-col justify-end overflow-hidden transition-all shadow-xs ${
-                          isHovered ? "brightness-125 ring-2 ring-blue-500 ring-offset-1" : "group-hover:brightness-110"
-                        }`}
-                      >
-                        {negPct > 0 && (
-                          <div
-                            style={{ height: `${negPct}%` }}
-                            className="w-full bg-rose-500/95"
-                            title={`${item.negative} critical reports`}
-                          />
-                        )}
-                      </div>
-
-                      {/* Date Tick Label */}
-                      <div className="h-5 flex items-center justify-center">
-                        {showLabel ? (
-                          <span className="text-[11px] font-mono text-slate-600 font-semibold whitespace-nowrap">
-                            {formatDateLabel(item.date)}
-                          </span>
-                        ) : (
-                          <span
-                            className="w-1.5 h-1.5 rounded-full bg-slate-300 my-1 group-hover:bg-blue-500 transition-colors"
-                            title={formatDateLabel(item.date)}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+                ))}
               </div>
             </div>
-          )}
+
+            {/* Responsive Chart */}
+            {visibleTrends.length === 0 ? (
+              <div className="h-52 flex flex-col items-center justify-center text-zinc-400 gap-2 border border-dashed border-[#E8E8E2] rounded-lg">
+                <TrendingUp className="w-8 h-8 text-zinc-300" />
+                <span className="text-xs font-semibold">No media coverage trend data available</span>
+              </div>
+            ) : (
+              <div
+                ref={scrollContainerRef}
+                className="w-full min-w-0 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-zinc-200"
+              >
+                <div
+                  className="h-52 flex items-end gap-2 sm:gap-2.5 pt-8 pb-1 px-2"
+                  style={{
+                    minWidth: visibleTrends.length > 14 ? `${visibleTrends.length * 36}px` : "100%",
+                  }}
+                >
+                  {visibleTrends.map((item, idx) => {
+                    const heightPct = Math.max(12, Math.min(100, Math.round((item.total / maxTotal) * 100)));
+                    const negPct = item.total > 0 ? Math.min(100, Math.round((item.negative / item.total) * 100)) : 0;
+
+                    const step = Math.ceil(visibleTrends.length / 10);
+                    const showLabel = visibleTrends.length <= 14 || idx % step === 0 || idx === visibleTrends.length - 1;
+                    const isHovered = hoveredItem?.date === item.date;
+
+                    return (
+                      <div
+                        key={item.date}
+                        onMouseEnter={() => setHoveredItem(item)}
+                        onMouseLeave={() => setHoveredItem(null)}
+                        className="flex-1 flex flex-col items-center gap-2 relative group h-full justify-end cursor-pointer"
+                      >
+                        {/* Clamped Hover Tooltip directly above bar */}
+                        {isHovered && (
+                          <div
+                            className={`absolute -top-14 z-30 pointer-events-none bg-zinc-900 text-white text-[11px] rounded px-2.5 py-1.5 shadow-xl whitespace-nowrap transition-all duration-150 border border-zinc-700 ${
+                              idx < 2 ? "left-0" : idx > visibleTrends.length - 3 ? "right-0" : "left-1/2 -translate-x-1/2"
+                            }`}
+                          >
+                            <div className="font-bold flex items-center gap-1.5">
+                              <span>{formatFullDate(item.date)}</span>
+                              <span className="text-[10px] px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-300 font-mono font-normal">
+                                {item.total} {item.total === 1 ? "report" : "reports"}
+                              </span>
+                            </div>
+                            <div className="text-zinc-300 font-mono flex items-center gap-2 mt-0.5 text-[10px]">
+                              <span className="text-emerald-400">+{item.positive} Pos</span>
+                              <span className="text-zinc-400">{item.neutral} Neu</span>
+                              <span className="text-rose-400">-{item.negative} Neg</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Bar Value on Hover */}
+                        <div className={`text-[10px] text-zinc-700 font-mono font-bold transition-opacity ${isHovered ? "opacity-100" : "opacity-0"}`}>
+                          {item.total}
+                        </div>
+
+                        {/* Dynamic Editorial Bar */}
+                        <div
+                          style={{ height: `${heightPct}%` }}
+                          className={`w-full max-w-[38px] min-w-[8px] bg-zinc-800 rounded-t-sm relative flex flex-col justify-end overflow-hidden transition-all shadow-2xs ${
+                            isHovered ? "bg-zinc-950 ring-2 ring-zinc-400" : "group-hover:bg-zinc-700"
+                          }`}
+                        >
+                          {negPct > 0 && (
+                            <div
+                              style={{ height: `${negPct}%` }}
+                              className="w-full bg-rose-700"
+                              title={`${item.negative} critical reports`}
+                            />
+                          )}
+                        </div>
+
+                        {/* Date Tick Label */}
+                        <div className="h-5 flex items-center justify-center">
+                          {showLabel ? (
+                            <span className="text-[11px] font-mono text-zinc-600 font-semibold whitespace-nowrap">
+                              {formatDateLabel(item.date)}
+                            </span>
+                          ) : (
+                            <span
+                              className="w-1.5 h-1.5 rounded-full bg-zinc-300 my-1 group-hover:bg-zinc-700 transition-colors"
+                              title={formatDateLabel(item.date)}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Hot Political Topics (1 col) */}
-        <div className="lg:col-span-1 min-w-0 bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs flex flex-col">
-          <div className="flex items-center justify-between mb-4 pb-2.5 border-b border-slate-100">
-            <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900">
-              Hot Political Topics
-            </h3>
-            <span className="text-xs text-slate-400 font-medium">Ranked by volume</span>
+        {/* Hot Topics (1 col) */}
+        <div className="bg-white border border-[#E8E8E2] rounded-xl p-4 sm:p-5 shadow-2xs flex flex-col">
+          <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-[#F0F0EB]">
+            <div className="flex items-center gap-2">
+              <Compass className="w-3.5 h-3.5 text-zinc-600" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
+                Hot Political Topics
+              </h2>
+            </div>
+            <span className="text-[11px] text-zinc-600">Ranking</span>
           </div>
 
           {top_topics.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center text-xs text-slate-400 py-6">
+            <div className="flex-1 flex items-center justify-center text-xs text-zinc-400 py-6">
               No topics recorded for current filter
             </div>
           ) : (
-            <div className="flex flex-wrap gap-2.5">
-              {top_topics.map((t) => (
-                <div
-                  key={t.topic}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-800 hover:border-slate-300 hover:text-blue-700 transition-colors"
-                >
-                  <span className="font-semibold">{t.topic}</span>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-200 text-slate-800">
-                    {t.count}
-                  </span>
-                </div>
-              ))}
+            <div className="space-y-2">
+              {top_topics.slice(0, 6).map((item, idx) => {
+                const topicPct = filtered_articles > 0 ? Math.round((item.count / filtered_articles) * 100) : 0;
+                return (
+                  <div
+                    key={item.topic}
+                    onClick={() => onSelectTopic && onSelectTopic(item.topic)}
+                    className="p-2.5 rounded hover:bg-[#F9F9F7] border border-transparent hover:border-[#E8E8E2] transition-colors cursor-pointer flex items-center justify-between gap-3 group"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="text-[11px] font-mono font-bold text-zinc-500 w-5 shrink-0">
+                        0{idx + 1}
+                      </span>
+                      <span className="text-xs font-bold text-zinc-800 group-hover:text-zinc-900 truncate">
+                        {item.topic}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 font-mono text-xs">
+                      <span className="font-bold text-zinc-900">{item.count}</span>
+                      <span className="text-[10px] text-zinc-500">({topicPct}%)</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
       </div>
 
       {/* Data Integrity Notice */}
-      <div className="p-4 sm:p-5 rounded-xl bg-slate-100/70 border border-slate-200 text-xs text-slate-600 leading-relaxed space-y-2">
+      <div className="p-4 sm:p-5 rounded-xl bg-zinc-100/70 border border-[#E8E8E2] text-xs text-zinc-600 leading-relaxed space-y-2">
         <div>
-          <span className="font-bold text-slate-900">Data Integrity Notice: </span>
+          <span className="font-bold text-zinc-900">Data Integrity Notice: </span>
           {disclaimer}
         </div>
         {metrics.polling_interval_desc && (
-          <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-200/80 text-[11px] text-slate-500 font-mono">
+          <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-[#E8E8E2] text-[11px] text-zinc-500 font-mono">
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
               <span>{metrics.polling_interval_desc}</span>
             </span>
             {metrics.last_collection_at && (
               <span>
                 • Last Feed Poll:{" "}
-                <strong className="text-slate-700">
+                <strong className="text-zinc-800">
                   {new Date(metrics.last_collection_at).toLocaleString("en-IN", {
                     month: "short",
                     day: "numeric",
@@ -610,7 +549,7 @@ export function MetricsOverview({
             {metrics.latest_publication_at && (
               <span>
                 • Latest Article Pub:{" "}
-                <strong className="text-blue-700">
+                <strong className="text-zinc-800">
                   {new Date(metrics.latest_publication_at).toLocaleString("en-IN", {
                     month: "short",
                     day: "numeric",
@@ -618,6 +557,11 @@ export function MetricsOverview({
                     minute: "2-digit",
                   })}
                 </strong>
+              </span>
+            )}
+            {metrics.data_sources && metrics.data_sources.length > 0 && (
+              <span>
+                • Sources: <strong className="text-zinc-800">{metrics.data_sources.length}</strong>
               </span>
             )}
           </div>
