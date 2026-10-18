@@ -81,7 +81,7 @@ export function FilterBar({
             id="party-filter"
             value={filters.party}
             onChange={(e) => onFilterChange({ ...filters, party: e.target.value })}
-            className="w-full h-9 bg-[#F9F9F7] hover:bg-white border border-[#E2E2DC] focus:border-zinc-500 rounded px-2.5 text-xs text-zinc-800 font-medium focus:outline-hidden transition-all cursor-pointer"
+            className="w-full min-h-[42px] sm:min-h-[36px] bg-[#F9F9F7] hover:bg-white border border-[#E2E2DC] focus:border-zinc-500 rounded px-2.5 text-xs text-zinc-800 font-medium focus:outline-hidden transition-all cursor-pointer"
           >
             <option value="">All Parties</option>
             {parties.map((p) => (
@@ -101,7 +101,7 @@ export function FilterBar({
             id="leader-filter"
             value={filters.leader}
             onChange={(e) => onFilterChange({ ...filters, leader: e.target.value })}
-            className="w-full h-9 bg-[#F9F9F7] hover:bg-white border border-[#E2E2DC] focus:border-zinc-500 rounded px-2.5 text-xs text-zinc-800 font-medium focus:outline-hidden transition-all cursor-pointer"
+            className="w-full min-h-[42px] sm:min-h-[36px] bg-[#F9F9F7] hover:bg-white border border-[#E2E2DC] focus:border-zinc-500 rounded px-2.5 text-xs text-zinc-800 font-medium focus:outline-hidden transition-all cursor-pointer"
           >
             <option value="">All Leaders</option>
             {leaders.map((l) => (
@@ -121,7 +121,7 @@ export function FilterBar({
             id="sentiment-filter"
             value={filters.sentiment}
             onChange={(e) => onFilterChange({ ...filters, sentiment: e.target.value })}
-            className="w-full h-9 bg-[#F9F9F7] hover:bg-white border border-[#E2E2DC] focus:border-zinc-500 rounded px-2.5 text-xs text-zinc-800 font-medium focus:outline-hidden transition-all cursor-pointer"
+            className="w-full min-h-[42px] sm:min-h-[36px] bg-[#F9F9F7] hover:bg-white border border-[#E2E2DC] focus:border-zinc-500 rounded px-2.5 text-xs text-zinc-800 font-medium focus:outline-hidden transition-all cursor-pointer"
           >
             <option value="">All Polarity</option>
             <option value="positive">Positive (நேர்மறை)</option>
@@ -139,7 +139,7 @@ export function FilterBar({
             id="topic-filter"
             value={filters.topic}
             onChange={(e) => onFilterChange({ ...filters, topic: e.target.value })}
-            className="w-full h-9 bg-[#F9F9F7] hover:bg-white border border-[#E2E2DC] focus:border-zinc-500 rounded px-2.5 text-xs text-zinc-800 font-medium focus:outline-hidden transition-all cursor-pointer"
+            className="w-full min-h-[42px] sm:min-h-[36px] bg-[#F9F9F7] hover:bg-white border border-[#E2E2DC] focus:border-zinc-500 rounded px-2.5 text-xs text-zinc-800 font-medium focus:outline-hidden transition-all cursor-pointer"
           >
             <option value="">All Topics</option>
             {topics.map((t) => (
@@ -159,7 +159,7 @@ export function FilterBar({
             id="source-filter"
             value={filters.source}
             onChange={(e) => onFilterChange({ ...filters, source: e.target.value })}
-            className="w-full h-9 bg-[#F9F9F7] hover:bg-white border border-[#E2E2DC] focus:border-zinc-500 rounded px-2.5 text-xs text-zinc-800 font-medium focus:outline-hidden transition-all cursor-pointer"
+            className="w-full min-h-[42px] sm:min-h-[36px] bg-[#F9F9F7] hover:bg-white border border-[#E2E2DC] focus:border-zinc-500 rounded px-2.5 text-xs text-zinc-800 font-medium focus:outline-hidden transition-all cursor-pointer"
           >
             <option value="">All Publishers</option>
             {sources.map((s) => (

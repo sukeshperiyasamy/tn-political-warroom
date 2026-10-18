@@ -1109,13 +1109,13 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
       )}
 
       {/* Source Classification Filter Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#F4F4F0] p-1.5 rounded-lg border border-[#E8E8E2]">
-        <div className="flex items-center gap-1.5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 bg-[#F4F4F0] p-1.5 rounded-lg border border-[#E8E8E2]">
+        <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
           <button
             onClick={() => setSourceGroupTab("all")}
-            className={`px-3 py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex-1 sm:flex-initial px-3 py-2 sm:py-1.5 rounded text-xs font-semibold transition-all cursor-pointer min-h-[40px] sm:min-h-[34px] text-center ${
               sourceGroupTab === "all"
-                ? "bg-zinc-900 text-white shadow-2xs"
+                ? "bg-zinc-900 text-white shadow-2xs font-bold"
                 : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200"
             }`}
           >
@@ -1123,31 +1123,31 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
           </button>
           <button
             onClick={() => setSourceGroupTab("news_media")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded text-xs font-semibold transition-all cursor-pointer min-h-[40px] sm:min-h-[34px] text-center ${
               sourceGroupTab === "news_media"
-                ? "bg-blue-600 text-white shadow-2xs"
+                ? "bg-blue-600 text-white shadow-2xs font-bold"
                 : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200"
             }`}
           >
             <Tv className="w-3.5 h-3.5" />
-            <span>Group A: News Media ({newsMediaSources.length})</span>
+            <span>Group A: News ({newsMediaSources.length})</span>
           </button>
           <button
             onClick={() => setSourceGroupTab("influencers")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded text-xs font-semibold transition-all cursor-pointer min-h-[40px] sm:min-h-[34px] text-center ${
               sourceGroupTab === "influencers"
-                ? "bg-purple-600 text-white shadow-2xs"
+                ? "bg-purple-600 text-white shadow-2xs font-bold"
                 : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200"
             }`}
           >
             <UserCheck className="w-3.5 h-3.5" />
-            <span>Group B: Influencers & Creators ({influencerSources.length})</span>
+            <span>Group B: Creators ({influencerSources.length})</span>
           </button>
         </div>
 
         <button
           onClick={loadData}
-          className="flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium bg-white hover:bg-zinc-100 border border-[#E2E2DC] text-zinc-700 cursor-pointer shadow-2xs"
+          className="flex items-center justify-center gap-1 px-3 py-2 sm:py-1 rounded text-xs font-medium bg-white hover:bg-zinc-100 border border-[#E2E2DC] text-zinc-700 cursor-pointer shadow-2xs min-h-[40px] sm:min-h-[34px] w-full sm:w-auto"
         >
           <RefreshCw className="w-3 h-3" />
           <span>Refresh All</span>
@@ -1180,8 +1180,8 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+              <div className="overflow-x-auto w-full">
+                <table className="w-full text-left text-xs min-w-[640px]">
                   <thead className="bg-[#F4F4F0] text-zinc-600 font-mono border-b border-[#E8E8E2] uppercase text-[10px] tracking-wider">
                     <tr>
                       <th className="py-2.5 px-4">Publisher & Feed URL</th>
@@ -1343,8 +1343,8 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+              <div className="overflow-x-auto w-full">
+                <table className="w-full text-left text-xs min-w-[640px]">
                   <thead className="bg-[#F4F4F0] text-zinc-600 font-mono border-b border-[#E8E8E2] uppercase text-[10px] tracking-wider">
                     <tr>
                       <th className="py-2.5 px-4">Creator / Channel & Feed</th>

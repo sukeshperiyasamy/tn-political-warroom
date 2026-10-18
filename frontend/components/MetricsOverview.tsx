@@ -182,7 +182,7 @@ export function MetricsOverview({
               Automated NLP tone categorization across published news reports (N = {filtered_articles})
             </p>
           </div>
-          <div className="flex items-center gap-4 text-xs font-mono">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs font-mono">
             <span className="flex items-center gap-1.5 text-emerald-800 font-medium">
               <span className="w-2.5 h-2.5 rounded-xs bg-emerald-700"></span>
               Positive: {sentiment_distribution.positive_pct}% ({sentiment_distribution.positive})
@@ -239,30 +239,33 @@ export function MetricsOverview({
                 <div
                   key={pm.party_code}
                   onClick={() => onSelectParty(pm.party_code)}
-                  className="py-2.5 px-1.5 hover:bg-[#F9F9F7] rounded cursor-pointer transition-colors flex items-center justify-between gap-3 group"
+                  className="py-2.5 px-1.5 hover:bg-[#F9F9F7] rounded cursor-pointer transition-colors flex items-center justify-between gap-2 sm:gap-3 group"
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
                     <span
                       className="w-2.5 h-2.5 rounded-full shrink-0"
                       style={{ backgroundColor: pm.color }}
                     />
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 sm:gap-2">
                         <span className="text-xs font-bold text-zinc-900 group-hover:text-zinc-600">
                           {pm.party_code}
                         </span>
-                        <span className="text-[11px] text-zinc-500 font-tamil truncate max-w-[170px] sm:max-w-[240px]">
+                        <span className="text-[11px] text-zinc-500 font-tamil truncate max-w-[100px] sm:max-w-[240px]">
                           {pm.tamil_name}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 shrink-0 font-mono text-xs">
-                    <span className="text-zinc-500 font-medium">
+                  <div className="flex items-center gap-2 sm:gap-4 shrink-0 font-mono text-xs">
+                    <span className="text-zinc-500 font-medium hidden sm:inline">
                       {pm.article_count} reports
                     </span>
-                    <span className="w-10 text-right font-bold text-zinc-800">
+                    <span className="text-zinc-500 font-medium sm:hidden text-[11px]">
+                      {pm.article_count}
+                    </span>
+                    <span className="w-8 sm:w-10 text-right font-bold text-zinc-800">
                       {pct}%
                     </span>
                     <span
@@ -300,30 +303,33 @@ export function MetricsOverview({
               <div
                 key={lm.name}
                 onClick={() => onSelectLeader(lm.name)}
-                className="py-2.5 px-1.5 hover:bg-[#F9F9F7] rounded cursor-pointer transition-colors flex items-center justify-between gap-3 group"
+                className="py-2.5 px-1.5 hover:bg-[#F9F9F7] rounded cursor-pointer transition-colors flex items-center justify-between gap-2 sm:gap-3 group"
               >
-                <div className="flex items-center gap-2.5 min-w-0">
+                <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
                   <div className="w-7 h-7 rounded bg-zinc-100 text-zinc-700 flex items-center justify-center text-[10px] font-bold font-mono shrink-0 border border-zinc-200">
                     {lm.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
                   </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-zinc-900 group-hover:text-zinc-600">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <span className="text-xs font-bold text-zinc-900 group-hover:text-zinc-600 truncate max-w-[100px] sm:max-w-none">
                         {lm.name}
                       </span>
                       <span className="px-1 py-0.2 rounded text-[9px] font-mono bg-zinc-100 text-zinc-600 border border-zinc-200">
                         {lm.party_code}
                       </span>
                     </div>
-                    <span className="text-[11px] text-zinc-500 font-tamil block leading-tight">
+                    <span className="text-[11px] text-zinc-500 font-tamil block leading-tight truncate max-w-[120px] sm:max-w-none">
                       {lm.tamil_name}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 shrink-0 font-mono text-xs">
-                  <span className="text-zinc-900 font-bold">
+                <div className="flex items-center gap-2 sm:gap-4 shrink-0 font-mono text-xs">
+                  <span className="text-zinc-900 font-bold hidden sm:inline">
                     {lm.article_count} reports
+                  </span>
+                  <span className="text-zinc-900 font-bold sm:hidden text-[11px]">
+                    {lm.article_count}
                   </span>
                   <div className="flex items-center gap-1 text-[11px] font-bold">
                     <span className="text-emerald-800">+{lm.positive_count}</span>

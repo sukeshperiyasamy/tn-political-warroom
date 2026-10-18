@@ -53,6 +53,7 @@ import {
   triggerIngest,
   fetchClientConfig,
 } from "../lib/api";
+import { FALLBACK_ARTICLES } from "../lib/seed-fallback";
 import {
   FileQuestion,
   RefreshCw,
@@ -85,7 +86,7 @@ export default function WarRoomDashboard() {
 
   // Drawer & Studio Active Item
   const [drawerArticle, setDrawerArticle] = useState<NewsArticle | null>(null);
-  const [studioArticle, setStudioArticle] = useState<NewsArticle | null>(null);
+  const [studioArticle, setStudioArticle] = useState<NewsArticle | null>(FALLBACK_ARTICLES[0] || null);
   const [clientConfig, setClientConfig] = useState<ClientConfig | null>(null);
 
   // Initial load
@@ -198,12 +199,12 @@ export default function WarRoomDashboard() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-6 sm:py-8">
+      <main className="flex-1 max-w-[1720px] w-full mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 py-4 sm:py-8 min-w-0">
         {/* Compact Editorial Header */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-[#E8E8E2]">
-          <div>
-            <div className="flex items-center gap-2.5">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 font-serif">
+          <div className="min-w-0 max-w-full">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-zinc-900 font-serif break-words">
                 TN 2026 Assembly War Room Intelligence
               </h1>
               {isLive ? (
@@ -225,12 +226,12 @@ export default function WarRoomDashboard() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             {isLive && (
               <button
                 onClick={handleTriggerQuickIngest}
                 disabled={isQuickIngesting}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold bg-white hover:bg-[#F4F4F0] border border-[#E2E2DC] text-zinc-800 shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded text-xs font-semibold bg-white hover:bg-[#F4F4F0] border border-[#E2E2DC] text-zinc-800 shadow-2xs transition-colors cursor-pointer disabled:opacity-50 min-h-[40px] sm:min-h-[36px]"
                 title="Poll registered RSS feeds for new stories"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isQuickIngesting ? "animate-spin text-zinc-600" : ""}`} />
@@ -240,7 +241,7 @@ export default function WarRoomDashboard() {
 
             <button
               onClick={() => setActiveTab("studio")}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs transition-colors cursor-pointer"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-1.5 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs transition-colors cursor-pointer min-h-[40px] sm:min-h-[36px]"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               <span>Card Studio</span>

@@ -148,9 +148,13 @@ export function NewsCardStudio({
       }
     };
     updateScale();
+    const timer = setTimeout(updateScale, 50);
     window.addEventListener("resize", updateScale);
-    return () => window.removeEventListener("resize", updateScale);
-  }, []);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", updateScale);
+    };
+  }, [activeStudioTab]);
 
   const fallbackTemplate: CardTemplate = {
     id: "warroom_dark",
@@ -577,18 +581,18 @@ export function NewsCardStudio({
       )}
 
       {/* Studio Sub-Tab Switcher */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#F4F4F0] p-1.5 rounded-lg border border-[#E8E8E2]">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F4F4F0] p-1.5 rounded-lg border border-[#E8E8E2]">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
           <button
             onClick={() => setActiveStudioTab("editorial")}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center justify-center gap-1.5 px-3.5 py-2.5 sm:py-2 rounded text-xs font-bold transition-all cursor-pointer min-h-[42px] sm:min-h-[36px] ${
               activeStudioTab === "editorial"
                 ? "bg-zinc-900 text-white shadow-2xs"
                 : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200"
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
-            <span>1. 3-Version Editorial Engine & Finalization</span>
+            <span>1. 3-Version Editorial Engine</span>
             {editorialData?.final_version_type && (
               <span className="ml-1.5 px-1.5 py-0.2 rounded text-[9px] bg-emerald-500 text-white font-mono uppercase">
                 FINAL: {editorialData.final_version_type}
@@ -598,7 +602,7 @@ export function NewsCardStudio({
 
           <button
             onClick={() => setActiveStudioTab("graphic")}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center justify-center gap-1.5 px-3.5 py-2.5 sm:py-2 rounded text-xs font-bold transition-all cursor-pointer min-h-[42px] sm:min-h-[36px] ${
               activeStudioTab === "graphic"
                 ? "bg-zinc-900 text-white shadow-2xs"
                 : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200"
@@ -614,7 +618,7 @@ export function NewsCardStudio({
             id="export-png-btn"
             onClick={handleExportPNG}
             disabled={isExporting}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 sm:py-1.5 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs transition-colors cursor-pointer disabled:opacity-50 min-h-[42px] sm:min-h-[36px] w-full sm:w-auto"
           >
             {isExporting ? (
               <>
@@ -743,11 +747,12 @@ export function NewsCardStudio({
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                       <button
                         onClick={() => handleCopyVersionText(activeItem)}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-semibold bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-800 border border-[#E2E2DC] transition-colors cursor-pointer"
+                        className="flex-1 sm:flex-initial flex items-center justify-center gap-1 px-3 py-2 sm:py-1.5 rounded text-xs font-semibold bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-800 border border-[#E2E2DC] transition-colors cursor-pointer min-h-[42px] sm:min-h-[36px]"
                         title="Copy text to clipboard"
+                        aria-label="Copy text to clipboard"
                       >
                         {copiedText ? (
                           <>
@@ -764,8 +769,9 @@ export function NewsCardStudio({
 
                       <button
                         onClick={() => handlePushToGraphicCard(activeItem)}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded text-xs font-semibold bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-800 border border-[#E2E2DC] transition-colors cursor-pointer"
+                        className="flex-1 sm:flex-initial flex items-center justify-center gap-1 px-3 py-2 sm:py-1.5 rounded text-xs font-semibold bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-800 border border-[#E2E2DC] transition-colors cursor-pointer min-h-[42px] sm:min-h-[36px]"
                         title="Load into 1080×1080 Graphic Studio"
+                        aria-label="Send to 1080p Card"
                       >
                         <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                         <span>Send to 1080p Card</span>
@@ -774,11 +780,12 @@ export function NewsCardStudio({
                       <button
                         onClick={() => handleSelectAsFinal(activeVersionType)}
                         disabled={savingFinal}
-                        className={`flex items-center gap-1.5 px-4 py-1.5 rounded text-xs font-bold transition-all cursor-pointer ${
+                        className={`w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 sm:py-1.5 rounded text-xs font-bold transition-all cursor-pointer min-h-[42px] sm:min-h-[36px] ${
                           editorialData.final_version_type === activeVersionType
                             ? "bg-emerald-700 hover:bg-emerald-800 text-white shadow-2xs"
                             : "bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs"
                         }`}
+                        aria-label="Select as final output"
                       >
                         {savingFinal ? (
                           <>
