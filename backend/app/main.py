@@ -6,10 +6,25 @@ from datetime import datetime, timezone
 import sqlite3
 from .data.migrations import DB_PATH
 
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Ensure data directory and SQLite database tables exist
+    try:
+        from .data.migrations import run_migrations, DB_PATH
+        os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+        run_migrations(DB_PATH)
+        print("Startup: Database migrations applied successfully.")
+    except Exception as e:
+        print(f"Startup: Warning running migrations: {e}")
+    yield
+
 app = FastAPI(
     title="TN Political Warroom API",
     description="Political media intelligence, Tamil NLP summaries, multi-source social trending, and comparative war room analytics for Tamil Nadu politics.",
-    version="1.2.0"
+    version="1.2.0",
+    lifespan=lifespan
 )
 
 # CORS configuration for Next.js frontend
