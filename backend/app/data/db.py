@@ -143,18 +143,22 @@ def get_connection(db_path: str = DB_PATH) -> ConnectionWrapper:
     """
     db_url = get_database_url()
     if db_url:
-        import psycopg
-        conn = psycopg.connect(db_url, connect_timeout=10)
-        return ConnectionWrapper(conn, is_pg=True)
-    else:
-        os.makedirs(os.path.dirname(db_path), exist_ok=True)
-        conn = sqlite3.connect(db_path, timeout=10.0)
         try:
-            conn.execute("PRAGMA journal_mode=WAL;")
-            conn.execute("PRAGMA busy_timeout=5000;")
-        except Exception:
+            import psycopg
+            conn = psycopg.connect(db_url, connect_timeout=10)
+            return ConnectionWrapper(conn, is_pg=True)
+        except Exception as e:
+            # Fallback to local SQLite if PostgreSQL connection fails
             pass
-        return ConnectionWrapper(conn, is_pg=False)
+
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    conn = sqlite3.connect(db_path, timeout=10.0)
+    try:
+        conn.execute("PRAGMA journal_mode=WAL;")
+        conn.execute("PRAGMA busy_timeout=5000;")
+    except Exception:
+        pass
+    return ConnectionWrapper(conn, is_pg=False)
 
 
 @contextmanager

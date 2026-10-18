@@ -83,19 +83,21 @@ def health_check():
     db_healthy = False
     journal_mode = "unknown"
     neon_connected = False
+    neon_error = None
     database_url = os.getenv("DATABASE_URL")
 
     # 1. Check Neon PostgreSQL if DATABASE_URL configured
     if database_url:
         try:
             import psycopg
-            with psycopg.connect(database_url, connect_timeout=3) as conn:
+            with psycopg.connect(database_url, connect_timeout=10) as conn:
                 with conn.cursor() as cur:
                     cur.execute("SELECT 1;")
                     neon_connected = True
                     db_healthy = True
         except Exception as e:
             neon_connected = False
+            neon_error = f"{type(e).__name__}: {str(e)}"
 
     # 2. Check local SQLite
     try:
@@ -106,10 +108,10 @@ def health_check():
             row = cursor.fetchone()
             if row:
                 journal_mode = str(row[0]).lower()
-            if not database_url:
+            if not neon_connected:
                 db_healthy = True
     except Exception:
-        if not database_url:
+        if not neon_connected:
             db_healthy = False
 
     return {
@@ -121,6 +123,7 @@ def health_check():
         "journal_mode": journal_mode,
         "neon_connected": neon_connected,
         "neon_serverless": neon_connected,
+        "neon_error": neon_error,
         "capabilities": [
             "neon_serverless_postgres" if neon_connected else "sqlite_wal_registry",
             "live_rss_ingestion",
