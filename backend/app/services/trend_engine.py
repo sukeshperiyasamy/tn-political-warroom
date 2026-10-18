@@ -4,7 +4,7 @@ import sqlite3
 import os
 from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, List, Optional, Tuple
-from backend.app.data.migrations import DB_PATH
+from backend.app.data.db import get_connection, DB_PATH
 
 class TrendEngine:
     """

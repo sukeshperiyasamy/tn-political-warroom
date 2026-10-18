@@ -47,7 +47,7 @@ __pycache__/
 venv/
 .pytest_cache/
 .mypy_cache/
-graphify-out/.graphify_root
+graphify-out/
 graphify-out/.graphify_python
 graphify-out/.cache/
 

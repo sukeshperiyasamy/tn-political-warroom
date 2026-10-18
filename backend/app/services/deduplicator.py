@@ -4,7 +4,7 @@ import sqlite3
 import hashlib
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional, Set
-from backend.app.data.migrations import DB_PATH
+from backend.app.data.db import get_connection, DB_PATH
 from backend.app.services.trend_engine import trend_engine
 
 STOPWORDS = {

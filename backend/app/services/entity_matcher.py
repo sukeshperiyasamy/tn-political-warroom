@@ -264,14 +264,22 @@ LEADERS_CONFIG = [
     }
 ]
 
+from backend.app.data.db import get_connection
+
 class EntityMatcher:
     def __init__(self, db_path: str = DB_PATH):
         self.db_path = db_path
+        self._initialized = False
+
+    def ensure_initialized(self):
+        if self._initialized:
+            return
         self._ensure_topic_registry()
+        self._initialized = True
 
     def _ensure_topic_registry(self):
         try:
-            with sqlite3.connect(self.db_path) as conn:
+            with get_connection(self.db_path) as conn:
                 cursor = conn.cursor()
                 cursor.execute("SELECT COUNT(*) FROM topic_registry")
                 count = cursor.fetchone()[0]

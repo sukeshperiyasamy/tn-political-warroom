@@ -3,7 +3,7 @@ import os
 import sqlite3
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
-from backend.app.data.migrations import DB_PATH, get_connection
+from backend.app.data.db import DB_PATH, get_connection
 
 DEFAULT_CONFIG = {
     "id": "default",
@@ -115,13 +115,28 @@ class ClientConfigService:
         with get_connection(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                INSERT OR REPLACE INTO client_configuration (
+                INSERT INTO client_configuration (
                     id, client_name, client_tagline, logo_url, brand_color, accent_color,
                     selected_parties, selected_leaders, topics_of_interest, authorized_sources,
                     authorized_connectors, default_language, default_demo_scenario, updated_at, is_active
                 ) VALUES (
                     'default', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                 )
+                ON CONFLICT (id) DO UPDATE SET
+                    client_name = EXCLUDED.client_name,
+                    client_tagline = EXCLUDED.client_tagline,
+                    logo_url = EXCLUDED.logo_url,
+                    brand_color = EXCLUDED.brand_color,
+                    accent_color = EXCLUDED.accent_color,
+                    selected_parties = EXCLUDED.selected_parties,
+                    selected_leaders = EXCLUDED.selected_leaders,
+                    topics_of_interest = EXCLUDED.topics_of_interest,
+                    authorized_sources = EXCLUDED.authorized_sources,
+                    authorized_connectors = EXCLUDED.authorized_connectors,
+                    default_language = EXCLUDED.default_language,
+                    default_demo_scenario = EXCLUDED.default_demo_scenario,
+                    updated_at = EXCLUDED.updated_at,
+                    is_active = EXCLUDED.is_active
             """, (
                 DEFAULT_CONFIG["client_name"],
                 DEFAULT_CONFIG["client_tagline"],

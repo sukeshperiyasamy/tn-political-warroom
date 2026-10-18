@@ -6,7 +6,7 @@ from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
-from backend.app.data.migrations import DB_PATH
+from backend.app.data.db import DB_PATH
 from backend.app.services.trend_engine import trend_engine
 from backend.app.services.source_health import source_health_service
 from backend.app.services.deduplicator import story_clustering_service

@@ -27,6 +27,29 @@ async def lifespan(app: FastAPI):
         print("Startup: SQLite database migrations applied successfully.")
     except Exception as e:
         print(f"Startup: Warning running SQLite migrations: {e}")
+
+    # 3. Post-migration deterministic service initialization
+    try:
+        from .services.source_health import source_health_service
+        source_health_service.ensure_initialized()
+        print("Startup: SourceHealthService initialized successfully.")
+    except Exception as e:
+        print(f"Startup: Warning initializing SourceHealthService: {e}")
+
+    try:
+        from .services.entity_matcher import entity_matcher
+        entity_matcher.ensure_initialized()
+        print("Startup: EntityMatcher initialized successfully.")
+    except Exception as e:
+        print(f"Startup: Warning initializing EntityMatcher: {e}")
+
+    try:
+        from .services.source_registry import source_registry
+        source_registry.ensure_initialized()
+        print("Startup: SourceRegistry initialized successfully.")
+    except Exception as e:
+        print(f"Startup: Warning initializing SourceRegistry: {e}")
+
     yield
 
 app = FastAPI(

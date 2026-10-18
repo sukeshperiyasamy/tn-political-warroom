@@ -124,8 +124,14 @@ DEFAULT_SOURCES = [
 class SourceRegistry:
     def __init__(self, db_path: str = DB_PATH):
         self.db_path = db_path
+        self._initialized = False
+
+    def ensure_initialized(self):
+        if self._initialized:
+            return
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         self.init_db()
+        self._initialized = True
 
     def get_connection(self) -> sqlite3.Connection:
         conn = sqlite3.connect(self.db_path)
