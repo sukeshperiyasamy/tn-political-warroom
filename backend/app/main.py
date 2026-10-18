@@ -10,14 +10,23 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Ensure data directory and SQLite database tables exist
+    # 1. Apply Neon PostgreSQL migrations if DATABASE_URL is configured
+    if os.getenv("DATABASE_URL"):
+        try:
+            from .data.neon_migrations import migrate_neon
+            migrate_neon()
+            print("Startup: Neon PostgreSQL migrations applied successfully.")
+        except Exception as e:
+            print(f"Startup: Warning running Neon migrations: {e}")
+
+    # 2. Ensure data directory and SQLite database tables exist
     try:
         from .data.migrations import run_migrations, DB_PATH
         os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
         run_migrations(DB_PATH)
-        print("Startup: Database migrations applied successfully.")
+        print("Startup: SQLite database migrations applied successfully.")
     except Exception as e:
-        print(f"Startup: Warning running migrations: {e}")
+        print(f"Startup: Warning running SQLite migrations: {e}")
     yield
 
 app = FastAPI(
@@ -50,6 +59,22 @@ app.include_router(client_config.router)
 def health_check():
     db_healthy = False
     journal_mode = "unknown"
+    neon_connected = False
+    database_url = os.getenv("DATABASE_URL")
+
+    # 1. Check Neon PostgreSQL if DATABASE_URL configured
+    if database_url:
+        try:
+            import psycopg
+            with psycopg.connect(database_url, connect_timeout=3) as conn:
+                with conn.cursor() as cur:
+                    cur.execute("SELECT 1;")
+                    neon_connected = True
+                    db_healthy = True
+        except Exception as e:
+            neon_connected = False
+
+    # 2. Check local SQLite
     try:
         with sqlite3.connect(DB_PATH, timeout=2.0) as conn:
             conn.execute("SELECT 1")
@@ -58,19 +83,24 @@ def health_check():
             row = cursor.fetchone()
             if row:
                 journal_mode = str(row[0]).lower()
-            db_healthy = True
+            if not database_url:
+                db_healthy = True
     except Exception:
-        db_healthy = False
+        if not database_url:
+            db_healthy = False
 
     return {
         "status": "healthy" if db_healthy else "degraded",
         "service": "tn-political-warroom-backend",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "database_connected": db_healthy,
+        "database_engine": "neon_postgres" if neon_connected else "sqlite_wal",
         "journal_mode": journal_mode,
+        "neon_connected": neon_connected,
+        "neon_serverless": neon_connected,
         "capabilities": [
+            "neon_serverless_postgres" if neon_connected else "sqlite_wal_registry",
             "live_rss_ingestion",
-            "sqlite_registry",
             "tamil_nlp_engine",
             "multi_source_social_intelligence",
             "client_workspace_configuration",
