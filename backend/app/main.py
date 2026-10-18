@@ -5,13 +5,15 @@ from .routers import news, metrics, intelligence, cards, sources, social_intelli
 from datetime import datetime, timezone
 import sqlite3
 from .data.migrations import DB_PATH
+from .data.db import get_database_url
 
 from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # 1. Apply Neon PostgreSQL migrations if DATABASE_URL is configured
-    if os.getenv("DATABASE_URL"):
+    db_url = get_database_url()
+    if db_url:
         try:
             from .data.neon_migrations import migrate_neon
             migrate_neon()
@@ -84,7 +86,7 @@ def health_check():
     journal_mode = "unknown"
     neon_connected = False
     neon_error = None
-    database_url = os.getenv("DATABASE_URL")
+    database_url = get_database_url()
 
     # 1. Check Neon PostgreSQL if DATABASE_URL configured
     if database_url:

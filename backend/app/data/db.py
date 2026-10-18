@@ -13,13 +13,32 @@ DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "warr
 
 
 def get_database_url() -> Optional[str]:
-    """Retrieves the active PostgreSQL connection URL if configured."""
-    return os.getenv("DIRECT_URL") or os.getenv("DATABASE_URL")
+    """Retrieves the active PostgreSQL connection URL if configured, stripping rogue newlines or spaces."""
+    raw = os.getenv("DIRECT_URL") or os.getenv("DATABASE_URL")
+    if not raw:
+        return None
+    # Strip accidental newlines, spaces, or tabs often introduced by copy-pasting in UI dashboards
+    cleaned = "".join(raw.split()).strip()
+    return cleaned if cleaned else None
 
+
+_pg_reachable: Optional[bool] = None
 
 def is_postgres() -> bool:
-    """Returns True if the backend is configured to use Neon PostgreSQL."""
-    return bool(get_database_url())
+    """Returns True if the backend is configured and able to connect to Neon PostgreSQL."""
+    db_url = get_database_url()
+    if not db_url:
+        return False
+    global _pg_reachable
+    if _pg_reachable is True:
+        return True
+    try:
+        import psycopg
+        with psycopg.connect(db_url, connect_timeout=5) as conn:
+            _pg_reachable = True
+            return True
+    except Exception:
+        return False
 
 
 class DBRow(dict):

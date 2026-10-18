@@ -307,7 +307,8 @@ ALTER TABLE ingestion_logs ALTER COLUMN id SET DEFAULT gen_random_uuid()::text;
 """
 
 def migrate_neon():
-    db_url = os.getenv("DIRECT_URL") or os.getenv("DATABASE_URL")
+    from .db import get_database_url
+    db_url = get_database_url()
     if not db_url:
         print("DATABASE_URL not found in environment.")
         return False
