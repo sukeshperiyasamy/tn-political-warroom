@@ -225,6 +225,85 @@ CREATE TABLE IF NOT EXISTS client_configuration (
     updated_at TEXT NOT NULL,
     is_active INTEGER NOT NULL DEFAULT 1
 );
+
+-- 13. Article Editorial Versions & Final Output
+CREATE TABLE IF NOT EXISTS article_editorial_versions (
+    article_id TEXT PRIMARY KEY,
+    version_1_summary TEXT NOT NULL,
+    version_2_detailed TEXT NOT NULL,
+    version_3_social TEXT NOT NULL,
+    final_version_type TEXT,
+    final_version_content TEXT,
+    is_finalized INTEGER DEFAULT 0,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+"""
+
+ALTER_COLUMNS_SQL = """
+ALTER TABLE sources ADD COLUMN IF NOT EXISTS source_type TEXT DEFAULT 'NEWS_MEDIA';
+ALTER TABLE sources ADD COLUMN IF NOT EXISTS platform TEXT DEFAULT 'web';
+ALTER TABLE sources ADD COLUMN IF NOT EXISTS created_at TEXT;
+ALTER TABLE sources ADD COLUMN IF NOT EXISTS current_article_count INTEGER DEFAULT 0;
+ALTER TABLE sources ADD COLUMN IF NOT EXISTS total_articles_fetched INTEGER DEFAULT 0;
+ALTER TABLE sources ADD COLUMN IF NOT EXISTS next_scheduled_fetch_at TEXT;
+
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS source_id TEXT;
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS source_name TEXT;
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS source_url TEXT;
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS canonical_url TEXT;
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS publisher_guid TEXT;
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS tamil_variations TEXT;
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS engagement_estimated TEXT;
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS content_hash TEXT;
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS processing_hash TEXT;
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS processing_status TEXT DEFAULT 'processed';
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS processed_at TEXT;
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS processing_attempts INTEGER DEFAULT 1;
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS last_seen_at TEXT;
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS first_seen_at TEXT;
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS source_type TEXT DEFAULT 'NEWS_MEDIA';
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS platform TEXT DEFAULT 'web';
+ALTER TABLE articles ALTER COLUMN url DROP NOT NULL;
+ALTER TABLE articles ALTER COLUMN source DROP NOT NULL;
+
+ALTER TABLE social_posts ADD COLUMN IF NOT EXISTS source_type TEXT DEFAULT 'SOCIAL_MEDIA';
+
+ALTER TABLE intelligence_briefs ALTER COLUMN brief_date DROP NOT NULL;
+ALTER TABLE intelligence_briefs ALTER COLUMN reporting_window_start DROP NOT NULL;
+ALTER TABLE intelligence_briefs ALTER COLUMN reporting_window_end DROP NOT NULL;
+ALTER TABLE intelligence_briefs ALTER COLUMN executive_summary_en DROP NOT NULL;
+ALTER TABLE intelligence_briefs ALTER COLUMN executive_summary_ta DROP NOT NULL;
+ALTER TABLE intelligence_briefs ALTER COLUMN top_topics_json DROP NOT NULL;
+ALTER TABLE intelligence_briefs ALTER COLUMN party_coverage_json DROP NOT NULL;
+ALTER TABLE intelligence_briefs ALTER COLUMN leader_coverage_json DROP NOT NULL;
+ALTER TABLE intelligence_briefs ALTER COLUMN sentiment_distribution_json DROP NOT NULL;
+ALTER TABLE intelligence_briefs ALTER COLUMN cross_platform_narratives_json DROP NOT NULL;
+ALTER TABLE intelligence_briefs ALTER COLUMN sources_monitored_count DROP NOT NULL;
+ALTER TABLE intelligence_briefs ALTER COLUMN total_articles_analyzed DROP NOT NULL;
+
+ALTER TABLE intelligence_briefs ADD COLUMN IF NOT EXISTS data_status TEXT;
+ALTER TABLE intelligence_briefs ADD COLUMN IF NOT EXISTS period TEXT;
+ALTER TABLE intelligence_briefs ADD COLUMN IF NOT EXISTS window_start TEXT;
+ALTER TABLE intelligence_briefs ADD COLUMN IF NOT EXISTS window_end TEXT;
+ALTER TABLE intelligence_briefs ADD COLUMN IF NOT EXISTS evidence_hash TEXT;
+ALTER TABLE intelligence_briefs ADD COLUMN IF NOT EXISTS config_version TEXT;
+ALTER TABLE intelligence_briefs ADD COLUMN IF NOT EXISTS sample_size INTEGER;
+ALTER TABLE intelligence_briefs ADD COLUMN IF NOT EXISTS publisher_count INTEGER;
+ALTER TABLE intelligence_briefs ADD COLUMN IF NOT EXISTS brief_english TEXT;
+ALTER TABLE intelligence_briefs ADD COLUMN IF NOT EXISTS brief_tamil TEXT;
+ALTER TABLE intelligence_briefs ADD COLUMN IF NOT EXISTS key_developments TEXT;
+ALTER TABLE intelligence_briefs ADD COLUMN IF NOT EXISTS emerging_topics TEXT;
+ALTER TABLE intelligence_briefs ADD COLUMN IF NOT EXISTS party_insights TEXT;
+ALTER TABLE intelligence_briefs ADD COLUMN IF NOT EXISTS supporting_article_ids TEXT;
+ALTER TABLE intelligence_briefs ADD COLUMN IF NOT EXISTS evidence_articles TEXT;
+ALTER TABLE intelligence_briefs ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'sufficient_data';
+
+ALTER TABLE ingestion_logs ADD COLUMN IF NOT EXISTS source_name TEXT;
+ALTER TABLE ingestion_logs ADD COLUMN IF NOT EXISTS http_status INTEGER DEFAULT 200;
+ALTER TABLE ingestion_logs ADD COLUMN IF NOT EXISTS new_items_added INTEGER DEFAULT 0;
+ALTER TABLE ingestion_logs ADD COLUMN IF NOT EXISTS skipped_duplicates INTEGER DEFAULT 0;
+ALTER TABLE ingestion_logs ALTER COLUMN id SET DEFAULT gen_random_uuid()::text;
 """
 
 def migrate_neon():
@@ -237,11 +316,92 @@ def migrate_neon():
     with psycopg.connect(db_url) as conn:
         with conn.cursor() as cur:
             cur.execute(SCHEMA_SQL)
+            cur.execute(ALTER_COLUMNS_SQL)
             conn.commit()
+
+            # Seed any missing default sources and update source_type & platform
+            try:
+                from backend.app.services.source_registry import DEFAULT_SOURCES
+                from datetime import datetime
+                now_str = datetime.now().isoformat()
+                for src in DEFAULT_SOURCES:
+                    cur.execute("""
+                        INSERT INTO sources (
+                            id, name, tamil_name, category, source_type, platform,
+                            url, rss_url, language, is_enabled, health_status,
+                            last_fetched_at, total_articles_fetched, created_at
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (id) DO UPDATE SET
+                            source_type = EXCLUDED.source_type,
+                            platform = EXCLUDED.platform,
+                            category = EXCLUDED.category
+                    """, (
+                        src["id"], src["name"], src["tamil_name"], src["category"],
+                        src.get("source_type", "NEWS_MEDIA"), src.get("platform", "web"),
+                        src["url"], src["rss_url"], src.get("language", "ta"),
+                        src.get("is_enabled", 1), src.get("health_status", "healthy"),
+                        src.get("last_fetched_at"), src.get("total_articles_fetched", 0),
+                        now_str
+                    ))
+                conn.commit()
+                print(f"Neon: Seeded / verified {len(DEFAULT_SOURCES)} default sources.")
+            except Exception as ex:
+                print(f"Neon: Note seeding sources: {ex}")
+
+            # Check if articles table is empty; if so, populate from SQLite warroom.db if available
+            cur.execute("SELECT COUNT(*) FROM articles")
+            art_count = cur.fetchone()[0]
+            if art_count == 0:
+                try:
+                    import sqlite3
+                    sqlite_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "warroom.db")
+                    if os.path.exists(sqlite_path):
+                        sl_conn = sqlite3.connect(sqlite_path)
+                        sl_conn.row_factory = sqlite3.Row
+                        sl_cur = sl_conn.cursor()
+                        sl_cur.execute("""
+                            SELECT id, source_id, source_name, title, tamil_title, summary,
+                                   tamil_summary, source_url, canonical_url, publisher_guid,
+                                   published_at, party_codes, leader_names, sentiment,
+                                   sentiment_score, topics, tamil_variations, engagement_estimated,
+                                   data_status, analysis_provider, first_seen_at
+                            FROM articles
+                        """)
+                        rows = sl_cur.fetchall()
+                        for r in rows:
+                            cur.execute("""
+                                INSERT INTO articles (
+                                    id, title, tamil_title, summary, tamil_summary, url,
+                                    source, source_id, source_name, source_url, canonical_url,
+                                    publisher_guid, published_at, party_codes, leader_names,
+                                    sentiment, sentiment_score, topics, tamil_variations,
+                                    engagement_estimated, data_status, analysis_provider,
+                                    first_seen_at, source_type, platform, collection_mode
+                                ) VALUES (
+                                    %s, %s, %s, %s, %s, %s,
+                                    %s, %s, %s, %s, %s,
+                                    %s, %s, %s, %s,
+                                    %s, %s, %s, %s,
+                                    %s, %s, %s,
+                                    %s, %s, %s, %s
+                                ) ON CONFLICT (id) DO NOTHING
+                            """, (
+                                r["id"], r["title"], r["tamil_title"], r["summary"], r["tamil_summary"], r["source_url"],
+                                r["source_name"], r["source_id"], r["source_name"], r["source_url"], r["canonical_url"],
+                                r["publisher_guid"], r["published_at"], r["party_codes"], r["leader_names"],
+                                r["sentiment"], r["sentiment_score"], r["topics"], r["tamil_variations"],
+                                r["engagement_estimated"], r["data_status"], r["analysis_provider"],
+                                r["first_seen_at"], "NEWS_MEDIA", "web", "LIVE"
+                            ))
+                        conn.commit()
+                        print(f"Neon: Synchronized {len(rows)} articles from local database.")
+                        sl_conn.close()
+                except Exception as ex:
+                    print(f"Neon: Note syncing articles from SQLite: {ex}")
 
             cur.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name;")
             tables = [r[0] for r in cur.fetchall()]
-            print(f"Neon migration successful! Created {len(tables)} tables:")
+            print(f"Neon migration successful! Total {len(tables)} tables present:")
             for t in tables:
                 print(f"  [+] {t}")
     return True

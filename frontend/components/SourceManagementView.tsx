@@ -24,6 +24,11 @@ import {
   Building,
   Palette,
   Sparkles,
+  TrendingUp,
+  Flame,
+  Globe,
+  UserCheck,
+  Tv,
 } from "lucide-react";
 import {
   NewsSource,
@@ -31,6 +36,7 @@ import {
   IngestionLog,
   IngestResponse,
   ClientConfig,
+  TrendingTopic,
 } from "../types/political";
 import {
   fetchSources,
@@ -43,6 +49,7 @@ import {
   fetchLogs,
   updateClientConfig,
   resetClientConfig,
+  fetchTrendingPulse,
 } from "../lib/api";
 
 function formatTimestamp(isoString?: string | null): string {
@@ -210,6 +217,8 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
 
   const [sources, setSources] = useState<NewsSource[]>([]);
   const [logs, setLogs] = useState<IngestionLog[]>([]);
+  const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([]);
+  const [sourceGroupTab, setSourceGroupTab] = useState<"all" | "news_media" | "influencers">("all");
   const [loading, setLoading] = useState<boolean>(true);
   const [ingesting, setIngesting] = useState<boolean>(false);
   const [ingestingSourceId, setIngestingSourceId] = useState<string | null>(null);
@@ -221,6 +230,8 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
   const [newName, setNewName] = useState<string>("");
   const [newTamilName, setNewTamilName] = useState<string>("");
   const [newCategory, setNewCategory] = useState<string>("Tamil News Portal");
+  const [newSourceType, setNewSourceType] = useState<string>("NEWS_MEDIA");
+  const [newPlatform, setNewPlatform] = useState<string>("web");
   const [newUrl, setNewUrl] = useState<string>("");
   const [newRssUrl, setNewRssUrl] = useState<string>("");
   const [newLanguage, setNewLanguage] = useState<string>("ta");
@@ -240,9 +251,16 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
   const loadData = async () => {
     setLoading(true);
     try {
-      const [srcList, logList] = await Promise.all([fetchSources(), fetchLogs(30)]);
+      const [srcList, logList, trendRes] = await Promise.all([
+        fetchSources(),
+        fetchLogs(30),
+        fetchTrendingPulse("24h", "live", 12).catch(() => null),
+      ]);
       setSources(srcList);
       setLogs(logList);
+      if (trendRes && trendRes.trending_topics) {
+        setTrendingTopics(trendRes.trending_topics);
+      }
     } catch (err) {
       console.error("Failed to load source management data:", err);
     } finally {
@@ -363,6 +381,8 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
         name: newName.trim(),
         tamil_name: newTamilName.trim() || newName.trim(),
         category: newCategory,
+        source_type: newSourceType,
+        platform: newPlatform,
         url: newUrl.trim(),
         rss_url: newRssUrl.trim(),
         language: newLanguage,
@@ -375,12 +395,41 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
       setNewTamilName("");
       setNewUrl("");
       setNewRssUrl("");
+      setNewSourceType("NEWS_MEDIA");
+      setNewPlatform("web");
       setFormTestResult(null);
       setIngestStatus(`✓ Added ${created.name}. You can now run ingestion on it.`);
     } catch (err: any) {
       setFormError(err.message || "Failed to register new source");
     }
   };
+
+  const isInfluencerSource = (source: NewsSource): boolean => {
+    if (source.source_type === "INFLUENCER" || source.source_type === "SOCIAL_MEDIA") return true;
+    const cat = (source.category || "").toLowerCase();
+    return (
+      cat.includes("influencer") ||
+      cat.includes("commentator") ||
+      cat.includes("commentary") ||
+      cat.includes("investigative") ||
+      source.id === "savukku_media" ||
+      source.id === "maridhas_official" ||
+      source.id === "redpix_24x7" ||
+      source.id === "aadhan_tamil" ||
+      source.id === "gunasekaran_news" ||
+      source.id === "nakkheeran_tv"
+    );
+  };
+
+  const newsMediaSources = sources.filter((s) => !isInfluencerSource(s));
+  const influencerSources = sources.filter((s) => isInfluencerSource(s));
+
+  const filteredSources =
+    sourceGroupTab === "news_media"
+      ? newsMediaSources
+      : sourceGroupTab === "influencers"
+      ? influencerSources
+      : sources;
 
   const activeSourcesCount = sources.filter((s) => s.is_enabled).length;
   const totalArticles = sources.reduce(
@@ -928,16 +977,51 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                   <option value="Print Daily">Print Daily</option>
                   <option value="International Bureau">International Bureau</option>
                   <option value="Digital Independent">Digital Independent</option>
+                  <option value="Political Influencer">Political Influencer</option>
+                  <option value="Political Commentator">Political Commentator</option>
+                  <option value="Investigative Journalism">Investigative Journalism</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                  Main Website URL
+                  Source Classification
+                </label>
+                <select
+                  value={newSourceType}
+                  onChange={(e) => setNewSourceType(e.target.value)}
+                  className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-1.5 text-xs text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white cursor-pointer"
+                >
+                  <option value="NEWS_MEDIA">Group A: News Media (TV, Print, Portals)</option>
+                  <option value="INFLUENCER">Group B: Influencer / Commentator</option>
+                  <option value="SOCIAL_MEDIA">Group B: Social Media Channel</option>
+                  <option value="OTHER">Other Intelligence Source</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  Delivery Platform
+                </label>
+                <select
+                  value={newPlatform}
+                  onChange={(e) => setNewPlatform(e.target.value)}
+                  className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-1.5 text-xs text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white cursor-pointer"
+                >
+                  <option value="web">Web (RSS / Atom XML)</option>
+                  <option value="youtube">YouTube (Channel RSS)</option>
+                  <option value="x">X / Twitter</option>
+                  <option value="facebook">Facebook Public</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  Main Website / Profile URL
                 </label>
                 <input
                   type="url"
-                  placeholder="https://www.dailythanthi.com"
+                  placeholder="https://www.dailythanthi.com or channel link"
                   value={newUrl}
                   onChange={(e) => setNewUrl(e.target.value)}
                   className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-1.5 text-xs text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white"
@@ -1024,191 +1108,477 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
         </div>
       )}
 
-      {/* Primary Sources Management Table */}
-      <div className="bg-white border border-[#E8E8E2] rounded-lg overflow-hidden shadow-2xs">
-        <div className="p-4 sm:p-5 border-b border-[#F0F0EB] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 flex items-center gap-2">
-              <Server className="w-3.5 h-3.5 text-zinc-700" />
-              <span>Registered Tamil Media Feeds</span>
-            </h3>
-            <p className="text-xs text-zinc-500 mt-0.5">
-              Live status, HTTP 304 validation, timestamps, and deduplication statistics
-            </p>
-          </div>
-
+      {/* Source Classification Filter Tabs */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#F4F4F0] p-1.5 rounded-lg border border-[#E8E8E2]">
+        <div className="flex items-center gap-1.5">
           <button
-            onClick={loadData}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium bg-[#F9F9F7] hover:bg-zinc-100 border border-[#E2E2DC] text-zinc-700 cursor-pointer"
+            onClick={() => setSourceGroupTab("all")}
+            className={`px-3 py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
+              sourceGroupTab === "all"
+                ? "bg-zinc-900 text-white shadow-2xs"
+                : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200"
+            }`}
           >
-            <RefreshCw className="w-3 h-3" />
-            <span>Refresh</span>
+            All Sources ({sources.length})
+          </button>
+          <button
+            onClick={() => setSourceGroupTab("news_media")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
+              sourceGroupTab === "news_media"
+                ? "bg-blue-600 text-white shadow-2xs"
+                : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200"
+            }`}
+          >
+            <Tv className="w-3.5 h-3.5" />
+            <span>Group A: News Media ({newsMediaSources.length})</span>
+          </button>
+          <button
+            onClick={() => setSourceGroupTab("influencers")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
+              sourceGroupTab === "influencers"
+                ? "bg-purple-600 text-white shadow-2xs"
+                : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200"
+            }`}
+          >
+            <UserCheck className="w-3.5 h-3.5" />
+            <span>Group B: Influencers & Creators ({influencerSources.length})</span>
           </button>
         </div>
 
-        {/* Sources List Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-[#F4F4F0] text-zinc-600 font-mono border-b border-[#E8E8E2] uppercase text-[10px] tracking-wider">
-              <tr>
-                <th className="py-2.5 px-4">Publisher & Feed URL</th>
-                <th className="py-2.5 px-3">Fetch Health</th>
-                <th className="py-2.5 px-3">Collection Timestamps</th>
-                <th className="py-2.5 px-3">Article Processing Health</th>
-                <th className="py-2.5 px-3">Active</th>
-                <th className="py-2.5 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#F0F0EB] font-medium">
-              {sources.map((source) => (
-                <tr key={source.id} className="hover:bg-[#F9F9F7] transition-colors">
-                  {/* Publisher & Endpoint */}
-                  <td className="py-3 px-4">
-                    <div className="flex items-start gap-2.5">
-                      <div className="w-7 h-7 rounded bg-[#F4F4F0] text-zinc-800 border border-[#E2E2DC] flex items-center justify-center font-bold text-[10px] font-mono shrink-0 mt-0.5">
-                        {source.name.slice(0, 2)}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="font-bold text-zinc-900 flex items-center gap-1.5">
-                          <span>{source.name}</span>
-                          <span className="px-1 py-0.2 rounded text-[9px] bg-zinc-100 text-zinc-600 font-mono">
-                            {source.language.toUpperCase()}
+        <button
+          onClick={loadData}
+          className="flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium bg-white hover:bg-zinc-100 border border-[#E2E2DC] text-zinc-700 cursor-pointer shadow-2xs"
+        >
+          <RefreshCw className="w-3 h-3" />
+          <span>Refresh All</span>
+        </button>
+      </div>
+
+      {/* Main Grid: Left Sources (8 cols) + Right Trending Now (4 cols) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Group A & Group B Tables */}
+        <div className="lg:col-span-8 space-y-6 min-w-0">
+          {/* GROUP A: News Media Publishers */}
+          {(sourceGroupTab === "all" || sourceGroupTab === "news_media") && (
+            <div className="bg-white border border-[#E8E8E2] rounded-lg overflow-hidden shadow-2xs">
+              <div className="p-4 sm:p-5 border-b border-[#F0F0EB] flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-[#FAFBFD]">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="p-1 rounded bg-blue-100 text-blue-700">
+                      <Tv className="w-3.5 h-3.5" />
+                    </span>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 font-mono">
+                      Group A: News Media Publishers ({newsMediaSources.length})
+                    </h3>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                      NEWS_MEDIA
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-500 mt-0.5">
+                    Television channels, newspaper websites, and verified Tamil digital news portals
+                  </p>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#F4F4F0] text-zinc-600 font-mono border-b border-[#E8E8E2] uppercase text-[10px] tracking-wider">
+                    <tr>
+                      <th className="py-2.5 px-4">Publisher & Feed URL</th>
+                      <th className="py-2.5 px-3">Fetch Health</th>
+                      <th className="py-2.5 px-3">Timestamps</th>
+                      <th className="py-2.5 px-3">Articles</th>
+                      <th className="py-2.5 px-3">Active</th>
+                      <th className="py-2.5 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#F0F0EB] font-medium">
+                    {newsMediaSources.map((source) => (
+                      <tr key={source.id} className="hover:bg-[#F9F9F7] transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="flex items-start gap-2.5">
+                            <div className="w-7 h-7 rounded bg-blue-50 text-blue-900 border border-blue-200 flex items-center justify-center font-bold text-[10px] font-mono shrink-0 mt-0.5">
+                              {source.name.slice(0, 2)}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-bold text-zinc-900 flex items-center gap-1.5 flex-wrap">
+                                <span>{source.name}</span>
+                                <span className="px-1 py-0.2 rounded text-[9px] bg-blue-50 text-blue-700 font-mono border border-blue-100">
+                                  {source.category || "News Media"}
+                                </span>
+                                <span className="px-1 py-0.2 rounded text-[9px] bg-zinc-100 text-zinc-600 font-mono uppercase">
+                                  {source.platform || "web"}
+                                </span>
+                              </div>
+                              <div className="text-[11px] text-zinc-500 font-tamil">{source.tamil_name}</div>
+                              <div className="flex items-center gap-1.5 mt-1 text-[11px] text-zinc-500 font-mono">
+                                <span className="truncate max-w-[180px]" title={source.rss_url}>
+                                  {source.rss_url}
+                                </span>
+                                <button
+                                  onClick={() => handleCopyUrl(source.rss_url)}
+                                  className="p-0.5 text-zinc-400 hover:text-zinc-700 cursor-pointer"
+                                  title="Copy RSS URL"
+                                >
+                                  {copiedUrl === source.rss_url ? (
+                                    <Check className="w-3 h-3 text-emerald-700" />
+                                  ) : (
+                                    <Copy className="w-3 h-3" />
+                                  )}
+                                </button>
+                                <a
+                                  href={source.rss_url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="p-0.5 text-zinc-400 hover:text-zinc-800"
+                                  title="Open XML stream"
+                                >
+                                  <ExternalLink className="w-3 h-3" />
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="py-3 px-3 whitespace-nowrap">
+                          <div>{getFetchStatusBadge(source)}</div>
+                          {source.last_fetch_error ? (
+                            <div className="text-[10px] text-rose-700 max-w-[140px] truncate mt-1" title={source.last_fetch_error}>
+                              {source.last_fetch_error}
+                            </div>
+                          ) : (
+                            <div className="text-[10px] text-zinc-500 mt-1 font-mono">15m interval</div>
+                          )}
+                        </td>
+
+                        <td className="py-3 px-3 whitespace-nowrap font-mono text-[10px]">
+                          <div className="space-y-0.5 text-zinc-600">
+                            <div><span className="text-zinc-400">Succ:</span> {formatTimestamp(source.last_successful_fetch_at || source.last_fetched_at)}</div>
+                            <div><span className="text-zinc-400">Pub:</span> <span className="text-zinc-900 font-semibold">{formatTimestamp(source.last_publication_at)}</span></div>
+                          </div>
+                        </td>
+
+                        <td className="py-3 px-3 whitespace-nowrap font-mono text-[11px]">
+                          <span className="font-bold text-zinc-900">
+                            {source.current_article_count || source.total_articles_fetched || 0}
                           </span>
-                        </div>
-                        <div className="text-[11px] text-zinc-500 font-tamil">{source.tamil_name}</div>
-                        
-                        {/* URL info */}
-                        <div className="flex items-center gap-1.5 mt-1 text-[11px] text-zinc-500 font-mono">
-                          <span className="truncate max-w-[220px]" title={source.rss_url}>
-                            {source.rss_url}
-                          </span>
+                          <div className="text-zinc-400 text-[10px]">
+                            dup: {source.skipped_duplicates_count || 0}
+                          </div>
+                        </td>
+
+                        <td className="py-3 px-3 whitespace-nowrap">
                           <button
-                            onClick={() => handleCopyUrl(source.rss_url)}
-                            className="p-0.5 text-zinc-400 hover:text-zinc-700 cursor-pointer"
-                            title="Copy RSS URL"
+                            role="switch"
+                            aria-checked={source.is_enabled}
+                            onClick={() => handleToggle(source.id)}
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-pointer ${
+                              source.is_enabled ? "bg-zinc-900" : "bg-zinc-300"
+                            }`}
+                            title={source.is_enabled ? "Active" : "Paused"}
                           >
-                            {copiedUrl === source.rss_url ? (
-                              <Check className="w-3 h-3 text-emerald-700" />
-                            ) : (
-                              <Copy className="w-3 h-3" />
-                            )}
+                            <span
+                              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                                source.is_enabled ? "translate-x-4.5" : "translate-x-0.5"
+                              }`}
+                            />
                           </button>
-                          <a
-                            href={source.rss_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="p-0.5 text-zinc-400 hover:text-zinc-800"
-                            title="Open XML stream"
+                        </td>
+
+                        <td className="py-3 px-4 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => handleTestSource(source)}
+                              disabled={testingSourceId === source.id}
+                              className="px-2 py-1 rounded text-xs font-semibold bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-700 transition-colors cursor-pointer"
+                            >
+                              {testingSourceId === source.id ? "Probing..." : "Test"}
+                            </button>
+                            <button
+                              onClick={() => handleIngestSingle(source)}
+                              disabled={ingestingSourceId === source.id || !source.is_enabled}
+                              className="px-2 py-1 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white transition-colors cursor-pointer disabled:opacity-40"
+                            >
+                              {ingestingSourceId === source.id ? (
+                                <RefreshCw className="w-3 h-3 animate-spin" />
+                              ) : (
+                                "Ingest"
+                              )}
+                            </button>
+                            <button
+                              onClick={() => handleDelete(source.id, source.name)}
+                              className="p-1 rounded text-zinc-400 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* GROUP B: Influencers & Social Media Creators */}
+          {(sourceGroupTab === "all" || sourceGroupTab === "influencers") && (
+            <div className="bg-white border border-[#E8E8E2] rounded-lg overflow-hidden shadow-2xs">
+              <div className="p-4 sm:p-5 border-b border-[#F0F0EB] flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-[#FBF9FD]">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="p-1 rounded bg-purple-100 text-purple-700">
+                      <UserCheck className="w-3.5 h-3.5" />
+                    </span>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 font-mono">
+                      Group B: Influencers & Political Creators ({influencerSources.length})
+                    </h3>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-50 text-purple-800 border border-purple-200">
+                      INFLUENCER / SOCIAL
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-500 mt-0.5">
+                    Political commentators, investigative analysts, and high-impact Tamil YouTube channels
+                  </p>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#F4F4F0] text-zinc-600 font-mono border-b border-[#E8E8E2] uppercase text-[10px] tracking-wider">
+                    <tr>
+                      <th className="py-2.5 px-4">Creator / Channel & Feed</th>
+                      <th className="py-2.5 px-3">Fetch Health</th>
+                      <th className="py-2.5 px-3">Timestamps</th>
+                      <th className="py-2.5 px-3">Dispatches</th>
+                      <th className="py-2.5 px-3">Active</th>
+                      <th className="py-2.5 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#F0F0EB] font-medium">
+                    {influencerSources.map((source) => (
+                      <tr key={source.id} className="hover:bg-[#F9F9F7] transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="flex items-start gap-2.5">
+                            <div className="w-7 h-7 rounded bg-purple-50 text-purple-900 border border-purple-200 flex items-center justify-center font-bold text-[10px] font-mono shrink-0 mt-0.5">
+                              {source.name.slice(0, 2)}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-bold text-zinc-900 flex items-center gap-1.5 flex-wrap">
+                                <span>{source.name}</span>
+                                <span className="px-1 py-0.2 rounded text-[9px] bg-purple-50 text-purple-700 font-mono border border-purple-100">
+                                  {source.category || "Political Influencer"}
+                                </span>
+                                <span className="px-1 py-0.2 rounded text-[9px] bg-red-50 text-red-700 font-mono border border-red-100 uppercase">
+                                  {source.platform || "youtube"}
+                                </span>
+                              </div>
+                              <div className="text-[11px] text-zinc-500 font-tamil">{source.tamil_name}</div>
+                              <div className="flex items-center gap-1.5 mt-1 text-[11px] text-zinc-500 font-mono">
+                                <span className="truncate max-w-[180px]" title={source.rss_url}>
+                                  {source.rss_url}
+                                </span>
+                                <button
+                                  onClick={() => handleCopyUrl(source.rss_url)}
+                                  className="p-0.5 text-zinc-400 hover:text-zinc-700 cursor-pointer"
+                                  title="Copy Channel RSS URL"
+                                >
+                                  {copiedUrl === source.rss_url ? (
+                                    <Check className="w-3 h-3 text-emerald-700" />
+                                  ) : (
+                                    <Copy className="w-3 h-3" />
+                                  )}
+                                </button>
+                                <a
+                                  href={source.url || source.rss_url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="p-0.5 text-zinc-400 hover:text-zinc-800"
+                                  title="Open Channel / Profile"
+                                >
+                                  <ExternalLink className="w-3 h-3" />
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="py-3 px-3 whitespace-nowrap">
+                          <div>{getFetchStatusBadge(source)}</div>
+                          {source.last_fetch_error ? (
+                            <div className="text-[10px] text-rose-700 max-w-[140px] truncate mt-1" title={source.last_fetch_error}>
+                              {source.last_fetch_error}
+                            </div>
+                          ) : (
+                            <div className="text-[10px] text-zinc-500 mt-1 font-mono">15m interval</div>
+                          )}
+                        </td>
+
+                        <td className="py-3 px-3 whitespace-nowrap font-mono text-[10px]">
+                          <div className="space-y-0.5 text-zinc-600">
+                            <div><span className="text-zinc-400">Succ:</span> {formatTimestamp(source.last_successful_fetch_at || source.last_fetched_at)}</div>
+                            <div><span className="text-zinc-400">Pub:</span> <span className="text-zinc-900 font-semibold">{formatTimestamp(source.last_publication_at)}</span></div>
+                          </div>
+                        </td>
+
+                        <td className="py-3 px-3 whitespace-nowrap font-mono text-[11px]">
+                          <span className="font-bold text-zinc-900">
+                            {source.current_article_count || source.total_articles_fetched || 0}
+                          </span>
+                          <div className="text-zinc-400 text-[10px]">
+                            dup: {source.skipped_duplicates_count || 0}
+                          </div>
+                        </td>
+
+                        <td className="py-3 px-3 whitespace-nowrap">
+                          <button
+                            role="switch"
+                            aria-checked={source.is_enabled}
+                            onClick={() => handleToggle(source.id)}
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-pointer ${
+                              source.is_enabled ? "bg-zinc-900" : "bg-zinc-300"
+                            }`}
+                            title={source.is_enabled ? "Active" : "Paused"}
                           >
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </td>
+                            <span
+                              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                                source.is_enabled ? "translate-x-4.5" : "translate-x-0.5"
+                              }`}
+                            />
+                          </button>
+                        </td>
 
-                  {/* Fetch Health & Status Badge */}
-                  <td className="py-3 px-3 whitespace-nowrap">
-                    <div>
-                      {getFetchStatusBadge(source)}
-                    </div>
-                    {source.last_fetch_error ? (
-                      <div className="text-[10px] text-rose-700 max-w-[170px] truncate mt-1" title={source.last_fetch_error}>
-                        {source.last_fetch_error}
-                      </div>
-                    ) : (
-                      <div className="text-[10px] text-zinc-600 mt-1 font-mono">15m interval</div>
-                    )}
-                  </td>
+                        <td className="py-3 px-4 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => handleTestSource(source)}
+                              disabled={testingSourceId === source.id}
+                              className="px-2 py-1 rounded text-xs font-semibold bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-700 transition-colors cursor-pointer"
+                            >
+                              {testingSourceId === source.id ? "Probing..." : "Test"}
+                            </button>
+                            <button
+                              onClick={() => handleIngestSingle(source)}
+                              disabled={ingestingSourceId === source.id || !source.is_enabled}
+                              className="px-2 py-1 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white transition-colors cursor-pointer disabled:opacity-40"
+                            >
+                              {ingestingSourceId === source.id ? (
+                                <RefreshCw className="w-3 h-3 animate-spin" />
+                              ) : (
+                                "Ingest"
+                              )}
+                            </button>
+                            <button
+                              onClick={() => handleDelete(source.id, source.name)}
+                              className="p-1 rounded text-zinc-400 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
 
-                  {/* Collection Timestamps */}
-                  <td className="py-3 px-3 whitespace-nowrap font-mono text-[11px]">
-                    <div className="space-y-0.5 text-zinc-600">
-                      <div>
-                        <span className="text-zinc-600">Attempt: </span>
-                        {formatTimestamp(source.last_fetch_attempt_at || source.last_fetched_at)}
-                      </div>
-                      <div>
-                        <span className="text-zinc-600">Success: </span>
-                        <span className="text-zinc-900 font-semibold">{formatTimestamp(source.last_successful_fetch_at || source.last_fetched_at)}</span>
-                      </div>
-                      <div>
-                        <span className="text-zinc-600">Latest Pub: </span>
-                        <span className="text-zinc-900 font-semibold">{formatTimestamp(source.last_publication_at)}</span>
-                      </div>
-                    </div>
-                  </td>
+        {/* Right Column: Trending Now Panel */}
+        <div className="lg:col-span-4 space-y-4">
+          <div className="bg-white border border-[#E8E8E2] rounded-lg p-4 sm:p-5 shadow-2xs">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F0F0EB]">
+              <div className="flex items-center gap-2">
+                <Flame className="w-4 h-4 text-amber-500 animate-pulse" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 font-mono">
+                  Trending Now in TN Politics
+                </h3>
+              </div>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-50 text-amber-900 border border-amber-200">
+                24h Real-Time
+              </span>
+            </div>
 
-                  {/* Article Processing Health */}
-                  <td className="py-3 px-3 whitespace-nowrap font-mono text-[11px]">
-                    <div>
-                      <span className="font-bold text-zinc-900">
-                        {source.current_article_count || source.total_articles_fetched || 0}
-                      </span>
-                      <span className="text-zinc-500"> total</span>
-                    </div>
-                    <div className="text-zinc-500 text-[10px]">
-                      <span>Skipped dupes: {source.skipped_duplicates_count || 0}</span>
-                    </div>
-                  </td>
+            <p className="text-[11px] text-zinc-500 mt-2 mb-3 leading-relaxed">
+              Algorithmic momentum combining News Media wire dispatches, Influencer commentary, and verified Tamil Nadu Google Trends.
+            </p>
 
-                  {/* Enabled Toggle Switch */}
-                  <td className="py-3 px-3 whitespace-nowrap">
-                    <button
-                      role="switch"
-                      aria-checked={source.is_enabled}
-                      onClick={() => handleToggle(source.id)}
-                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-pointer ${
-                        source.is_enabled ? "bg-zinc-900" : "bg-zinc-300"
-                      }`}
-                      title={source.is_enabled ? "Feed active - click to pause" : "Feed paused - click to resume"}
+            {trendingTopics.length === 0 ? (
+              <div className="p-8 text-center bg-[#F9F9F7] rounded border border-dashed border-[#E2E2DC] text-zinc-500 text-xs">
+                <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-zinc-400" />
+                <span>Aggregating real-time political momentum...</span>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {trendingTopics.slice(0, 8).map((trend, idx) => {
+                  const categories = trend.originating_categories || [trend.primary_origin || "News Media"];
+                  return (
+                    <div
+                      key={trend.id || idx}
+                      className="p-3 rounded-lg bg-[#FAFBFD] border border-[#E8EBF0] hover:border-zinc-400 transition-colors space-y-1.5"
                     >
-                      <span
-                        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                          source.is_enabled ? "translate-x-4.5" : "translate-x-0.5"
-                        }`}
-                      />
-                    </button>
-                  </td>
-
-                  {/* Action Buttons */}
-                  <td className="py-3 px-4 text-right whitespace-nowrap">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => handleTestSource(source)}
-                        disabled={testingSourceId === source.id}
-                        className="px-2 py-1 rounded text-xs font-semibold bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-700 transition-colors cursor-pointer"
-                        title="Probe feed headers and XML response"
-                      >
-                        {testingSourceId === source.id ? "Probing..." : "Test"}
-                      </button>
-
-                      <button
-                        onClick={() => handleIngestSingle(source)}
-                        disabled={ingestingSourceId === source.id || !source.is_enabled}
-                        className="px-2 py-1 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white transition-colors cursor-pointer disabled:opacity-40"
-                        title="Fetch latest articles immediately with conditional validation"
-                      >
-                        {ingestingSourceId === source.id ? (
-                          <RefreshCw className="w-3 h-3 animate-spin" />
-                        ) : (
-                          "Ingest"
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="w-5 h-5 rounded-full bg-zinc-900 text-white flex items-center justify-center font-mono text-[10px] font-bold shrink-0">
+                            #{idx + 1}
+                          </span>
+                          <span className="font-tamil font-bold text-zinc-900 text-xs leading-snug line-clamp-1">
+                            {trend.tamil_topic || trend.topic}
+                          </span>
+                        </div>
+                        {trend.is_cross_category && (
+                          <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-50 text-amber-800 border border-amber-300">
+                            ✨ Cross-Media
+                          </span>
                         )}
-                      </button>
+                      </div>
 
-                      <button
-                        onClick={() => handleDelete(source.id, source.name)}
-                        className="p-1 rounded text-zinc-400 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
-                        title="Delete source from registry"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      {trend.tamil_topic && trend.topic && (
+                        <div className="text-[11px] text-zinc-600 font-medium pl-7 line-clamp-1">
+                          {trend.topic}
+                        </div>
+                      )}
+
+                      {/* Originating Categories Badges */}
+                      <div className="flex flex-wrap items-center gap-1 pl-7 pt-0.5">
+                        {categories.map((cat) => (
+                          <span
+                            key={cat}
+                            className={`px-1.5 py-0.2 rounded text-[9px] font-mono font-bold ${
+                              cat === "Influencers" || cat === "INFLUENCER"
+                                ? "bg-purple-50 text-purple-800 border border-purple-200"
+                                : cat === "Google Trends"
+                                ? "bg-amber-50 text-amber-800 border border-amber-200"
+                                : cat === "Social Media"
+                                ? "bg-sky-50 text-sky-800 border border-sky-200"
+                                : "bg-blue-50 text-blue-800 border border-blue-200"
+                            }`}
+                          >
+                            {cat}
+                          </span>
+                        ))}
+
+                        {trend.search_volume_display ? (
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-zinc-100 text-zinc-700 border border-zinc-200 ml-auto">
+                            {trend.search_volume_display}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-mono text-zinc-500 ml-auto">
+                            Score: {Math.round(trend.trend_score || 80)}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="mt-4 pt-3 border-t border-[#F0F0EB] text-[10px] text-zinc-500 font-mono leading-relaxed">
+              Standardized weighted formula (0.40 momentum + 0.30 volume + 0.20 cross-source presence + 0.10 recency). Filtered strictly for Tamil Nadu political entities.
+            </div>
+          </div>
         </div>
       </div>
 

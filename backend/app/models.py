@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 from pydantic import BaseModel, Field
 from enum import Enum
 from datetime import datetime
@@ -7,6 +7,12 @@ class SentimentType(str, Enum):
     POSITIVE = "positive"
     NEUTRAL = "neutral"
     NEGATIVE = "negative"
+
+class SourceType(str, Enum):
+    NEWS_MEDIA = "NEWS_MEDIA"
+    INFLUENCER = "INFLUENCER"
+    SOCIAL_MEDIA = "SOCIAL_MEDIA"
+    OTHER = "OTHER"
 
 class DataStatus(str, Enum):
     SEEDED_DEMO = "seeded_demo"
@@ -19,6 +25,8 @@ class NewsSource(BaseModel):
     name: str
     tamil_name: str
     category: str
+    source_type: str = "NEWS_MEDIA"
+    platform: str = "web"
     url: str
     rss_url: str
     language: str = "ta"
@@ -47,6 +55,8 @@ class SourceCreate(BaseModel):
     name: str
     tamil_name: Optional[str] = None
     category: Optional[str] = "Digital News"
+    source_type: Optional[str] = "NEWS_MEDIA"
+    platform: Optional[str] = "web"
     url: Optional[str] = ""
     rss_url: str
     language: Optional[str] = "ta"
@@ -66,7 +76,7 @@ class SourceTestResult(BaseModel):
     error: Optional[str] = None
 
 class IngestionLog(BaseModel):
-    id: int
+    id: Union[int, str]
     source_id: str
     source_name: str
     timestamp: str
@@ -114,6 +124,9 @@ class NewsArticle(BaseModel):
     tamil_summary: str
     tamil_variations: List[TamilVariation]
     source: str
+    source_type: Optional[str] = "NEWS_MEDIA"
+    source_category: Optional[str] = "News Media"
+    platform: Optional[str] = "web"
     source_url: str
     canonical_url: Optional[str] = None
     publisher_guid: Optional[str] = None
@@ -132,6 +145,46 @@ class NewsArticle(BaseModel):
     processed_at: Optional[str] = None
     processing_attempts: Optional[int] = 1
     last_seen_at: Optional[str] = None
+
+class EditorialVersionItem(BaseModel):
+    version_type: str  # "summary" | "detailed" | "social"
+    version_label: str # "Version 1: Summarized News" | "Version 2: Detailed News" | "Version 3: Social Media / Influencer Format"
+    title: str
+    content: str
+    hook: Optional[str] = None
+    attribution: str
+    word_count: int
+    tags: List[str] = []
+    status_label: Optional[str] = "Confirmed Facts"
+
+class ArticleEditorialVersionsResponse(BaseModel):
+    article_id: str
+    original_title: str
+    original_tamil_title: Optional[str] = None
+    original_summary: str
+    source_name: str
+    source_type: str
+    source_category: str
+    platform: str
+    source_url: str
+    published_at: str
+    party_codes: List[str] = []
+    leader_names: List[str] = []
+    topics: List[str] = []
+    version_1_summary: EditorialVersionItem
+    version_2_detailed: EditorialVersionItem
+    version_3_social: EditorialVersionItem
+    final_version_type: Optional[str] = None  # "summary" | "detailed" | "social"
+    final_version_content: Optional[str] = None
+    is_finalized: bool = False
+    updated_at: Optional[str] = None
+
+class EditorialFinalizeRequest(BaseModel):
+    final_version_type: str # "summary" | "detailed" | "social"
+    final_version_content: str
+    version_1_summary_content: Optional[str] = None
+    version_2_detailed_content: Optional[str] = None
+    version_3_social_content: Optional[str] = None
 
 class FilterParams(BaseModel):
     q: Optional[str] = None

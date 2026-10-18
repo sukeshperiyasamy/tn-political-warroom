@@ -32,6 +32,9 @@ export interface NewsArticle {
   tamil_summary: string;
   tamil_variations: TamilVariation[];
   source: string;
+  source_type?: string;
+  source_category?: string;
+  platform?: string;
   source_url: string;
   published_at: string;
   party_codes: string[];
@@ -151,6 +154,8 @@ export interface NewsSource {
   name: string;
   tamil_name: string;
   category: string;
+  source_type?: string;
+  platform?: string;
   url: string;
   rss_url: string;
   language: string;
@@ -492,7 +497,12 @@ export interface MethodologyPanel {
 }
 
 export interface TrendingTopic {
+  id?: string;
   topic: string;
+  tamil_topic?: string;
+  search_volume_display?: string;
+  post_count?: number;
+  article_count?: number;
   current_volume: number;
   prior_volume: number;
   volume_change: number;
@@ -509,6 +519,9 @@ export interface TrendingTopic {
   related_parties: string[];
   related_leaders: string[];
   sample_titles: string[];
+  originating_categories?: string[];
+  primary_origin?: string;
+  is_cross_category?: boolean;
   sub_scores: {
     engagement_growth: number;
     volume_growth: number;
@@ -653,3 +666,47 @@ export interface ScenarioBriefResponse {
   narrative_cluster?: any;
   disclaimer: string;
 }
+
+export interface EditorialVersionItem {
+  version_type: "summary" | "detailed" | "social" | string;
+  version_label: string;
+  title: string;
+  content: string;
+  hook?: string | null;
+  attribution: string;
+  word_count: number;
+  tags: string[];
+  status_label?: string;
+}
+
+export interface ArticleEditorialVersionsResponse {
+  article_id: string;
+  original_title: string;
+  original_tamil_title?: string | null;
+  original_summary: string;
+  source_name: string;
+  source_type: string;
+  source_category: string;
+  platform: string;
+  source_url: string;
+  published_at: string;
+  party_codes: string[];
+  leader_names: string[];
+  topics: string[];
+  version_1_summary: EditorialVersionItem;
+  version_2_detailed: EditorialVersionItem;
+  version_3_social: EditorialVersionItem;
+  final_version_type?: "summary" | "detailed" | "social" | null;
+  final_version_content?: string | null;
+  is_finalized: boolean;
+  updated_at?: string | null;
+}
+
+export interface EditorialFinalizeRequest {
+  final_version_type: "summary" | "detailed" | "social";
+  final_version_content: string;
+  version_1_summary_content?: string;
+  version_2_detailed_content?: string;
+  version_3_social_content?: string;
+}
+

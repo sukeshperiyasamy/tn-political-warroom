@@ -1,6 +1,9 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import Optional, List
-from ..models import NewsArticle, FilterParams, PoliticalParty, PoliticalLeader
+from ..models import (
+    NewsArticle, FilterParams, PoliticalParty, PoliticalLeader,
+    ArticleEditorialVersionsResponse, EditorialFinalizeRequest
+)
 from ..services.news_service import news_service
 
 router = APIRouter(prefix="/api/news", tags=["news"])
@@ -44,3 +47,18 @@ def get_article(article_id: str):
     if not result:
         raise HTTPException(status_code=404, detail="Article not found")
     return result
+
+@router.get("/{article_id}/editorial-versions", response_model=ArticleEditorialVersionsResponse)
+def get_editorial_versions(article_id: str):
+    result = news_service.get_editorial_versions(article_id)
+    if not result:
+        raise HTTPException(status_code=404, detail=f"Article {article_id} not found")
+    return result
+
+@router.post("/{article_id}/editorial-final", response_model=ArticleEditorialVersionsResponse)
+def save_editorial_final(article_id: str, request: EditorialFinalizeRequest):
+    result = news_service.save_editorial_final(article_id, request)
+    if not result:
+        raise HTTPException(status_code=404, detail=f"Article {article_id} not found")
+    return result
+

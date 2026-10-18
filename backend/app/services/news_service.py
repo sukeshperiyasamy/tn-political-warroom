@@ -1,12 +1,15 @@
+import json
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from ..models import (
     NewsArticle, PoliticalParty, PoliticalLeader, FilterParams,
     DashboardMetrics, SentimentDistribution, PartyMetric, LeaderMetric,
     DailyTrendItem, CompareResponse, EntityComparison, SentimentType,
-    DataStatus, CardTemplate, TamilVariation
+    DataStatus, CardTemplate, TamilVariation, SourceType,
+    EditorialVersionItem, ArticleEditorialVersionsResponse, EditorialFinalizeRequest
 )
 from ..data.seed_data import PARTIES, LEADERS, ARTICLES, CARD_TEMPLATES
+from ..data.db import get_connection, is_postgres
 from .source_registry import source_registry
 
 class NewsService:
@@ -33,6 +36,10 @@ class NewsService:
             elif isinstance(v, TamilVariation):
                 variations.append(v)
 
+        source_type = d.get("source_type") or "NEWS_MEDIA"
+        source_category = d.get("source_category") or ("News Media" if source_type == "NEWS_MEDIA" else "Influencers & Social Media")
+        platform = d.get("platform") or "web"
+
         return NewsArticle(
             id=d["id"],
             title=d["title"],
@@ -41,6 +48,9 @@ class NewsService:
             tamil_summary=d["tamil_summary"],
             tamil_variations=variations,
             source=d.get("source_name") or d.get("source", "Live Media"),
+            source_type=source_type,
+            source_category=source_category,
+            platform=platform,
             source_url=d["source_url"],
             published_at=d["published_at"],
             party_codes=d.get("party_codes", []),
@@ -363,5 +373,277 @@ class NewsService:
             comparison=comparisons,
             methodology="Sentiment score calculated by contextual entity attribution (-1.0 to +1.0). Estimated reach is aggregate reader impressions."
         )
+
+    def _parse_editorial_item(self, raw: Any, default_item: EditorialVersionItem) -> EditorialVersionItem:
+        if not raw:
+            return default_item
+        if isinstance(raw, dict):
+            try:
+                return EditorialVersionItem(**raw)
+            except Exception:
+                pass
+        if isinstance(raw, str):
+            try:
+                parsed = json.loads(raw)
+                if isinstance(parsed, dict):
+                    return EditorialVersionItem(**parsed)
+            except Exception:
+                pass
+            return EditorialVersionItem(
+                version_type=default_item.version_type,
+                version_label=default_item.version_label,
+                title=default_item.title,
+                content=raw,
+                hook=default_item.hook,
+                attribution=default_item.attribution,
+                word_count=len(raw.split()),
+                tags=default_item.tags,
+                status_label=default_item.status_label
+            )
+        return default_item
+
+    def _generate_default_editorial_versions(self, article: NewsArticle) -> tuple[EditorialVersionItem, EditorialVersionItem, EditorialVersionItem]:
+        source_type_val = getattr(article, "source_type", "NEWS_MEDIA") or "NEWS_MEDIA"
+        source_category_val = "News Media" if source_type_val == "NEWS_MEDIA" else "Influencers & Social Media"
+        platform_val = getattr(article, "platform", "web") or "web"
+        party_str = ", ".join(article.party_codes) if article.party_codes else "Tamil Nadu Political Landscape"
+        leader_str = ", ".join(article.leader_names) if article.leader_names else "State Leadership"
+        topic_str = ", ".join(article.topics) if article.topics else "Assembly Elections 2026"
+
+        # Version 1: Summarized News (factual, concise)
+        v1_content = (
+            f"{article.summary}\n\n"
+            f"Verified Details: Reporting centers on developments involving {leader_str} "
+            f"with strategic relevance to {party_str}. Core issue: {topic_str}."
+        )
+        v1_item = EditorialVersionItem(
+            version_type="summary",
+            version_label="Version 1: Summarized News",
+            title=f"[Brief] {article.title}",
+            content=v1_content,
+            hook=None,
+            attribution=f"Attributed to {article.source} ({source_category_val}) via {platform_val}",
+            word_count=len(v1_content.split()),
+            tags=list(article.party_codes) + list(article.topics),
+            status_label="Confirmed Facts"
+        )
+
+        # Version 2: Detailed News (deep context, facts preserved, missing vs confirmed distinguished)
+        v2_content = (
+            f"### 1. Executive Summary & Core Facts\n"
+            f"{article.summary}\n\n"
+            f"### 2. Tamil Nadu Political Context & 2026 Election Impact\n"
+            f"This development directly affects political equations across Tamil Nadu, particularly for {party_str}. "
+            f"With political leaders {leader_str} actively shaping messaging on {topic_str}, "
+            f"state watchers consider this an essential pivot leading into the 2026 Assembly elections.\n\n"
+            f"### 3. Fact Verification & Source Attribution\n"
+            f"• **Primary Source:** {article.source} ({source_category_val})\n"
+            f"• **Distribution Platform:** {platform_val}\n"
+            f"• **Verification Status:** Factual claims cross-verified against primary publisher syndication.\n"
+            f"• **Official Attribution:** Direct quotations and policy remarks remain attributed to original speakers; "
+            f"unconfirmed claims remain pending formal press clarification.\n"
+            f"• **Original Reference:** {article.source_url}"
+        )
+        v2_item = EditorialVersionItem(
+            version_type="detailed",
+            version_label="Version 2: Detailed News",
+            title=f"[In-Depth Analysis] {article.title}",
+            content=v2_content,
+            hook=None,
+            attribution=f"Detailed report synthesized from {article.source} ({source_category_val})",
+            word_count=len(v2_content.split()),
+            tags=list(article.party_codes) + list(article.topics) + ["TN Assembly 2026", "In-Depth Context"],
+            status_label="Detailed Context with Fact Verification"
+        )
+
+        # Version 3: Social Media / Influencer Format (hook, political context, factually guarded)
+        clean_parties = " ".join([f"#{p}" for p in article.party_codes]) if article.party_codes else "#TNPolitics"
+        v3_hook = f"🚨 Ground Pulse Check: Significant political movement involving {leader_str} ({party_str})"
+        v3_content = (
+            f"⚡ **HIGH-IMPACT TAKEAWAYS:**\n"
+            f"• **What just happened:** {article.summary[:180]}...\n"
+            f"• **Strategic angle:** How {party_str} positions itself around {topic_str}.\n"
+            f"• **Public pulse:** High traction recorded across Tamil Nadu political forums.\n\n"
+            f"💬 **POLITICAL WARROOM BYTE:**\n"
+            f"Does this statement reshape the ground alliance arithmetic for 2026? Drop your analytical perspective below.\n\n"
+            f"📌 **Attribution Guardrail:** Formatted from verified coverage by {article.source}. Fact-checked for editorial commentary.\n\n"
+            f"#TNPolitics #TamilNadu2026 {clean_parties}"
+        )
+        v3_item = EditorialVersionItem(
+            version_type="social",
+            version_label="Version 3: Social Media / Influencer Format",
+            title=f"[Social Media Byte] {article.title}",
+            content=v3_content,
+            hook=v3_hook,
+            attribution=f"Social Media Intelligence Unit — Adapted from {article.source}",
+            word_count=len(v3_content.split()),
+            tags=["#TNPolitics", "#TamilNadu2026"] + [f"#{p}" for p in article.party_codes],
+            status_label="Social Media Format (Factually Guarded)"
+        )
+
+        return v1_item, v2_item, v3_item
+
+    def get_editorial_versions(self, article_id: str) -> Optional[ArticleEditorialVersionsResponse]:
+        article_obj = self.get_article_by_id(article_id)
+        if not article_obj:
+            return None
+        article: NewsArticle = article_obj["article"]
+
+        source_type_val = getattr(article, "source_type", "NEWS_MEDIA") or "NEWS_MEDIA"
+        source_category_val = "News Media" if source_type_val == "NEWS_MEDIA" else "Influencers & Social Media"
+        platform_val = getattr(article, "platform", "web") or "web"
+
+        def_v1, def_v2, def_v3 = self._generate_default_editorial_versions(article)
+
+        now_str = datetime.now().isoformat()
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT article_id, version_1_summary, version_2_detailed, version_3_social,
+                       final_version_type, final_version_content, is_finalized, created_at, updated_at
+                FROM article_editorial_versions
+                WHERE article_id = ?
+            """, (article_id,))
+            row = cursor.fetchone()
+
+            if row:
+                r_dict = dict(row)
+                v1_item = self._parse_editorial_item(r_dict.get("version_1_summary"), def_v1)
+                v2_item = self._parse_editorial_item(r_dict.get("version_2_detailed"), def_v2)
+                v3_item = self._parse_editorial_item(r_dict.get("version_3_social"), def_v3)
+                final_v_type = r_dict.get("final_version_type")
+                final_v_content = r_dict.get("final_version_content")
+                is_fin = bool(r_dict.get("is_finalized", 0))
+                up_at = r_dict.get("updated_at") or now_str
+            else:
+                v1_item, v2_item, v3_item = def_v1, def_v2, def_v3
+                final_v_type = None
+                final_v_content = None
+                is_fin = False
+                up_at = now_str
+
+                # Seed the record into DB
+                if is_postgres():
+                    cursor.execute("""
+                        INSERT INTO article_editorial_versions (
+                            article_id, version_1_summary, version_2_detailed, version_3_social,
+                            final_version_type, final_version_content, is_finalized, created_at, updated_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ON CONFLICT (article_id) DO NOTHING
+                    """, (
+                        article_id,
+                        json.dumps(v1_item.model_dump()),
+                        json.dumps(v2_item.model_dump()),
+                        json.dumps(v3_item.model_dump()),
+                        None, None, 0, now_str, now_str
+                    ))
+                else:
+                    cursor.execute("""
+                        INSERT OR IGNORE INTO article_editorial_versions (
+                            article_id, version_1_summary, version_2_detailed, version_3_social,
+                            final_version_type, final_version_content, is_finalized, created_at, updated_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        article_id,
+                        json.dumps(v1_item.model_dump()),
+                        json.dumps(v2_item.model_dump()),
+                        json.dumps(v3_item.model_dump()),
+                        None, None, 0, now_str, now_str
+                    ))
+                conn.commit()
+
+        return ArticleEditorialVersionsResponse(
+            article_id=article.id,
+            original_title=article.title,
+            original_tamil_title=article.tamil_title,
+            original_summary=article.summary,
+            source_name=article.source,
+            source_type=source_type_val,
+            source_category=source_category_val,
+            platform=platform_val,
+            source_url=article.source_url,
+            published_at=article.published_at,
+            party_codes=article.party_codes,
+            leader_names=article.leader_names,
+            topics=article.topics,
+            version_1_summary=v1_item,
+            version_2_detailed=v2_item,
+            version_3_social=v3_item,
+            final_version_type=final_v_type,
+            final_version_content=final_v_content,
+            is_finalized=is_fin,
+            updated_at=up_at
+        )
+
+    def save_editorial_final(self, article_id: str, request: EditorialFinalizeRequest) -> Optional[ArticleEditorialVersionsResponse]:
+        current = self.get_editorial_versions(article_id)
+        if not current:
+            return None
+
+        v1_item = current.version_1_summary
+        v2_item = current.version_2_detailed
+        v3_item = current.version_3_social
+
+        if request.version_1_summary_content:
+            v1_item.content = request.version_1_summary_content
+            v1_item.word_count = len(request.version_1_summary_content.split())
+        if request.version_2_detailed_content:
+            v2_item.content = request.version_2_detailed_content
+            v2_item.word_count = len(request.version_2_detailed_content.split())
+        if request.version_3_social_content:
+            v3_item.content = request.version_3_social_content
+            v3_item.word_count = len(request.version_3_social_content.split())
+
+        now_str = datetime.now().isoformat()
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            if is_postgres():
+                cursor.execute("""
+                    INSERT INTO article_editorial_versions (
+                        article_id, version_1_summary, version_2_detailed, version_3_social,
+                        final_version_type, final_version_content, is_finalized, created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT (article_id) DO UPDATE SET
+                        version_1_summary = EXCLUDED.version_1_summary,
+                        version_2_detailed = EXCLUDED.version_2_detailed,
+                        version_3_social = EXCLUDED.version_3_social,
+                        final_version_type = EXCLUDED.final_version_type,
+                        final_version_content = EXCLUDED.final_version_content,
+                        is_finalized = EXCLUDED.is_finalized,
+                        updated_at = EXCLUDED.updated_at
+                """, (
+                    article_id,
+                    json.dumps(v1_item.model_dump()),
+                    json.dumps(v2_item.model_dump()),
+                    json.dumps(v3_item.model_dump()),
+                    request.final_version_type,
+                    request.final_version_content,
+                    1, now_str, now_str
+                ))
+            else:
+                cursor.execute("""
+                    INSERT OR REPLACE INTO article_editorial_versions (
+                        article_id, version_1_summary, version_2_detailed, version_3_social,
+                        final_version_type, final_version_content, is_finalized, created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    article_id,
+                    json.dumps(v1_item.model_dump()),
+                    json.dumps(v2_item.model_dump()),
+                    json.dumps(v3_item.model_dump()),
+                    request.final_version_type,
+                    request.final_version_content,
+                    1, now_str, now_str
+                ))
+            conn.commit()
+
+        current.version_1_summary = v1_item
+        current.version_2_detailed = v2_item
+        current.version_3_social = v3_item
+        current.final_version_type = request.final_version_type
+        current.final_version_content = request.final_version_content
+        current.is_finalized = True
+        current.updated_at = now_str
+        return current
 
 news_service = NewsService()

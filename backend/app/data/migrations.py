@@ -240,6 +240,44 @@ def run_migrations(db_path: str = DB_PATH):
                     1
                 )
             """, (now_iso,))
+        # 9. Article Editorial Versions & Final Output Table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS article_editorial_versions (
+                article_id TEXT PRIMARY KEY,
+                version_1_summary TEXT NOT NULL,
+                version_2_detailed TEXT NOT NULL,
+                version_3_social TEXT NOT NULL,
+                final_version_type TEXT,
+                final_version_content TEXT,
+                is_finalized INTEGER DEFAULT 0,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+        """)
+
+        # 10. Ensure source_type and platform columns exist in sources, articles, social_posts
+        try:
+            cursor.execute("ALTER TABLE sources ADD COLUMN source_type TEXT DEFAULT 'NEWS_MEDIA'")
+        except Exception:
+            pass
+        try:
+            cursor.execute("ALTER TABLE sources ADD COLUMN platform TEXT DEFAULT 'web'")
+        except Exception:
+            pass
+
+        try:
+            cursor.execute("ALTER TABLE articles ADD COLUMN source_type TEXT DEFAULT 'NEWS_MEDIA'")
+        except Exception:
+            pass
+        try:
+            cursor.execute("ALTER TABLE articles ADD COLUMN platform TEXT DEFAULT 'web'")
+        except Exception:
+            pass
+
+        try:
+            cursor.execute("ALTER TABLE social_posts ADD COLUMN source_type TEXT DEFAULT 'SOCIAL_MEDIA'")
+        except Exception:
+            pass
 
         conn.commit()
 

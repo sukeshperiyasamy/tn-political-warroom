@@ -220,6 +220,7 @@ class TrendEngine:
                         "topic": t,
                         "post_count": 0,
                         "platforms": set(),
+                        "categories": set(),
                         "parties": set(),
                         "leaders": set(),
                         "total_engagement": 0.0,
@@ -232,6 +233,17 @@ class TrendEngine:
                 agg = topic_aggregates[t]
                 agg["post_count"] += 1
                 agg["platforms"].add(platform)
+
+                # Determine originating category: News Media, Influencers, Social Media, Google Trends
+                if platform in ("news", "news_rss"):
+                    agg["categories"].add("News Media")
+                elif platform == "google_trends":
+                    agg["categories"].add("Google Trends")
+                elif platform in ("youtube", "influencer"):
+                    agg["categories"].add("Influencers")
+                else:
+                    agg["categories"].add("Social Media")
+
                 agg["total_engagement"] += eng
                 agg["post_ids"].append(p["id"])
                 agg["growth_rates"].append(growth_rate)
@@ -309,6 +321,10 @@ class TrendEngine:
             else:
                 momentum_state = "STEADY"
 
+            originating_categories = sorted(list(data.get("categories", {"News Media"})))
+            is_cross_category = len(originating_categories) > 1
+            primary_origin = originating_categories[0] if originating_categories else "News Media"
+
             results.append({
                 "topic": t,
                 "current_volume": curr_cnt,
@@ -323,6 +339,9 @@ class TrendEngine:
                 "trend_score": round(composite_score, 1),
                 "platforms": platform_list,
                 "distinct_platforms_count": len(platform_list),
+                "originating_categories": originating_categories,
+                "primary_origin": primary_origin,
+                "is_cross_category": is_cross_category,
                 "total_standardized_engagement": int(curr_eng),
                 "related_parties": sorted(list(data["parties"])),
                 "related_leaders": sorted(list(data["leaders"])),

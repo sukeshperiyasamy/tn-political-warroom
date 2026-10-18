@@ -7,6 +7,10 @@ import {
   ArrowRight,
   Eye,
   Calendar,
+  Globe,
+  Tv,
+  Video,
+  UserCheck,
 } from "lucide-react";
 import { NewsArticle } from "../types/political";
 
@@ -30,11 +34,15 @@ export function ArticleCard({
   onCreateCard,
 }: ArticleCardProps) {
   const {
+    id,
     tamil_title,
     title,
     summary,
     source,
     source_url,
+    source_type,
+    source_category,
+    platform,
     published_at,
     party_codes,
     leader_names,
@@ -52,6 +60,10 @@ export function ArticleCard({
     minute: "2-digit",
   });
 
+  const isInfluencer = source_type === "INFLUENCER" || source_category?.toLowerCase().includes("influencer");
+  const isSocial = source_type === "SOCIAL_MEDIA";
+  const displayPlatform = platform || (source_url?.includes("youtube.com") ? "youtube" : "web");
+
   const cleanedSummary = cleanExcerpt(summary || "");
   const hasDistinctEnglish = Boolean(
     title &&
@@ -63,19 +75,41 @@ export function ArticleCard({
   return (
     <article className="group bg-white border border-[#E8E8E2] hover:border-zinc-400 rounded-lg p-4 sm:p-5 transition-colors flex flex-col justify-between shadow-2xs">
       <div>
-        {/* Masthead / Source Row */}
-        <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-[#F0F0EB] text-[11px]">
-          <div className="flex items-center gap-2">
-            <span className="font-bold tracking-wider text-zinc-900 font-mono">
+        {/* Masthead / Source Row with Category Classification */}
+        <div className="flex flex-wrap items-center justify-between gap-1.5 mb-2 pb-2 border-b border-[#F0F0EB] text-[11px]">
+          <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+            {/* Category Badge: News Media vs Influencer */}
+            {isInfluencer ? (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-50 text-purple-800 border border-purple-200">
+                <UserCheck className="w-2.5 h-2.5 text-purple-700" />
+                INFLUENCER
+              </span>
+            ) : isSocial ? (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-sky-50 text-sky-800 border border-sky-200">
+                SOCIAL MEDIA
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                <Tv className="w-2.5 h-2.5 text-blue-700" />
+                NEWS MEDIA
+              </span>
+            )}
+
+            {/* Platform Badge */}
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-semibold bg-zinc-100 text-zinc-600 border border-zinc-200 uppercase">
+              {displayPlatform}
+            </span>
+
+            <span className="font-bold tracking-tight text-zinc-900 font-mono truncate max-w-[130px]" title={source}>
               {source}
             </span>
             <span className="text-zinc-300">•</span>
-            <span className="text-zinc-500 font-mono">
+            <span className="text-zinc-500 font-mono text-[10px]">
               {dateFormatted}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0 ml-auto">
             {/* Polarity Indicator as a Quiet Secondary Detail */}
             <span
               className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${
@@ -148,9 +182,10 @@ export function ArticleCard({
           ))}
         </div>
 
-        {/* Micro Attribution Notice */}
-        <div className="text-[10px] text-zinc-400 font-mono mb-2">
-          Automated NLP Entity & Sentiment Attribution
+        {/* Full Attribution Strip */}
+        <div className="text-[10px] text-zinc-500 font-mono mb-2 flex items-center justify-between border-t border-dashed border-[#EAEAE5] pt-1.5">
+          <span>Source: <strong className="text-zinc-700">{source}</strong> ({isInfluencer ? "Influencer" : "News Media"})</span>
+          <span className="text-zinc-400">{displayPlatform.toUpperCase()}</span>
         </div>
       </div>
 

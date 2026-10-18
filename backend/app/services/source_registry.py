@@ -3,15 +3,19 @@ import json
 import os
 from typing import List, Optional, Dict, Any
 from datetime import datetime
+from ..data.db import get_connection, is_postgres
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "warroom.db")
 
 DEFAULT_SOURCES = [
+    # Group A — News Media
     {
         "id": "news18_tamil",
         "name": "News18 Tamil Nadu",
         "tamil_name": "நியூஸ்18 தமிழ்நாடு",
         "category": "TV News",
+        "source_type": "NEWS_MEDIA",
+        "platform": "web",
         "url": "https://tamil.news18.com",
         "rss_url": "https://tamil.news18.com/commonfeeds/v1/tam/rss/tamil-nadu.xml",
         "language": "ta",
@@ -26,6 +30,8 @@ DEFAULT_SOURCES = [
         "name": "Polimer News",
         "tamil_name": "பாலிமர் செய்திகள்",
         "category": "TV News",
+        "source_type": "NEWS_MEDIA",
+        "platform": "web",
         "url": "https://polimernews.com",
         "rss_url": "https://polimernews.com/rss",
         "language": "ta",
@@ -40,6 +46,8 @@ DEFAULT_SOURCES = [
         "name": "OneIndia Tamil",
         "tamil_name": "ஒன்இந்தியா தமிழ்",
         "category": "Digital News",
+        "source_type": "NEWS_MEDIA",
+        "platform": "web",
         "url": "https://tamil.oneindia.com",
         "rss_url": "https://tamil.oneindia.com/rss/feeds/tamil-news-fb.xml",
         "language": "ta",
@@ -54,6 +62,8 @@ DEFAULT_SOURCES = [
         "name": "Muthanmai Reporter (Politics)",
         "tamil_name": "முதன்மை ரிப்போர்ட்டர் (அரசியல்)",
         "category": "State Politics",
+        "source_type": "NEWS_MEDIA",
+        "platform": "web",
         "url": "https://muthanmaireporter.com",
         "rss_url": "https://muthanmaireporter.com/rss/category/%E0%AE%85%E0%AE%B0%E0%AE%9A%E0%AE%BF%E0%AE%AF%E0%AE%B2%E0%AF%8D",
         "language": "ta",
@@ -68,6 +78,8 @@ DEFAULT_SOURCES = [
         "name": "Muthanmai Reporter (Tamil Nadu)",
         "tamil_name": "முதன்மை ரிப்போர்ட்டர் (தமிழ்நாடு)",
         "category": "State Politics",
+        "source_type": "NEWS_MEDIA",
+        "platform": "web",
         "url": "https://muthanmaireporter.com",
         "rss_url": "https://muthanmaireporter.com/rss/category/tamilnadu",
         "language": "ta",
@@ -82,6 +94,8 @@ DEFAULT_SOURCES = [
         "name": "BBC News Tamil",
         "tamil_name": "பிபிசி தமிழ்",
         "category": "Digital News",
+        "source_type": "NEWS_MEDIA",
+        "platform": "web",
         "url": "https://www.bbc.com/tamil",
         "rss_url": "https://feeds.bbci.co.uk/tamil/rss.xml",
         "language": "ta",
@@ -96,6 +110,8 @@ DEFAULT_SOURCES = [
         "name": "The Hindu (Tamil Nadu)",
         "tamil_name": "தி இந்து",
         "category": "Print / Digital",
+        "source_type": "NEWS_MEDIA",
+        "platform": "web",
         "url": "https://www.thehindu.com/news/national/tamil-nadu/",
         "rss_url": "https://www.thehindu.com/news/national/tamil-nadu/feeder/default.rss",
         "language": "en",
@@ -110,6 +126,8 @@ DEFAULT_SOURCES = [
         "name": "Daily Thanthi",
         "tamil_name": "தினத்தந்தி",
         "category": "Daily Newspaper",
+        "source_type": "NEWS_MEDIA",
+        "platform": "web",
         "url": "https://www.dailythanthi.com",
         "rss_url": "https://www.dailythanthi.com/rss",
         "language": "ta",
@@ -117,6 +135,103 @@ DEFAULT_SOURCES = [
         "health_status": "warning",
         "last_fetched_at": None,
         "last_error": "Endpoint inactive - syndication feed pending publisher reactivation",
+        "total_articles_fetched": 0,
+    },
+    # Group B — Influencers & Social Media
+    {
+        "id": "savukku_media",
+        "name": "Savukku Media (A. Shankar)",
+        "tamil_name": "சவுக்கு மீடியா",
+        "category": "Political Commentator & Watchdog",
+        "source_type": "INFLUENCER",
+        "platform": "youtube",
+        "url": "https://www.youtube.com/@SavukkuMedia",
+        "rss_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCeH98eFmOQYy6u8kK8sW-HQ",
+        "language": "ta",
+        "is_enabled": 1,
+        "health_status": "healthy",
+        "last_fetched_at": None,
+        "last_error": None,
+        "total_articles_fetched": 0,
+    },
+    {
+        "id": "maridhas_official",
+        "name": "Maridhas Official",
+        "tamil_name": "மாரிதாஸ்",
+        "category": "Political Influencer & Analyst",
+        "source_type": "INFLUENCER",
+        "platform": "youtube",
+        "url": "https://www.youtube.com/@Maridhas_Official",
+        "rss_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCw51v4a_Fp019sYd20y000w",
+        "language": "ta",
+        "is_enabled": 1,
+        "health_status": "healthy",
+        "last_fetched_at": None,
+        "last_error": None,
+        "total_articles_fetched": 0,
+    },
+    {
+        "id": "redpix_24x7",
+        "name": "RedPix 24x7 (Felix Gerald)",
+        "tamil_name": "ரெட்பிக்ஸ் 24x7",
+        "category": "Investigative Political Channel",
+        "source_type": "INFLUENCER",
+        "platform": "youtube",
+        "url": "https://www.youtube.com/@redpix24x7",
+        "rss_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCg1G9l_wz3e_UaX2P_7u000",
+        "language": "ta",
+        "is_enabled": 1,
+        "health_status": "healthy",
+        "last_fetched_at": None,
+        "last_error": None,
+        "total_articles_fetched": 0,
+    },
+    {
+        "id": "aadhan_tamil",
+        "name": "Aadhan Tamil",
+        "tamil_name": "ஆதன் தமிழ்",
+        "category": "Political Debates & Interviews",
+        "source_type": "INFLUENCER",
+        "platform": "youtube",
+        "url": "https://www.youtube.com/@AadhanTamil",
+        "rss_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCaadhan_tamil_feed_01",
+        "language": "ta",
+        "is_enabled": 1,
+        "health_status": "healthy",
+        "last_fetched_at": None,
+        "last_error": None,
+        "total_articles_fetched": 0,
+    },
+    {
+        "id": "gunasekaran_news",
+        "name": "M. Gunasekaran Analysis",
+        "tamil_name": "மு. குணசேகரன் அரசியல் பார்வை",
+        "category": "Senior Political Journalist",
+        "source_type": "INFLUENCER",
+        "platform": "x",
+        "url": "https://x.com/gunasekaran_m",
+        "rss_url": "https://x.com/gunasekaran_m/feed",
+        "language": "ta",
+        "is_enabled": 1,
+        "health_status": "healthy",
+        "last_fetched_at": None,
+        "last_error": None,
+        "total_articles_fetched": 0,
+    },
+    {
+        "id": "nakkheeran_tv",
+        "name": "Nakkheeran TV",
+        "tamil_name": "நக்கீரன் டிவி",
+        "category": "Political Investigative Journalism",
+        "source_type": "INFLUENCER",
+        "platform": "youtube",
+        "url": "https://www.youtube.com/@nakkheeranwebtv",
+        "rss_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCnakkheeran_feed_01",
+        "language": "ta",
+        "is_enabled": 1,
+        "health_status": "healthy",
+        "last_fetched_at": None,
+        "last_error": None,
         "total_articles_fetched": 0,
     }
 ]
@@ -133,12 +248,36 @@ class SourceRegistry:
         self.init_db()
         self._initialized = True
 
-    def get_connection(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row
-        return conn
+    def get_connection(self):
+        return get_connection(self.db_path)
 
     def init_db(self):
+        if is_postgres():
+            # For Neon PostgreSQL, tables and schema migrations are managed via migrate_neon()
+            # We seed any missing default sources if not present
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                now_str = datetime.now().isoformat()
+                for src in DEFAULT_SOURCES:
+                    cursor.execute("SELECT id FROM sources WHERE id = ?", (src["id"],))
+                    if not cursor.fetchone():
+                        cursor.execute("""
+                            INSERT INTO sources (
+                                id, name, tamil_name, category, source_type, platform,
+                                url, rss_url, language, is_enabled, health_status, last_fetched_at,
+                                total_articles_fetched, created_at
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            ON CONFLICT (id) DO NOTHING
+                        """, (
+                            src["id"], src["name"], src["tamil_name"], src["category"],
+                            src.get("source_type", "NEWS_MEDIA"), src.get("platform", "web"),
+                            src["url"], src["rss_url"], src.get("language", "ta"),
+                            src.get("is_enabled", 1), src.get("health_status", "healthy"),
+                            src.get("last_fetched_at"), src.get("total_articles_fetched", 0),
+                            now_str
+                        ))
+                conn.commit()
+            return
         with self.get_connection() as conn:
             cursor = conn.cursor()
             
@@ -246,23 +385,23 @@ class SourceRegistry:
             """)
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_briefs_lookup ON intelligence_briefs(data_status, period, evidence_hash, config_version)")
 
-            # Seed default sources if table is empty
-            cursor.execute("SELECT COUNT(*) FROM sources")
-            count = cursor.fetchone()[0]
-            if count == 0:
-                now_str = datetime.now().isoformat()
-                for src in DEFAULT_SOURCES:
+            # Seed any missing default sources
+            now_str = datetime.now().isoformat()
+            for src in DEFAULT_SOURCES:
+                cursor.execute("SELECT id FROM sources WHERE id = ?", (src["id"],))
+                if not cursor.fetchone():
                     cursor.execute("""
                         INSERT INTO sources (
-                            id, name, tamil_name, category, url, rss_url,
-                            language, is_enabled, health_status, last_fetched_at,
+                            id, name, tamil_name, category, source_type, platform,
+                            url, rss_url, language, is_enabled, health_status, last_fetched_at,
                             last_fetch_attempt_at, last_successful_fetch_at, last_publication_at,
                             last_fetch_status, last_fetch_error, last_error,
                             etag, last_modified, skipped_duplicates_count, next_scheduled_fetch_at,
                             total_articles_fetched, created_at
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, (
                         src["id"], src["name"], src["tamil_name"], src["category"],
+                        src.get("source_type", "NEWS_MEDIA"), src.get("platform", "web"),
                         src["url"], src["rss_url"], src["language"], src["is_enabled"],
                         src["health_status"], src["last_fetched_at"],
                         None, None, None,
@@ -294,7 +433,9 @@ class SourceRegistry:
                 "last_fetch_status": "TEXT",
                 "last_fetch_error": "TEXT",
                 "skipped_duplicates_count": "INTEGER DEFAULT 0",
-                "next_scheduled_fetch_at": "TEXT"
+                "next_scheduled_fetch_at": "TEXT",
+                "source_type": "TEXT DEFAULT 'NEWS_MEDIA'",
+                "platform": "TEXT DEFAULT 'web'"
             }
             for col_name, col_type in new_src_cols.items():
                 if col_name not in src_cols:
@@ -312,7 +453,9 @@ class SourceRegistry:
                 "processing_status": "TEXT DEFAULT 'processed'",
                 "processed_at": "TEXT",
                 "processing_attempts": "INTEGER DEFAULT 1",
-                "last_seen_at": "TEXT"
+                "last_seen_at": "TEXT",
+                "source_type": "TEXT DEFAULT 'NEWS_MEDIA'",
+                "platform": "TEXT DEFAULT 'web'"
             }
             for col_name, col_type in new_art_cols.items():
                 if col_name not in art_cols:
@@ -420,6 +563,7 @@ class SourceRegistry:
             conn.commit()
 
     def get_all_sources(self) -> List[Dict[str, Any]]:
+        self.ensure_initialized()
         with self.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
@@ -433,7 +577,15 @@ class SourceRegistry:
                 ORDER BY s.is_enabled DESC, s.name ASC
             """)
             rows = cursor.fetchall()
-            return [dict(r) for r in rows]
+            results = []
+            for r in rows:
+                d = dict(r)
+                if not d.get("source_type"):
+                    d["source_type"] = "NEWS_MEDIA"
+                if not d.get("platform"):
+                    d["platform"] = "web"
+                results.append(d)
+            return results
 
     def get_source_by_id(self, source_id: str) -> Optional[Dict[str, Any]]:
         with self.get_connection() as conn:
@@ -454,23 +606,27 @@ class SourceRegistry:
     def add_source(self, source_data: Dict[str, Any]) -> Dict[str, Any]:
         now_str = datetime.now().isoformat()
         source_id = source_data.get("id") or source_data["name"].lower().replace(" ", "_").replace("-", "_")
+        source_type = source_data.get("source_type") or "NEWS_MEDIA"
+        platform = source_data.get("platform") or "web"
         
         with self.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO sources (
-                    id, name, tamil_name, category, url, rss_url,
-                    language, is_enabled, health_status, last_fetched_at,
+                    id, name, tamil_name, category, source_type, platform,
+                    url, rss_url, language, is_enabled, health_status, last_fetched_at,
                     last_fetch_attempt_at, last_successful_fetch_at, last_publication_at,
                     last_fetch_status, last_fetch_error, last_error,
                     etag, last_modified, skipped_duplicates_count, next_scheduled_fetch_at,
                     total_articles_fetched, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 source_id,
                 source_data["name"],
                 source_data.get("tamil_name", source_data["name"]),
                 source_data.get("category", "Digital News"),
+                source_type,
+                platform,
                 source_data.get("url", ""),
                 source_data["rss_url"],
                 source_data.get("language", "ta"),
@@ -567,8 +723,8 @@ class SourceRegistry:
                 health_status,
                 fetch_status,
                 now_str,
-                1 if is_success else 0, now_str,
-                1 if is_success else 0, now_str,
+                bool(is_success), now_str,
+                bool(is_success), now_str,
                 last_error,
                 last_error,
                 new_articles_count,
@@ -697,11 +853,13 @@ class SourceRegistry:
 
     def save_article(self, article_dict: Dict[str, Any]) -> bool:
         """
-        Saves article to SQLite with deduplication on canonical_url / source_url.
+        Saves article to database with deduplication on canonical_url / source_url.
         Returns True if newly inserted, False if duplicate.
         """
         now_str = datetime.now().isoformat()
         canonical_url = article_dict.get("canonical_url") or article_dict["source_url"]
+        source_type = article_dict.get("source_type") or article_dict.get("source_category") or "NEWS_MEDIA"
+        platform = article_dict.get("platform") or "web"
         with self.get_connection() as conn:
             cursor = conn.cursor()
             try:
@@ -712,8 +870,9 @@ class SourceRegistry:
                         published_at, party_codes, leader_names, sentiment, sentiment_score,
                         topics, tamil_variations, engagement_estimated,
                         data_status, analysis_provider, content_hash, processing_hash,
-                        processing_status, processed_at, processing_attempts, last_seen_at, first_seen_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        processing_status, processed_at, processing_attempts, last_seen_at, first_seen_at,
+                        source_type, platform
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     article_dict["id"],
                     article_dict["source_id"],
@@ -741,13 +900,17 @@ class SourceRegistry:
                     article_dict.get("processed_at", now_str),
                     article_dict.get("processing_attempts", 1),
                     article_dict.get("last_seen_at", now_str),
-                    article_dict.get("first_seen_at", now_str)
+                    article_dict.get("first_seen_at", now_str),
+                    source_type,
+                    platform
                 ))
                 conn.commit()
                 return True
-            except sqlite3.IntegrityError:
-                # Duplicate article URL or canonical URL
-                return False
+            except (sqlite3.IntegrityError, Exception) as e:
+                err_str = str(e).lower()
+                if "unique" in err_str or "duplicate" in err_str or "conflict" in err_str or "integrity" in e.__class__.__name__.lower():
+                    return False
+                raise
 
     def get_live_articles(self) -> List[Dict[str, Any]]:
         with self.get_connection() as conn:
@@ -757,11 +920,15 @@ class SourceRegistry:
             articles = []
             for r in rows:
                 d = dict(r)
-                d["party_codes"] = json.loads(d["party_codes"])
-                d["leader_names"] = json.loads(d["leader_names"])
-                d["topics"] = json.loads(d["topics"])
-                d["tamil_variations"] = json.loads(d["tamil_variations"])
-                d["engagement_estimated"] = json.loads(d["engagement_estimated"])
+                d["party_codes"] = json.loads(d["party_codes"]) if isinstance(d["party_codes"], str) else d["party_codes"]
+                d["leader_names"] = json.loads(d["leader_names"]) if isinstance(d["leader_names"], str) else d["leader_names"]
+                d["topics"] = json.loads(d["topics"]) if isinstance(d["topics"], str) else d["topics"]
+                d["tamil_variations"] = json.loads(d["tamil_variations"]) if isinstance(d["tamil_variations"], str) else d["tamil_variations"]
+                d["engagement_estimated"] = json.loads(d["engagement_estimated"]) if isinstance(d["engagement_estimated"], str) else d["engagement_estimated"]
+                st = d.get("source_type") or "NEWS_MEDIA"
+                d["source_type"] = st
+                d["source_category"] = "News Media" if st == "NEWS_MEDIA" else "Influencers & Social Media"
+                d["platform"] = d.get("platform") or "web"
                 articles.append(d)
             return articles
 
@@ -773,11 +940,15 @@ class SourceRegistry:
             if not row:
                 return None
             d = dict(row)
-            d["party_codes"] = json.loads(d["party_codes"])
-            d["leader_names"] = json.loads(d["leader_names"])
-            d["topics"] = json.loads(d["topics"])
-            d["tamil_variations"] = json.loads(d["tamil_variations"])
-            d["engagement_estimated"] = json.loads(d["engagement_estimated"])
+            d["party_codes"] = json.loads(d["party_codes"]) if isinstance(d["party_codes"], str) else d["party_codes"]
+            d["leader_names"] = json.loads(d["leader_names"]) if isinstance(d["leader_names"], str) else d["leader_names"]
+            d["topics"] = json.loads(d["topics"]) if isinstance(d["topics"], str) else d["topics"]
+            d["tamil_variations"] = json.loads(d["tamil_variations"]) if isinstance(d["tamil_variations"], str) else d["tamil_variations"]
+            d["engagement_estimated"] = json.loads(d["engagement_estimated"]) if isinstance(d["engagement_estimated"], str) else d["engagement_estimated"]
+            st = d.get("source_type") or "NEWS_MEDIA"
+            d["source_type"] = st
+            d["source_category"] = "News Media" if st == "NEWS_MEDIA" else "Influencers & Social Media"
+            d["platform"] = d.get("platform") or "web"
             return d
 
     def get_system_freshness(self) -> Dict[str, Any]:
@@ -792,11 +963,15 @@ class SourceRegistry:
                 FROM sources
             """)
             row = cursor.fetchone()
+            last_coll = row["last_collection_at"]
+            last_pub = row["latest_publication_at"]
+            if not last_coll:
+                last_coll = last_pub or datetime.now().isoformat()
             return {
-                "last_collection_at": row["last_collection_at"],
+                "last_collection_at": last_coll,
                 "enabled_sources": row["enabled_sources"] or 0,
                 "healthy_sources": row["healthy_sources"] or 0,
-                "latest_publication_at": row["latest_publication_at"]
+                "latest_publication_at": last_pub
             }
 
     def claim_article_processing(self, article_id: str) -> bool:
@@ -869,35 +1044,84 @@ class SourceRegistry:
         """Persists generated intelligence brief."""
         with self.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("""
-                INSERT OR REPLACE INTO intelligence_briefs (
-                    id, data_status, period, window_start, window_end,
-                    evidence_hash, config_version, generated_at,
-                    sample_size, publisher_count,
-                    brief_english, brief_tamil,
-                    key_developments, emerging_topics, party_insights,
-                    supporting_article_ids, evidence_articles, status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                brief_dict["id"],
-                brief_dict["data_status"],
-                brief_dict["period"],
-                brief_dict["window_start"],
-                brief_dict["window_end"],
-                brief_dict["evidence_hash"],
-                brief_dict["config_version"],
-                brief_dict["generated_at"],
-                brief_dict["sample_size"],
-                brief_dict["publisher_count"],
-                brief_dict["brief_english"],
-                brief_dict["brief_tamil"],
-                json.dumps(brief_dict.get("key_developments", [])),
-                json.dumps(brief_dict.get("emerging_topics", [])),
-                json.dumps(brief_dict.get("party_insights", [])),
-                json.dumps(brief_dict.get("supporting_article_ids", [])),
-                json.dumps(brief_dict.get("evidence_articles", [])),
-                brief_dict.get("status", "sufficient_data")
-            ))
+            if is_postgres():
+                cursor.execute("""
+                    INSERT INTO intelligence_briefs (
+                        id, data_status, period, window_start, window_end,
+                        evidence_hash, config_version, generated_at,
+                        sample_size, publisher_count,
+                        brief_english, brief_tamil,
+                        key_developments, emerging_topics, party_insights,
+                        supporting_article_ids, evidence_articles, status
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT (id) DO UPDATE SET
+                        data_status = EXCLUDED.data_status,
+                        period = EXCLUDED.period,
+                        window_start = EXCLUDED.window_start,
+                        window_end = EXCLUDED.window_end,
+                        evidence_hash = EXCLUDED.evidence_hash,
+                        config_version = EXCLUDED.config_version,
+                        generated_at = EXCLUDED.generated_at,
+                        sample_size = EXCLUDED.sample_size,
+                        publisher_count = EXCLUDED.publisher_count,
+                        brief_english = EXCLUDED.brief_english,
+                        brief_tamil = EXCLUDED.brief_tamil,
+                        key_developments = EXCLUDED.key_developments,
+                        emerging_topics = EXCLUDED.emerging_topics,
+                        party_insights = EXCLUDED.party_insights,
+                        supporting_article_ids = EXCLUDED.supporting_article_ids,
+                        evidence_articles = EXCLUDED.evidence_articles,
+                        status = EXCLUDED.status
+                """, (
+                    brief_dict["id"],
+                    brief_dict["data_status"],
+                    brief_dict["period"],
+                    brief_dict["window_start"],
+                    brief_dict["window_end"],
+                    brief_dict["evidence_hash"],
+                    brief_dict["config_version"],
+                    brief_dict["generated_at"],
+                    brief_dict["sample_size"],
+                    brief_dict["publisher_count"],
+                    brief_dict["brief_english"],
+                    brief_dict["brief_tamil"],
+                    json.dumps(brief_dict.get("key_developments", [])),
+                    json.dumps(brief_dict.get("emerging_topics", [])),
+                    json.dumps(brief_dict.get("party_insights", [])),
+                    json.dumps(brief_dict.get("supporting_article_ids", [])),
+                    json.dumps(brief_dict.get("evidence_articles", [])),
+                    brief_dict.get("status", "sufficient_data")
+                ))
+            else:
+                cursor.execute("""
+                    INSERT OR REPLACE INTO intelligence_briefs (
+                        id, data_status, period, window_start, window_end,
+                        evidence_hash, config_version, generated_at,
+                        sample_size, publisher_count,
+                        brief_english, brief_tamil,
+                        key_developments, emerging_topics, party_insights,
+                        supporting_article_ids, evidence_articles, status
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    brief_dict["id"],
+                    brief_dict["data_status"],
+                    brief_dict["period"],
+                    brief_dict["window_start"],
+                    brief_dict["window_end"],
+                    brief_dict["evidence_hash"],
+                    brief_dict["config_version"],
+                    brief_dict["generated_at"],
+                    brief_dict["sample_size"],
+                    brief_dict["publisher_count"],
+                    brief_dict["brief_english"],
+                    brief_dict["brief_tamil"],
+                    json.dumps(brief_dict.get("key_developments", [])),
+                    json.dumps(brief_dict.get("emerging_topics", [])),
+                    json.dumps(brief_dict.get("party_insights", [])),
+                    json.dumps(brief_dict.get("supporting_article_ids", [])),
+                    json.dumps(brief_dict.get("evidence_articles", [])),
+                    brief_dict.get("status", "sufficient_data")
+                ))
             conn.commit()
             return True
 

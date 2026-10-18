@@ -29,6 +29,8 @@ import {
   MethodologyPanel,
   ClientConfig,
   ScenarioBriefResponse,
+  ArticleEditorialVersionsResponse,
+  EditorialFinalizeRequest,
 } from "../types/political";
 import {
   FALLBACK_ARTICLES,
@@ -885,5 +887,25 @@ export async function fetchScenarioBrief(scenarioId: string): Promise<ScenarioBr
   if (!res.ok) throw new Error("Failed to fetch scenario intelligence brief");
   return await res.json();
 }
+
+export async function fetchEditorialVersions(articleId: string): Promise<ArticleEditorialVersionsResponse> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/news/${articleId}/editorial-versions`, {}, 6000);
+  if (!res.ok) throw new Error(`Failed to fetch editorial versions for article ${articleId}`);
+  return await res.json();
+}
+
+export async function saveEditorialFinal(
+  articleId: string,
+  payload: EditorialFinalizeRequest
+): Promise<ArticleEditorialVersionsResponse> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/news/${articleId}/editorial-final`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  }, 8000);
+  if (!res.ok) throw new Error(`Failed to save finalized editorial version for article ${articleId}`);
+  return await res.json();
+}
+
 
 
