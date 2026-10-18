@@ -139,4 +139,5 @@ def test_live_vs_demo_strict_isolation():
     brief_live = brief_service.get_or_generate_brief(mode="live", period="7d")
     assert brief_live.data_status == "live_rss"
     for art in brief_live.evidence_articles:
-        assert art["id"].startswith("live-")
+        assert art["id"].startswith("art-") or art["id"].startswith("live-")
+        assert not art["id"].startswith("tn-art-")

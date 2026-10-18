@@ -17,6 +17,9 @@ import {
   Layers,
   ArrowRight,
   Info,
+  Printer,
+  Download,
+  ShieldAlert,
 } from "lucide-react";
 import {
   IntelligenceBriefResponse,
@@ -127,10 +130,38 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
     }
   };
 
+  const handleExportMarkdown = () => {
+    if (!brief) return;
+    const isTa = language === "ta";
+    let md = `# ${isTa ? "தமிழ்நாடு அரசியல் ஊடக நுண்ணறிவுச் சுருக்கம்" : "Tamil Nadu Political Intelligence Brief"}\n\n`;
+    md += `**Provenance:** ${brief.data_status === "live_rss" ? "LIVE RSS INTELLIGENCE" : "DEMO SCENARIO INTELLIGENCE"}\n`;
+    md += `**Reporting Period:** ${brief.period.toUpperCase()} (${brief.window_start} to ${brief.window_end})\n`;
+    md += `**Generated At:** ${brief.generated_at}\n`;
+    md += `**Evidence Base:** ${brief.sample_size} articles across ${brief.publisher_count} verified media outlets\n\n`;
+    md += `## ${isTa ? "முதன்மைச் சுருக்கம்" : "Executive Intelligence Brief"}\n\n`;
+    md += `${isTa ? brief.brief_tamil : brief.brief_english}\n\n`;
+    md += `## ${isTa ? "முக்கிய அரசியல் நகர்வுகள் & சான்றுகள்" : "Key Narrative Developments & Evidence"}\n\n`;
+    brief.key_developments.forEach((dev, idx) => {
+      md += `### ${idx + 1}. ${isTa ? dev.headline_ta : dev.headline_en}\n`;
+      md += `${isTa ? dev.summary_ta : dev.summary_en}\n\n`;
+      md += `*Impact Assessment:* ${dev.impact_assessment}\n\n`;
+    });
+    md += `---\n\n`;
+    md += `**MANDATORY ELECTORATE DISCLAIMER:**\n${brief.caveat}\n`;
+
+    const blob = new Blob([md], { type: "text/markdown;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `TN_Political_Intelligence_Brief_${period}_${new Date().toISOString().slice(0, 10)}.md`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header Banner & Controls */}
-      <div className="bg-white rounded-lg border border-[#E8E8E2] shadow-2xs p-4 sm:p-5">
+      <div className="bg-white rounded-lg border border-[#E8E8E2] shadow-2xs p-4 sm:p-5 print:border-none print:shadow-none">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-[#F0F0EB]">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -139,6 +170,15 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
               </h1>
               <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-[#F4F4F0] text-zinc-700 border border-[#E2E2DC]">
                 v1.0 Synthesis
+              </span>
+              <span
+                className={`text-[10px] px-2.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider border ${
+                  brief?.data_status === "live_rss"
+                    ? "bg-emerald-100 text-emerald-950 border-emerald-300"
+                    : "bg-purple-100 text-purple-950 border-purple-300"
+                }`}
+              >
+                {brief?.data_status === "live_rss" ? "LIVE RSS INTELLIGENCE" : "DEMO SEEDED SCENARIO INTELLIGENCE"}
               </span>
               {brief?.is_cached ? (
                 <span className="text-[10px] px-2 py-0.5 rounded font-mono font-semibold bg-zinc-100 text-zinc-600 border border-zinc-200 flex items-center gap-1">
@@ -156,10 +196,11 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
           </div>
 
           {/* Action Toolbar */}
-          <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+          <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap print:hidden">
             {/* Period Selector */}
             <div className="flex items-center bg-[#F4F4F0] p-0.5 rounded border border-[#E2E2DC] text-xs">
               <button
+                type="button"
                 onClick={() => setPeriod("24h")}
                 className={`px-2.5 py-1 rounded text-xs transition-all cursor-pointer font-semibold ${
                   period === "24h" ? "bg-zinc-900 text-white shadow-2xs" : "text-zinc-600 hover:text-zinc-900"
@@ -168,6 +209,7 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                 24 Hours
               </button>
               <button
+                type="button"
                 onClick={() => setPeriod("7d")}
                 className={`px-2.5 py-1 rounded text-xs transition-all cursor-pointer font-semibold ${
                   period === "7d" ? "bg-zinc-900 text-white shadow-2xs" : "text-zinc-600 hover:text-zinc-900"
@@ -180,6 +222,7 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
             {/* Language Switcher */}
             <div className="flex items-center bg-[#F4F4F0] p-0.5 rounded border border-[#E2E2DC] text-xs">
               <button
+                type="button"
                 onClick={() => setLanguage("en")}
                 className={`px-2.5 py-1 rounded text-xs transition-all cursor-pointer font-semibold ${
                   language === "en" ? "bg-zinc-900 text-white shadow-2xs" : "text-zinc-600 hover:text-zinc-900"
@@ -188,6 +231,7 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                 English
               </button>
               <button
+                type="button"
                 onClick={() => setLanguage("ta")}
                 className={`px-2.5 py-1 rounded text-xs font-tamil transition-all cursor-pointer font-semibold ${
                   language === "ta" ? "bg-zinc-900 text-white shadow-2xs" : "text-zinc-600 hover:text-zinc-900"
@@ -197,8 +241,33 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
               </button>
             </div>
 
+            {/* Export Markdown */}
+            <button
+              type="button"
+              onClick={handleExportMarkdown}
+              disabled={!brief}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-800 border border-[#E2E2DC] text-xs font-semibold rounded shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+              title="Download structured Markdown brief"
+            >
+              <Download className="w-3.5 h-3.5 text-zinc-600" />
+              <span>Export MD</span>
+            </button>
+
+            {/* Print / PDF */}
+            <button
+              type="button"
+              onClick={() => window.print()}
+              disabled={!brief}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-800 border border-[#E2E2DC] text-xs font-semibold rounded shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+              title="Print executive brief or save as PDF"
+            >
+              <Printer className="w-3.5 h-3.5 text-zinc-600" />
+              <span>Print / PDF</span>
+            </button>
+
             {/* Regenerate Button */}
             <button
+              type="button"
               onClick={() => loadData(true)}
               disabled={loading || regenerating}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white text-xs font-semibold rounded shadow-2xs transition-colors cursor-pointer"
@@ -289,6 +358,17 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
               <div className="prose prose-zinc max-w-none text-xs sm:text-sm leading-relaxed whitespace-pre-line text-zinc-800 font-normal">
                 {language === "ta" ? brief.brief_tamil : brief.brief_english}
               </div>
+            </div>
+
+            {/* Mandatory Electorate Representation Disclaimer */}
+            <div className="p-3.5 rounded-lg bg-amber-50/80 border border-amber-300 text-amber-950 text-xs">
+              <div className="flex items-center gap-1.5 font-bold mb-1">
+                <ShieldAlert className="w-4 h-4 text-amber-800" />
+                <span className="uppercase tracking-wider font-mono text-[11px]">Mandatory Analytics Disclaimer</span>
+              </div>
+              <p className="leading-relaxed text-[11px] text-amber-900">
+                {brief.caveat || "Media presence, article volume, and coverage sentiment reflect regional journalism and news wire reporting. They do not constitute an electoral opinion poll, voter preference survey, or representative demographic voting sample."}
+              </p>
             </div>
 
             {/* Key Developments */}

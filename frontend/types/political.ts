@@ -351,3 +351,305 @@ export interface IntelligenceBriefResponse {
   caveat: string;
   is_cached: boolean;
 }
+
+// --- Multi-Source Social Media Intelligence & Trending Types ---
+
+export interface EngagementSnapshot {
+  observed_at: string;
+  likes: number;
+  comments: number;
+  shares: number;
+  views: number;
+  growth_rate_per_hour: number;
+}
+
+export interface SocialPost {
+  id: string;
+  platform: "youtube" | "x" | "instagram" | "facebook" | "reddit" | "news" | "google_trends" | string;
+  platform_post_id: string;
+  canonical_url: string;
+  author_name: string;
+  author_handle: string;
+  title?: string | null;
+  content: string;
+  language: string;
+  media_type: string;
+  thumbnail_url?: string | null;
+  published_at: string;
+  first_seen_at?: string;
+  last_seen_at?: string;
+  views_count?: number | null;
+  likes_count?: number | null;
+  comments_count?: number | null;
+  shares_count?: number | null;
+  quotes_count?: number | null;
+  party_codes: string[];
+  leader_names: string[];
+  topics: string[];
+  hashtags: string[];
+  sentiment: string;
+  sentiment_score: number;
+  trend_score: number;
+  growth_rate_per_hour?: number | null;
+  collection_mode: "LIVE" | "DEMO";
+  story_cluster_id?: string | null;
+  raw_metrics_available: string[];
+  engagement_history?: EngagementSnapshot[];
+  cluster?: StoryCluster;
+  platform_percentile?: number;
+  has_sufficient_history?: boolean;
+  history_status?: string;
+  engagement_rate_percent?: number | null;
+  acquisition_method?: string;
+  source_reliability?: number;
+  data_provenance?: Record<string, any>;
+  matched_entities?: Array<{
+    entity_name: string;
+    tamil_name?: string;
+    entity_type: string;
+    party_code?: string;
+    confidence: number;
+    evidence: string;
+    matched_keyword: string;
+  }>;
+}
+
+export interface DemoScenarioStep {
+  step: number;
+  title: string;
+  description: string;
+}
+
+export interface DemoScenario {
+  id: string;
+  name: string;
+  scenario_type: string;
+  description: string;
+  parties_involved: string[];
+  leaders_involved: string[];
+  topic: string;
+  total_steps: number;
+  current_step: number;
+  last_replayed_at?: string | null;
+  steps_meta: DemoScenarioStep[];
+}
+
+export interface ClusterTimelineNode {
+  id: string;
+  node_type: "news_article" | "social_post";
+  platform: string;
+  publisher?: string;
+  author?: string;
+  title: string;
+  content?: string;
+  url: string;
+  media_type?: string;
+  published_at: string;
+  engagement?: number;
+  time_lag_mins: number;
+}
+
+export interface ClusterTimelineResponse {
+  cluster: StoryCluster;
+  narrative_origin: ClusterTimelineNode | null;
+  latest_update: ClusterTimelineNode | null;
+  propagation_lag_minutes: number;
+  platforms_count: number;
+  timeline: ClusterTimelineNode[];
+  confidence_score: number;
+}
+
+export interface TrendExplorerResponse {
+  query: {
+    party?: string;
+    leader?: string;
+    topic?: string;
+    platform?: string;
+    time_window: string;
+    mode: string;
+  };
+  summary: {
+    total_posts: number;
+    total_standardized_engagement: number;
+    average_trend_score: number;
+    platform_diversity: number;
+    platforms: Record<string, number>;
+  };
+  timeline: {
+    timestamp: string;
+    post_count: number;
+    engagement: number;
+    avg_trend_score: number;
+  }[];
+  has_sufficient_data: boolean;
+}
+
+export interface MethodologyPanel {
+  disclaimer: string;
+  normalization_strategy: string;
+  rankings: Record<string, string>;
+  confidence_rules: Record<string, string>;
+}
+
+export interface TrendingTopic {
+  topic: string;
+  current_volume: number;
+  prior_volume: number;
+  volume_change: number;
+  current_standardized_engagement?: number;
+  prior_standardized_engagement?: number;
+  engagement_change?: number;
+  is_emerging: boolean;
+  momentum_state?: "ACCELERATING" | "STEADY" | "DECELERATING" | "EMERGING" | "INSUFFICIENT_HISTORY";
+  latest_activity_at?: string;
+  trend_score: number;
+  platforms: string[];
+  distinct_platforms_count: number;
+  total_standardized_engagement: number;
+  related_parties: string[];
+  related_leaders: string[];
+  sample_titles: string[];
+  sub_scores: {
+    engagement_growth: number;
+    volume_growth: number;
+    cross_source: number;
+    recency: number;
+  };
+}
+
+export interface TrendingPulseResponse {
+  time_window: "1h" | "24h" | "7d" | "30d";
+  mode: "live" | "demo" | "all";
+  methodology: {
+    formula: string;
+    weights: {
+      engagement_growth: number;
+      post_volume_growth: number;
+      cross_source_presence: number;
+      recency: number;
+    };
+    description: string;
+  };
+  trending_topics: TrendingTopic[];
+}
+
+export interface StoryCluster {
+  id: string;
+  title_en: string;
+  title_ta: string;
+  lead_story?: string;
+  topic: string;
+  first_observed_at: string;
+  latest_observed_at: string;
+  distinct_sources_count: number;
+  platforms_involved: string[];
+  total_engagement: number;
+  post_ids: string[];
+  news_article_ids?: string[];
+  time_lag_minutes: number;
+  cluster_status: string;
+  post_count?: number;
+  collection_mode?: "LIVE" | "DEMO";
+}
+
+export interface PlatformStat {
+  platform: string;
+  post_count: number;
+  total_raw_views: number;
+  total_raw_likes: number;
+  total_raw_comments: number;
+  total_raw_shares: number;
+  total_standardized_engagement: number;
+  party_breakdown: Record<string, number>;
+}
+
+export interface PlatformComparisonResponse {
+  time_window: string;
+  reporting_period: string;
+  platforms: PlatformStat[];
+  total_posts_across_platforms: number;
+  methodology_note: string;
+}
+
+export interface ConnectorSetupInstructions {
+  platform: string;
+  env_variable: string;
+  documentation_url: string;
+  steps: string[];
+}
+
+export interface ConnectorSummary {
+  platform: string;
+  name: string;
+  status: "HEALTHY" | "CONFIGURED" | "NOT_CONFIGURED" | "WARNING" | "ERROR" | "RATE_LIMITED";
+  is_enabled: number;
+  credentials_configured: number;
+  last_successful_fetch?: string | null;
+  last_fetch_attempt?: string | null;
+  last_error?: string | null;
+  error_count: number;
+  records_collected: number;
+  supported_metrics: string[];
+  quota_used: number;
+  quota_limit: number;
+  setup_instructions?: ConnectorSetupInstructions;
+  quota_info?: Record<string, any>;
+  latency_ms?: number;
+}
+
+export interface ClientConfig {
+  id: string;
+  client_name: string;
+  client_tagline?: string;
+  logo_url?: string;
+  brand_color?: string;
+  accent_color?: string;
+  selected_parties: string[];
+  selected_leaders: string[];
+  topics_of_interest: string[];
+  authorized_sources: string[];
+  authorized_connectors: string[];
+  default_language: string;
+  default_demo_scenario?: string;
+  updated_at?: string;
+  is_active?: boolean;
+}
+
+export interface ScenarioBriefResponse {
+  scenario_id: string;
+  scenario_name: string;
+  scenario_type: string;
+  current_stage: number;
+  total_stages: number;
+  stage_title: string;
+  stage_description: string;
+  topic: string;
+  parties_involved: string[];
+  leaders_involved: string[];
+  provenance: string;
+  is_demo: boolean;
+  generated_at: string;
+  reporting_period: string;
+  data_freshness: {
+    posts_count: number;
+    simulated_views: number;
+    simulated_likes: number;
+    simulated_comments: number;
+    simulated_shares: number;
+  };
+  executive_summary_en: string;
+  executive_summary_ta: string;
+  key_developments: Array<{
+    platform: string;
+    author: string;
+    title: string;
+    content: string;
+    published_at: string;
+    url?: string;
+    likes?: number;
+    comments?: number;
+    shares?: number;
+  }>;
+  narrative_cluster?: any;
+  disclaimer: string;
+}

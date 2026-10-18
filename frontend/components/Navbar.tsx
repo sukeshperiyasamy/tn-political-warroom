@@ -10,16 +10,20 @@ import {
   Radio,
   FlaskConical,
   FileText,
+  TrendingUp,
 } from "lucide-react";
 
+import { ClientConfig } from "../types/political";
+
 interface NavbarProps {
-  activeTab: "dashboard" | "news" | "sources" | "comparison" | "studio" | "brief";
-  onTabChange: (tab: "dashboard" | "news" | "sources" | "comparison" | "studio" | "brief") => void;
+  activeTab: "dashboard" | "news" | "social" | "lab" | "sources" | "comparison" | "studio" | "brief";
+  onTabChange: (tab: "dashboard" | "news" | "social" | "lab" | "sources" | "comparison" | "studio" | "brief") => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   articleCount: number;
   mode: "live" | "demo";
   onModeToggle: (mode: "live" | "demo") => void;
+  clientConfig?: ClientConfig | null;
 }
 
 export function Navbar({
@@ -30,7 +34,12 @@ export function Navbar({
   articleCount,
   mode,
   onModeToggle,
+  clientConfig,
 }: NavbarProps) {
+  const clientName = clientConfig?.client_name || "Tamil Nadu Strategic Intelligence Bureau";
+  const clientTagline = clientConfig?.client_tagline || "Public Opinion & Media Analytics Command";
+  const initials = clientName.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "TN";
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[#E8E8E2] bg-white/98 backdrop-blur-xs">
       {/* Top Editorial Hairline Indicator */}
@@ -40,13 +49,24 @@ export function Navbar({
         <div className="flex items-center justify-between h-16 sm:h-17 gap-2 lg:gap-4 min-w-0">
           {/* Masthead Brand Block */}
           <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 min-w-0">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-md bg-zinc-900 text-white flex items-center justify-center font-bold tracking-tighter text-xs sm:text-sm font-mono shrink-0 shadow-2xs">
-              TN
-            </div>
+            {clientConfig?.logo_url ? (
+              <img
+                src={clientConfig.logo_url}
+                alt={clientName}
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-md object-contain shrink-0 border border-zinc-200"
+              />
+            ) : (
+              <div
+                style={{ backgroundColor: clientConfig?.brand_color || "#18181B" }}
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-md text-white flex items-center justify-center font-bold tracking-tighter text-xs sm:text-sm font-mono shrink-0 shadow-2xs"
+              >
+                {initials}
+              </div>
+            )}
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className="text-xs sm:text-sm font-bold tracking-wider text-zinc-900 uppercase truncate">
-                  TN Political War Room
+                  {clientName}
                 </span>
                 {mode === "live" ? (
                   <span className="hidden md:inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80 shrink-0">
@@ -61,7 +81,7 @@ export function Navbar({
                 )}
               </div>
               <p className="text-[11px] text-zinc-500 font-tamil leading-none mt-0.5 truncate max-w-[170px] sm:max-w-none">
-                தமிழ்நாடு அரசியல் ஊடக நுண்ணறிவு & வார் ரூம்
+                {clientTagline}
               </p>
             </div>
           </div>
@@ -72,13 +92,13 @@ export function Navbar({
             aria-label="Main Navigation"
             className="hidden lg:flex items-center justify-center flex-1 min-w-0 px-1"
           >
-            <div className="flex items-center bg-[#F4F4F0] p-1 rounded-lg border border-[#E4E4DE] shrink-0">
+            <div className="flex items-center bg-[#F4F4F0] p-0.5 rounded-lg border border-[#E4E4DE] shrink-0">
               <button
                 role="tab"
                 aria-label="Dashboard Overview"
                 aria-selected={activeTab === "dashboard"}
                 onClick={() => onTabChange("dashboard")}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "dashboard"
                     ? "bg-white text-zinc-900 shadow-2xs border border-zinc-200/80 font-bold"
                     : "text-zinc-600 hover:text-zinc-900 hover:bg-white/50 font-medium"
@@ -93,16 +113,52 @@ export function Navbar({
                 aria-label="News Intelligence"
                 aria-selected={activeTab === "news"}
                 onClick={() => onTabChange("news")}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "news"
                     ? "bg-white text-zinc-900 shadow-2xs border border-zinc-200/80 font-bold"
                     : "text-zinc-600 hover:text-zinc-900 hover:bg-white/50 font-medium"
                 }`}
               >
                 <Newspaper className="w-3.5 h-3.5 text-zinc-600" />
-                <span>News Wire</span>
-                <span className="ml-0.5 px-1.5 py-0.2 rounded text-[10px] bg-zinc-200/70 text-zinc-700 font-mono font-semibold">
+                <span>News</span>
+                <span className="ml-0.5 px-1 py-0.2 rounded text-[10px] bg-zinc-200/70 text-zinc-700 font-mono font-semibold">
                   {articleCount}
+                </span>
+              </button>
+
+              <button
+                role="tab"
+                aria-label="Social Intelligence"
+                aria-selected={activeTab === "social"}
+                onClick={() => onTabChange("social")}
+                className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
+                  activeTab === "social"
+                    ? "bg-white text-zinc-900 shadow-2xs border border-zinc-200/80 font-bold"
+                    : "text-zinc-600 hover:text-zinc-900 hover:bg-white/50 font-medium"
+                }`}
+              >
+                <TrendingUp className="w-3.5 h-3.5 text-amber-600" />
+                <span>Trending</span>
+                <span className="px-1 py-0.2 text-[9px] font-mono font-bold rounded bg-amber-100 text-amber-800 uppercase">
+                  LIVE
+                </span>
+              </button>
+
+              <button
+                role="tab"
+                aria-label="Social Discovery Lab"
+                aria-selected={activeTab === "lab"}
+                onClick={() => onTabChange("lab")}
+                className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
+                  activeTab === "lab"
+                    ? "bg-white text-zinc-900 shadow-2xs border border-zinc-200/80 font-bold"
+                    : "text-zinc-600 hover:text-zinc-900 hover:bg-white/50 font-medium"
+                }`}
+              >
+                <FlaskConical className="w-3.5 h-3.5 text-purple-600" />
+                <span>Discovery Lab</span>
+                <span className="px-1 py-0.2 text-[9px] font-mono font-bold rounded bg-purple-100 text-purple-800 uppercase">
+                  LAB
                 </span>
               </button>
 
@@ -111,7 +167,7 @@ export function Navbar({
                 aria-label="Intelligence Brief"
                 aria-selected={activeTab === "brief"}
                 onClick={() => onTabChange("brief")}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "brief"
                     ? "bg-white text-zinc-900 shadow-2xs border border-zinc-200/80 font-bold"
                     : "text-zinc-600 hover:text-zinc-900 hover:bg-white/50 font-medium"
@@ -119,9 +175,6 @@ export function Navbar({
               >
                 <FileText className="w-3.5 h-3.5 text-zinc-600" />
                 <span>Brief</span>
-                <span className="px-1 py-0.2 text-[9px] font-mono font-bold rounded bg-zinc-200/60 text-zinc-700 uppercase">
-                  v1
-                </span>
               </button>
 
               <button
@@ -129,14 +182,14 @@ export function Navbar({
                 aria-label="Party Comparison"
                 aria-selected={activeTab === "comparison"}
                 onClick={() => onTabChange("comparison")}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "comparison"
                     ? "bg-white text-zinc-900 shadow-2xs border border-zinc-200/80 font-bold"
                     : "text-zinc-600 hover:text-zinc-900 hover:bg-white/50 font-medium"
                 }`}
               >
                 <GitCompare className="w-3.5 h-3.5 text-zinc-600" />
-                <span>Party Comparison</span>
+                <span>Compare</span>
               </button>
 
               <button
@@ -144,7 +197,7 @@ export function Navbar({
                 aria-label="Sources & Ingestion"
                 aria-selected={activeTab === "sources"}
                 onClick={() => onTabChange("sources")}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "sources"
                     ? "bg-white text-zinc-900 shadow-2xs border border-zinc-200/80 font-bold"
                     : "text-zinc-600 hover:text-zinc-900 hover:bg-white/50 font-medium"
@@ -159,7 +212,7 @@ export function Navbar({
                 aria-label="News Card Studio"
                 aria-selected={activeTab === "studio"}
                 onClick={() => onTabChange("studio")}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "studio"
                     ? "bg-zinc-900 text-white shadow-2xs font-bold"
                     : "text-zinc-700 hover:text-zinc-900 hover:bg-white/50 font-medium"
@@ -243,6 +296,26 @@ export function Navbar({
             }`}
           >
             News ({articleCount})
+          </button>
+          <button
+            onClick={() => onTabChange("social")}
+            className={`px-2.5 py-1 rounded text-xs whitespace-nowrap cursor-pointer ${
+              activeTab === "social"
+                ? "bg-zinc-900 text-white font-semibold shadow-2xs"
+                : "text-zinc-600 hover:bg-zinc-100 font-medium"
+            }`}
+          >
+            Trending
+          </button>
+          <button
+            onClick={() => onTabChange("lab")}
+            className={`px-2.5 py-1 rounded text-xs whitespace-nowrap cursor-pointer ${
+              activeTab === "lab"
+                ? "bg-zinc-900 text-white font-semibold shadow-2xs"
+                : "text-zinc-600 hover:bg-zinc-100 font-medium"
+            }`}
+          >
+            Discovery Lab
           </button>
           <button
             onClick={() => onTabChange("brief")}

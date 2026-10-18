@@ -23,8 +23,11 @@ coverage/
 *credentials*.json
 secrets.*
 *.db
+*.db-*
+*.db.*
 *.sqlite
 *.sqlite3
+backend/app/data/*.db*
 
 # Claude & Tool Backups / Local State
 *.bak

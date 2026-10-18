@@ -16,12 +16,21 @@ import {
   Server,
   Layers,
   Tag,
+  Settings,
+  Sliders,
+  Shield,
+  Save,
+  RotateCcw,
+  Building,
+  Palette,
+  Sparkles,
 } from "lucide-react";
 import {
   NewsSource,
   SourceTestResult,
   IngestionLog,
   IngestResponse,
+  ClientConfig,
 } from "../types/political";
 import {
   fetchSources,
@@ -32,6 +41,8 @@ import {
   deleteSource,
   triggerIngest,
   fetchLogs,
+  updateClientConfig,
+  resetClientConfig,
 } from "../lib/api";
 
 function formatTimestamp(isoString?: string | null): string {
@@ -114,7 +125,89 @@ function getFetchStatusBadge(source: NewsSource) {
   );
 }
 
-export function SourceManagementView() {
+interface SourceManagementViewProps {
+  clientConfig?: ClientConfig | null;
+  onConfigUpdated?: (config: ClientConfig) => void;
+}
+
+export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceManagementViewProps) {
+  const [adminTab, setAdminTab] = useState<"sources" | "branding">("sources");
+
+  // Client configuration local state
+  const [configState, setConfigState] = useState<Partial<ClientConfig>>({
+    client_name: "Tamil Nadu Strategic Intelligence Bureau",
+    client_tagline: "Public Opinion & Media Analytics Command",
+    logo_url: "",
+    brand_color: "#0F172A",
+    accent_color: "#2563EB",
+    selected_parties: ["DMK", "AIADMK", "BJP", "INC", "TVK", "NTK", "PMK", "VCK"],
+    selected_leaders: ["MK Stalin", "Edappadi Palaniswami", "K Annamalai", "Vijay", "Seeman", "Udhayanidhi Stalin"],
+    topics_of_interest: ["Welfare Schemes", "Infrastructure", "Corruption & Governance", "Education & NEET", "Language & Federalism", "Law & Order", "Fishermen Rights"],
+    authorized_sources: ["daily_thanthi", "dinamalar", "dinakaran", "puthiyathalaimurai", "bbc_tamil", "the_hindu_tamil"],
+    authorized_connectors: ["news", "youtube", "x", "reddit", "instagram", "facebook", "google_trends"],
+    default_language: "ta",
+    default_demo_scenario: "scenario_policy_announcement",
+  });
+  const [savingConfig, setSavingConfig] = useState<boolean>(false);
+  const [configFeedback, setConfigFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  useEffect(() => {
+    if (clientConfig) {
+      setConfigState({
+        client_name: clientConfig.client_name || "",
+        client_tagline: clientConfig.client_tagline || "",
+        logo_url: clientConfig.logo_url || "",
+        brand_color: clientConfig.brand_color || "#0F172A",
+        accent_color: clientConfig.accent_color || "#2563EB",
+        selected_parties: clientConfig.selected_parties || [],
+        selected_leaders: clientConfig.selected_leaders || [],
+        topics_of_interest: clientConfig.topics_of_interest || [],
+        authorized_sources: clientConfig.authorized_sources || [],
+        authorized_connectors: clientConfig.authorized_connectors || [],
+        default_language: clientConfig.default_language || "ta",
+        default_demo_scenario: clientConfig.default_demo_scenario || "scenario_policy_announcement",
+      });
+    }
+  }, [clientConfig]);
+
+  const toggleArrayItem = (field: keyof ClientConfig, item: string) => {
+    setConfigState((prev) => {
+      const arr = (prev[field] as string[]) || [];
+      const updated = arr.includes(item) ? arr.filter((x) => x !== item) : [...arr, item];
+      return { ...prev, [field]: updated };
+    });
+  };
+
+  const handleSaveConfig = async () => {
+    setSavingConfig(true);
+    setConfigFeedback(null);
+    try {
+      const saved = await updateClientConfig(configState);
+      setConfigFeedback({ type: "success", text: "Client configuration successfully updated and persisted." });
+      if (onConfigUpdated) onConfigUpdated(saved);
+    } catch (err: any) {
+      setConfigFeedback({ type: "error", text: err.message || "Failed to update client configuration" });
+    } finally {
+      setSavingConfig(false);
+    }
+  };
+
+  const handleResetConfig = async () => {
+    if (!confirm("Reset client workspace configuration to Bureau defaults?")) return;
+    setSavingConfig(true);
+    setConfigFeedback(null);
+    try {
+      const reset = await resetClientConfig();
+      setConfigFeedback({ type: "success", text: "Configuration reset to default Bureau profile." });
+      setConfigState(reset);
+      if (onConfigUpdated) onConfigUpdated(reset);
+    } catch (err: any) {
+      setConfigFeedback({ type: "error", text: err.message || "Failed to reset configuration" });
+    } finally {
+      setSavingConfig(false);
+    }
+  };
+
   const [sources, setSources] = useState<NewsSource[]>([]);
   const [logs, setLogs] = useState<IngestionLog[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -309,31 +402,78 @@ export function SourceManagementView() {
             <div className="flex items-center gap-2 mb-1">
               <Radio className="w-4 h-4 text-zinc-700" />
               <h2 className="text-base sm:text-lg font-bold text-zinc-900 tracking-tight font-serif">
-                Source Management & Feed Freshness Hub
+                {adminTab === "sources" ? "Source Management & Feed Freshness Hub" : "Client Workspace & Branding Administration"}
               </h2>
             </div>
             <p className="text-xs text-zinc-500 font-medium">
-              Regional media syndication registry with conditional ETag validation, HTTP 304 caching, and canonical deduplication
+              {adminTab === "sources"
+                ? "Regional media syndication registry with conditional ETag validation, HTTP 304 caching, and canonical deduplication"
+                : "Manage client organization profile, brand assets, targeted parties, monitored topics, and deployment defaults"}
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => setShowAddForm(!showAddForm)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-800 border border-[#E2E2DC] transition-colors cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5 text-zinc-600" />
-              <span>{showAddForm ? "Close Form" : "Add Publisher"}</span>
-            </button>
+            <div className="inline-flex p-1 bg-[#F4F4F0] rounded-md border border-[#E2E2DC] mr-1">
+              <button
+                type="button"
+                onClick={() => setAdminTab("sources")}
+                className={`px-3 py-1 text-xs font-semibold rounded transition-colors cursor-pointer ${
+                  adminTab === "sources" ? "bg-white text-zinc-900 shadow-2xs" : "text-zinc-600 hover:text-zinc-900"
+                }`}
+              >
+                Media Feeds Hub
+              </button>
+              <button
+                type="button"
+                onClick={() => setAdminTab("branding")}
+                className={`px-3 py-1 text-xs font-semibold rounded transition-colors flex items-center gap-1.5 cursor-pointer ${
+                  adminTab === "branding" ? "bg-white text-zinc-900 shadow-2xs" : "text-zinc-600 hover:text-zinc-900"
+                }`}
+              >
+                <Sliders className="w-3 h-3 text-zinc-600" />
+                <span>Client Settings</span>
+              </button>
+            </div>
 
-            <button
-              onClick={handleIngestAll}
-              disabled={ingesting}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
-            >
-              <Play className={`w-3.5 h-3.5 ${ingesting ? "animate-spin" : ""}`} />
-              <span>{ingesting ? "Ingesting Feeds..." : "Ingest All Feeds"}</span>
-            </button>
+            {adminTab === "sources" ? (
+              <>
+                <button
+                  onClick={() => setShowAddForm(!showAddForm)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-800 border border-[#E2E2DC] transition-colors cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5 text-zinc-600" />
+                  <span>{showAddForm ? "Close Form" : "Add Publisher"}</span>
+                </button>
+
+                <button
+                  onClick={handleIngestAll}
+                  disabled={ingesting}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  <Play className={`w-3.5 h-3.5 ${ingesting ? "animate-spin" : ""}`} />
+                  <span>{ingesting ? "Ingesting Feeds..." : "Ingest All Feeds"}</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={handleResetConfig}
+                  disabled={savingConfig}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-700 border border-[#E2E2DC] transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 text-zinc-500" />
+                  <span>Reset Defaults</span>
+                </button>
+                <button
+                  onClick={handleSaveConfig}
+                  disabled={savingConfig}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-bold bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  <Save className="w-3.5 h-3.5 text-zinc-100" />
+                  <span>{savingConfig ? "Saving..." : "Save Configuration"}</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -372,12 +512,373 @@ export function SourceManagementView() {
         </div>
       </div>
 
-      {/* Add Source Drawer / Collapsible Form */}
-      {showAddForm && (
-        <div className="bg-white border border-[#E8E8E2] rounded-lg p-5 shadow-sm space-y-4">
-          <div className="border-b border-[#F0F0EB] pb-2 flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
-              Register New Tamil Media Publisher
+      {adminTab === "branding" ? (
+        <div className="space-y-6">
+          {/* Feedback banner */}
+          {configFeedback && (
+            <div
+              className={`p-3 rounded border text-xs font-medium flex items-center justify-between ${
+                configFeedback.type === "success"
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-900"
+                  : "bg-rose-50 border-rose-200 text-rose-900"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                {configFeedback.type === "success" ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 text-rose-600" />
+                )}
+                <span>{configFeedback.text}</span>
+              </div>
+              <button
+                onClick={() => setConfigFeedback(null)}
+                className="text-zinc-400 hover:text-zinc-700 text-xs cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {/* Section 1: Client Organization & Brand Identity */}
+          <div className="bg-white border border-[#E8E8E2] rounded-lg p-5 shadow-2xs space-y-4">
+            <div className="border-b border-[#F0F0EB] pb-3 flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 flex items-center gap-2">
+                  <Building className="w-4 h-4 text-zinc-700" />
+                  <span>Organization & Visual Branding</span>
+                </h3>
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  Customizes the platform banner, report headers, and dashboard identity for the client.
+                </p>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 border border-zinc-200">
+                DB-Backed Profile
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  Client / Bureau Display Name *
+                </label>
+                <input
+                  type="text"
+                  value={configState.client_name || ""}
+                  onChange={(e) => setConfigState({ ...configState, client_name: e.target.value })}
+                  placeholder="e.g. Tamil Nadu Strategic Intelligence Bureau"
+                  className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-2 text-xs text-zinc-900 font-medium focus:outline-hidden focus:border-zinc-500 focus:bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  Tagline / Operational Subtitle
+                </label>
+                <input
+                  type="text"
+                  value={configState.client_tagline || ""}
+                  onChange={(e) => setConfigState({ ...configState, client_tagline: e.target.value })}
+                  placeholder="e.g. Public Opinion & Media Analytics Command"
+                  className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-2 text-xs text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  Logo Image URL (Optional)
+                </label>
+                <input
+                  type="url"
+                  value={configState.logo_url || ""}
+                  onChange={(e) => setConfigState({ ...configState, logo_url: e.target.value })}
+                  placeholder="https://example.com/logo.png"
+                  className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-2 text-xs text-zinc-900 font-mono focus:outline-hidden focus:border-zinc-500 focus:bg-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                    Primary Brand Color
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={configState.brand_color || "#0F172A"}
+                      onChange={(e) => setConfigState({ ...configState, brand_color: e.target.value })}
+                      className="w-8 h-8 rounded border border-[#E2E2DC] p-0.5 cursor-pointer bg-white"
+                    />
+                    <input
+                      type="text"
+                      value={configState.brand_color || "#0F172A"}
+                      onChange={(e) => setConfigState({ ...configState, brand_color: e.target.value })}
+                      className="flex-1 bg-[#F9F9F7] border border-[#E2E2DC] rounded px-2.5 py-1.5 text-xs font-mono text-zinc-800"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                    Accent Color
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={configState.accent_color || "#2563EB"}
+                      onChange={(e) => setConfigState({ ...configState, accent_color: e.target.value })}
+                      className="w-8 h-8 rounded border border-[#E2E2DC] p-0.5 cursor-pointer bg-white"
+                    />
+                    <input
+                      type="text"
+                      value={configState.accent_color || "#2563EB"}
+                      onChange={(e) => setConfigState({ ...configState, accent_color: e.target.value })}
+                      className="flex-1 bg-[#F9F9F7] border border-[#E2E2DC] rounded px-2.5 py-1.5 text-xs font-mono text-zinc-800"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Targeted Political Entities */}
+          <div className="bg-white border border-[#E8E8E2] rounded-lg p-5 shadow-2xs space-y-4">
+            <div className="border-b border-[#F0F0EB] pb-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 flex items-center gap-2">
+                <Tag className="w-4 h-4 text-zinc-700" />
+                <span>Monitored Political Parties & Key Leaders</span>
+              </h3>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                Toggle the parties and prominent leaders included in comparative analytics and brief synthesis.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 mb-2">
+                  Targeted Political Parties
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {["DMK", "AIADMK", "BJP", "INC", "TVK", "NTK", "PMK", "VCK"].map((party) => {
+                    const isSelected = (configState.selected_parties || []).includes(party);
+                    return (
+                      <button
+                        key={party}
+                        type="button"
+                        onClick={() => toggleArrayItem("selected_parties", party)}
+                        className={`px-3 py-1.5 rounded text-xs font-semibold transition-all cursor-pointer border ${
+                          isSelected
+                            ? "bg-zinc-900 text-white border-zinc-900 shadow-2xs"
+                            : "bg-[#F9F9F7] text-zinc-600 border-[#E2E2DC] hover:border-zinc-400"
+                        }`}
+                      >
+                        {isSelected ? "✓ " : "+ "}
+                        {party}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 mb-2">
+                  Key Monitored Leaders
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "MK Stalin",
+                    "Edappadi Palaniswami",
+                    "K Annamalai",
+                    "Vijay",
+                    "Seeman",
+                    "Udhayanidhi Stalin",
+                    "TR Baalu",
+                    "O Panneerselvam",
+                  ].map((leader) => {
+                    const isSelected = (configState.selected_leaders || []).includes(leader);
+                    return (
+                      <button
+                        key={leader}
+                        type="button"
+                        onClick={() => toggleArrayItem("selected_leaders", leader)}
+                        className={`px-3 py-1.5 rounded text-xs font-medium transition-all cursor-pointer border ${
+                          isSelected
+                            ? "bg-blue-900 text-white border-blue-900 shadow-2xs"
+                            : "bg-[#F9F9F7] text-zinc-600 border-[#E2E2DC] hover:border-zinc-400"
+                        }`}
+                      >
+                        {isSelected ? "✓ " : "+ "}
+                        {leader}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Topics & Channels Configuration */}
+          <div className="bg-white border border-[#E8E8E2] rounded-lg p-5 shadow-2xs space-y-4">
+            <div className="border-b border-[#F0F0EB] pb-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-zinc-700" />
+                <span>Policy Topics & Authorized Channels</span>
+              </h3>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                Select prioritized policy areas and specify which multi-source channels are activated for intelligence discovery.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 mb-2">
+                  Policy Topics of Interest
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "Welfare Schemes",
+                    "Infrastructure",
+                    "Corruption & Governance",
+                    "Education & NEET",
+                    "Language & Federalism",
+                    "Law & Order",
+                    "Fishermen Rights",
+                    "Temple Administration",
+                    "Youth & Unemployment",
+                    "State Financial Autonomy",
+                  ].map((topic) => {
+                    const isSelected = (configState.topics_of_interest || []).includes(topic);
+                    return (
+                      <button
+                        key={topic}
+                        type="button"
+                        onClick={() => toggleArrayItem("topics_of_interest", topic)}
+                        className={`px-3 py-1.5 rounded text-xs font-medium transition-all cursor-pointer border ${
+                          isSelected
+                            ? "bg-emerald-900 text-white border-emerald-900 shadow-2xs"
+                            : "bg-[#F9F9F7] text-zinc-600 border-[#E2E2DC] hover:border-zinc-400"
+                        }`}
+                      >
+                        {isSelected ? "✓ " : "+ "}
+                        {topic}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 mb-2">
+                  Authorized Multi-Source Connectors
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  {[
+                    { id: "news", name: "Tamil News RSS", desc: "Regional press feeds" },
+                    { id: "youtube", name: "YouTube Data API", desc: "Public political channels" },
+                    { id: "x", name: "X / Twitter API", desc: "Public hashtag commentary" },
+                    { id: "reddit", name: "Reddit Public", desc: "r/TamilNadu discussions" },
+                    { id: "instagram", name: "Instagram Graph", desc: "Public political reels" },
+                    { id: "facebook", name: "Facebook Pages", desc: "Verified party pages" },
+                    { id: "google_trends", name: "Google Trends", desc: "Regional search momentum" },
+                  ].map((conn) => {
+                    const isAuth = (configState.authorized_connectors || []).includes(conn.id);
+                    return (
+                      <div
+                        key={conn.id}
+                        onClick={() => toggleArrayItem("authorized_connectors", conn.id)}
+                        className={`p-3 rounded border text-xs cursor-pointer transition-all ${
+                          isAuth
+                            ? "bg-zinc-50 border-zinc-800 text-zinc-900 shadow-2xs"
+                            : "bg-[#F9F9F7] border-[#E8E8E2] text-zinc-400 opacity-60"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between font-bold mb-0.5">
+                          <span>{conn.name}</span>
+                          <span
+                            className={`w-2 h-2 rounded-full ${
+                              isAuth ? "bg-emerald-600" : "bg-zinc-300"
+                            }`}
+                          />
+                        </div>
+                        <p className="text-[11px] text-zinc-500">{conn.desc}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                    Default Working Language
+                  </label>
+                  <select
+                    value={configState.default_language || "ta"}
+                    onChange={(e) => setConfigState({ ...configState, default_language: e.target.value })}
+                    className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-2 text-xs text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white cursor-pointer"
+                  >
+                    <option value="ta">Tamil (தமிழ்) — Primary</option>
+                    <option value="en">English — Primary</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                    Default Client Demo Scenario
+                  </label>
+                  <select
+                    value={configState.default_demo_scenario || "scenario_policy_announcement"}
+                    onChange={(e) =>
+                      setConfigState({ ...configState, default_demo_scenario: e.target.value })
+                    }
+                    className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-2 text-xs text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white cursor-pointer"
+                  >
+                    <option value="scenario_policy_announcement">
+                      Policy Announcement: Kalaignar Magalir Urimai Thogai Expansion
+                    </option>
+                    <option value="scenario_leader_speech">
+                      Leader Speech: TVK Vijay Youth & Education Address
+                    </option>
+                    <option value="scenario_political_controversy">
+                      Political Controversy: DMK vs BJP Budget & Fund Allocation
+                    </option>
+                    <option value="scenario_cross_party_debate">
+                      Cross-Party Debate: NEET Exemption & State Autonomy
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-[#F0F0EB]">
+              <button
+                type="button"
+                onClick={handleResetConfig}
+                disabled={savingConfig}
+                className="px-3.5 py-2 rounded text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 border border-[#E2E2DC] cursor-pointer"
+              >
+                Reset to Bureau Defaults
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveConfig}
+                disabled={savingConfig}
+                className="px-5 py-2 rounded text-xs font-bold bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs cursor-pointer flex items-center gap-2"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>{savingConfig ? "Saving Client Settings..." : "Save Client Configuration"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Add Source Drawer / Collapsible Form */}
+          {showAddForm && (
+            <div className="bg-white border border-[#E8E8E2] rounded-lg p-5 shadow-sm space-y-4">
+              <div className="border-b border-[#F0F0EB] pb-2 flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
+                  Register New Tamil Media Publisher
             </h3>
             <button onClick={() => setShowAddForm(false)} className="text-xs text-zinc-400 hover:text-zinc-700 cursor-pointer">
               Cancel
@@ -885,6 +1386,9 @@ export function SourceManagementView() {
           </table>
         </div>
       </div>
-    </div>
-  );
+    </>
+  )}
+</div>
+);
 }
+

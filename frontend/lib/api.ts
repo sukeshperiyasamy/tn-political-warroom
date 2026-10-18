@@ -18,6 +18,17 @@ import {
   TopicTrendsResponse,
   PartyLeaderCoverageResponse,
   IntelligenceBriefResponse,
+  SocialPost,
+  TrendingPulseResponse,
+  PlatformComparisonResponse,
+  StoryCluster,
+  ConnectorSummary,
+  DemoScenario,
+  ClusterTimelineResponse,
+  TrendExplorerResponse,
+  MethodologyPanel,
+  ClientConfig,
+  ScenarioBriefResponse,
 } from "../types/political";
 import {
   FALLBACK_ARTICLES,
@@ -657,4 +668,222 @@ export async function fetchEvidenceSearch(params: {
   if (!res.ok) throw new Error("Failed to search evidence");
   return await res.json();
 }
+
+// --- Social Intelligence API Methods ---
+
+export async function fetchSocialPosts(filters: {
+  platform?: string;
+  topic?: string;
+  party?: string;
+  leader?: string;
+  mode?: "live" | "demo" | "all";
+  sort?: "trending" | "fastest_growing" | "most_discussed" | "most_liked" | "most_shared" | "most_cross_platform" | "engagement" | "recent" | string;
+  limit?: number;
+  offset?: number;
+} = {}): Promise<{ total_count: number; limit: number; offset: number; posts: SocialPost[] }> {
+  const params = new URLSearchParams();
+  if (filters.platform && filters.platform !== "all") params.append("platform", filters.platform);
+  if (filters.topic && filters.topic !== "all") params.append("topic", filters.topic);
+  if (filters.party && filters.party !== "all") params.append("party", filters.party);
+  if (filters.leader && filters.leader !== "all") params.append("leader", filters.leader);
+  if (filters.mode) params.append("mode", filters.mode);
+  if (filters.sort) params.append("sort", filters.sort);
+  if (filters.limit) params.append("limit", filters.limit.toString());
+  if (filters.offset) params.append("offset", filters.offset.toString());
+
+  const res = await fetchWithTimeout(`${API_BASE}/api/social/posts?${params.toString()}`, {}, 5000);
+  if (!res.ok) throw new Error("Failed to fetch social posts");
+  return await res.json();
+}
+
+export async function fetchSocialPostDetail(postId: string): Promise<SocialPost> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/social/posts/${postId}`, {}, 4000);
+  if (!res.ok) throw new Error("Failed to fetch social post detail");
+  return await res.json();
+}
+
+export async function fetchTrendingPulse(
+  timeWindow: "1h" | "24h" | "7d" | "30d" = "24h",
+  mode: "live" | "demo" | "all" = "live",
+  limit = 10
+): Promise<TrendingPulseResponse> {
+  const params = new URLSearchParams({
+    time_window: timeWindow,
+    mode: mode,
+    limit: limit.toString(),
+  });
+  const res = await fetchWithTimeout(`${API_BASE}/api/social/trending?${params.toString()}`, {}, 5000);
+  if (!res.ok) throw new Error("Failed to fetch trending pulse");
+  return await res.json();
+}
+
+export async function fetchPlatformComparison(
+  timeWindow: "1h" | "24h" | "7d" | "30d" = "24h",
+  mode: "live" | "demo" | "all" = "live"
+): Promise<PlatformComparisonResponse> {
+  const params = new URLSearchParams({
+    time_window: timeWindow,
+    mode: mode,
+  });
+  const res = await fetchWithTimeout(`${API_BASE}/api/social/platform-comparison?${params.toString()}`, {}, 5000);
+  if (!res.ok) throw new Error("Failed to fetch platform comparison");
+  return await res.json();
+}
+
+export async function fetchStoryClusters(
+  limit = 10,
+  mode: "live" | "demo" | "all" = "live"
+): Promise<{ count: number; clusters: StoryCluster[] }> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/social/story-clusters?limit=${limit}&mode=${mode}`, {}, 5000);
+  if (!res.ok) throw new Error("Failed to fetch story clusters");
+  return await res.json();
+}
+
+export async function fetchTopHashtags(
+  limit = 15,
+  mode: "live" | "demo" | "all" = "live"
+): Promise<{ hashtags: Array<{ tag: string; count: number; platforms: string[]; parties: string[] }> }> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/social/hashtags?limit=${limit}&mode=${mode}`, {}, 4000);
+  if (!res.ok) throw new Error("Failed to fetch hashtags");
+  return await res.json();
+}
+
+export async function fetchConnectors(): Promise<ConnectorSummary[]> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/social/connectors`, {}, 4000);
+  if (!res.ok) throw new Error("Failed to fetch connectors");
+  return await res.json();
+}
+
+export async function testConnector(platform: string): Promise<any> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/social/connectors/${platform}/test`, {
+    method: "POST",
+  }, 10000);
+  if (!res.ok) throw new Error(`Failed to test connector ${platform}`);
+  return await res.json();
+}
+
+export async function triggerSocialIngestion(): Promise<any> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/social/ingestion/run`, {
+    method: "POST",
+  }, 30000);
+  if (!res.ok) throw new Error("Failed to trigger social ingestion");
+  return await res.json();
+}
+
+export async function seedDemoSocialData(): Promise<any> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/social/demo/seed`, {
+    method: "POST",
+  }, 10000);
+  if (!res.ok) throw new Error("Failed to seed demo social data");
+  return await res.json();
+}
+
+export async function fetchTrendExplorer(params: {
+  party?: string;
+  leader?: string;
+  topic?: string;
+  platform?: string;
+  timeWindow?: "1h" | "24h" | "7d" | "30d";
+  mode?: "live" | "demo" | "all";
+}): Promise<TrendExplorerResponse> {
+  const q = new URLSearchParams();
+  if (params.party && params.party !== "all") q.append("party", params.party);
+  if (params.leader && params.leader !== "all") q.append("leader", params.leader);
+  if (params.topic && params.topic !== "all") q.append("topic", params.topic);
+  if (params.platform && params.platform !== "all") q.append("platform", params.platform);
+  if (params.timeWindow) q.append("time_window", params.timeWindow);
+  if (params.mode) q.append("mode", params.mode);
+
+  const res = await fetchWithTimeout(`${API_BASE}/api/social/trend-explorer?${q.toString()}`, {}, 5000);
+  if (!res.ok) throw new Error("Failed to fetch trend explorer data");
+  return await res.json();
+}
+
+export async function fetchClusterTimeline(clusterId: string): Promise<ClusterTimelineResponse> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/social/story-clusters/${clusterId}/timeline`, {}, 5000);
+  if (!res.ok) throw new Error("Failed to fetch story cluster timeline");
+  return await res.json();
+}
+
+export async function fetchMethodology(): Promise<MethodologyPanel> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/social/methodology`, {}, 4000);
+  if (!res.ok) throw new Error("Failed to fetch methodology");
+  return await res.json();
+}
+
+export async function fetchDemoScenarios(): Promise<{ scenarios: DemoScenario[] }> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/social/demo/scenarios`, {}, 4000);
+  if (!res.ok) throw new Error("Failed to fetch demo scenarios");
+  return await res.json();
+}
+
+export async function fetchDemoScenarioDetail(scenarioId: string): Promise<DemoScenario> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/social/demo/scenarios/${scenarioId}`, {}, 4000);
+  if (!res.ok) throw new Error("Failed to fetch scenario detail");
+  return await res.json();
+}
+
+export async function replayDemoScenario(scenarioId: string, step: number = 1): Promise<any> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/social/demo/scenarios/${scenarioId}/replay`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ step }),
+  }, 10000);
+  if (!res.ok) throw new Error("Failed to replay demo scenario");
+  return await res.json();
+}
+
+export async function fetchFetchRuns(limit = 25): Promise<{ fetch_runs: any[] }> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/social/fetch-runs?limit=${limit}`, {}, 4000);
+  if (!res.ok) throw new Error("Failed to fetch fetch runs diagnostics");
+  return await res.json();
+}
+
+export async function runConnectorManually(platform: string): Promise<any> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/social/scheduler/run-connector/${platform}`, {
+    method: "POST",
+  }, 15000);
+  if (!res.ok) throw new Error(`Failed to execute connector ${platform}`);
+  return await res.json();
+}
+
+export async function fetchClientConfig(): Promise<ClientConfig> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/client-config`, {}, 4000);
+  if (!res.ok) throw new Error("Failed to fetch client configuration");
+  return await res.json();
+}
+
+export async function updateClientConfig(updates: Partial<ClientConfig>): Promise<ClientConfig> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/client-config`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updates),
+  }, 5000);
+  if (!res.ok) throw new Error("Failed to update client configuration");
+  return await res.json();
+}
+
+export async function resetClientConfig(): Promise<ClientConfig> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/client-config/reset`, {
+    method: "POST",
+  }, 5000);
+  if (!res.ok) throw new Error("Failed to reset client configuration");
+  return await res.json();
+}
+
+export async function resetDemoScenario(scenarioId?: string): Promise<{ status: string; message: string }> {
+  const url = scenarioId
+    ? `${API_BASE}/api/social/demo/scenarios/${scenarioId}/reset`
+    : `${API_BASE}/api/social/demo/scenarios/reset`;
+  const res = await fetchWithTimeout(url, { method: "POST" }, 8000);
+  if (!res.ok) throw new Error("Failed to reset demo scenario");
+  return await res.json();
+}
+
+export async function fetchScenarioBrief(scenarioId: string): Promise<ScenarioBriefResponse> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/social/demo/scenarios/${scenarioId}/brief`, {}, 5000);
+  if (!res.ok) throw new Error("Failed to fetch scenario intelligence brief");
+  return await res.json();
+}
+
 

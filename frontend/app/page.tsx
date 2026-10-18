@@ -29,6 +29,12 @@ import {
   IntelligenceBriefView,
 } from "../components/IntelligenceBriefView";
 import {
+  SocialIntelligenceView,
+} from "../components/SocialIntelligenceView";
+import {
+  SocialDiscoveryLab,
+} from "../components/SocialDiscoveryLab";
+import {
   NewsArticle,
   PoliticalParty,
   PoliticalLeader,
@@ -36,6 +42,7 @@ import {
   DashboardMetrics,
   FilterState,
   TamilVariation,
+  ClientConfig,
 } from "../types/political";
 import {
   fetchArticles,
@@ -44,6 +51,7 @@ import {
   fetchLeaders,
   fetchTemplates,
   triggerIngest,
+  fetchClientConfig,
 } from "../lib/api";
 import {
   FileQuestion,
@@ -55,7 +63,7 @@ import {
 } from "lucide-react";
 
 export default function WarRoomDashboard() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "news" | "sources" | "comparison" | "studio" | "brief">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "news" | "social" | "lab" | "sources" | "comparison" | "studio" | "brief">("dashboard");
   const [filters, setFilters] = useState<FilterState>({
     search: "",
     party: "",
@@ -78,16 +86,18 @@ export default function WarRoomDashboard() {
   // Drawer & Studio Active Item
   const [drawerArticle, setDrawerArticle] = useState<NewsArticle | null>(null);
   const [studioArticle, setStudioArticle] = useState<NewsArticle | null>(null);
+  const [clientConfig, setClientConfig] = useState<ClientConfig | null>(null);
 
   // Initial load
   useEffect(() => {
-    Promise.all([fetchParties(), fetchLeaders(), fetchTemplates()]).then(
-      ([pList, lList, tList]) => {
+    Promise.all([fetchParties(), fetchLeaders(), fetchTemplates(), fetchClientConfig()]).then(
+      ([pList, lList, tList, cfg]) => {
         setParties(pList);
         setLeaders(lList);
         setTemplates(tList);
+        setClientConfig(cfg);
       }
-    );
+    ).catch((err) => console.error("Failed to load initial metadata:", err));
   }, []);
 
   // Filter-dependent load
@@ -184,6 +194,7 @@ export default function WarRoomDashboard() {
         articleCount={articles.length}
         mode={isLive ? "live" : "demo"}
         onModeToggle={handleModeToggle}
+        clientConfig={clientConfig}
       />
 
       {/* Main Content Area */}
@@ -357,8 +368,19 @@ export default function WarRoomDashboard() {
           </div>
         )}
 
-        {/* Tab 3: Sources & Ingestion Hub */}
-        {activeTab === "sources" && <SourceManagementView />}
+        {/* Tab 3: Social Media Intelligence & Trending Pulse */}
+        {activeTab === "social" && <SocialIntelligenceView mode={isLive ? "live" : "demo"} />}
+
+        {/* Tab 3.5: Social Discovery & Trending Intelligence Lab (Phase 4) */}
+        {activeTab === "lab" && <SocialDiscoveryLab mode={isLive ? "live" : "demo"} onModeToggle={handleModeToggle} />}
+
+        {/* Tab 4: Sources & Ingestion Hub */}
+        {activeTab === "sources" && (
+          <SourceManagementView
+            clientConfig={clientConfig}
+            onConfigUpdated={setClientConfig}
+          />
+        )}
 
         {/* Tab 4: Party & Leader Comparison */}
         {activeTab === "comparison" && (

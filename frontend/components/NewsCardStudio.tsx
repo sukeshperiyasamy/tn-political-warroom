@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Download,
   Sparkles,
@@ -48,9 +48,46 @@ export function NewsCardStudio({
   const [downloadSuccess, setDownloadSuccess] = useState<string | null>(null);
 
   const cardRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [previewScale, setPreviewScale] = useState<number>(0.5);
 
-  const activeTemplate = templates.find((t) => t.id === selectedTemplateId) || templates[0];
-  const activeParty = parties.find((p) => p.code === selectedPartyCode) || parties[0];
+  useEffect(() => {
+    const updateScale = () => {
+      if (containerRef.current) {
+        const width = containerRef.current.clientWidth;
+        setPreviewScale(width > 0 ? width / 1080 : 0.5);
+      }
+    };
+    updateScale();
+    window.addEventListener("resize", updateScale);
+    return () => window.removeEventListener("resize", updateScale);
+  }, []);
+
+  const fallbackTemplate: CardTemplate = {
+    id: "warroom_dark",
+    name: "War Room Dark",
+    style_category: "editorial",
+    theme_bg: "#0B0F19",
+    theme_text: "#FFFFFF",
+    accent_color: "#E11D48",
+    border_style: "solid",
+    badge_style: "dark",
+  };
+  const activeTemplate = (templates && templates.length > 0)
+    ? (templates.find((t) => t.id === selectedTemplateId) || templates[0])
+    : fallbackTemplate;
+
+  const fallbackParty: PoliticalParty = {
+    code: "DMK",
+    name: "Dravida Munnetra Kazhagam",
+    color: "#DC2626",
+    tamil_name: "திராவிட முன்னேற்றக் கழகம்",
+    symbol: "Rising Sun",
+    alliance: "INDIA",
+  };
+  const activeParty = (parties && parties.length > 0)
+    ? (parties.find((p) => p.code === selectedPartyCode) || parties[0])
+    : fallbackParty;
 
   // Quick preset headlines
   const quickPresets = [
@@ -204,14 +241,14 @@ export function NewsCardStudio({
 
         // 5. Headline Text
         ctx.fillStyle = "#FFFFFF";
-        ctx.font = `bold ${titleFontSize * 1.6}px 'Noto Sans Tamil', sans-serif`;
+        ctx.font = `bold ${titleFontSize * 1.6}px 'Noto Sans Tamil', 'Latha', 'Mukta Malar', sans-serif`;
         ctx.textAlign = textAlign;
         const headlineX = textAlign === "center" ? 540 : 64;
         const headlineY = wrapText(ctx, headline, headlineX, 360, 952, titleFontSize * 2.0);
 
         // 6. Subheadline
         ctx.fillStyle = "rgba(255, 255, 255, 0.88)";
-        ctx.font = "34px 'Noto Sans Tamil', sans-serif";
+        ctx.font = "34px 'Noto Sans Tamil', 'Latha', 'Mukta Malar', sans-serif";
         ctx.textAlign = textAlign;
         wrapText(ctx, subheadline, headlineX, headlineY + 50, 952, 48);
 
@@ -229,7 +266,7 @@ export function NewsCardStudio({
         ctx.fillText("EDITORIAL SOURCE / ஊடகம்:", 64, 995);
 
         ctx.fillStyle = "#FFFFFF";
-        ctx.font = "bold 26px 'Noto Sans Tamil', sans-serif";
+        ctx.font = "bold 26px 'Noto Sans Tamil', 'Latha', 'Mukta Malar', sans-serif";
         ctx.fillText(sourceAttribution, 64, 1030);
 
         // Right Branding Stamp
@@ -239,7 +276,7 @@ export function NewsCardStudio({
         ctx.fillText("TN POLITICAL WAR ROOM", 1016, 995);
 
         ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
-        ctx.font = "18px 'Noto Sans Tamil', sans-serif";
+        ctx.font = "18px 'Noto Sans Tamil', 'Latha', 'Mukta Malar', sans-serif";
         ctx.fillText("அரசியல் ஊடக நுண்ணறிவு & பகுப்பாய்வு மையம்", 1016, 1030);
 
         // Trigger Download
@@ -496,15 +533,10 @@ export function NewsCardStudio({
             <span className="text-[11px] text-zinc-600 font-mono font-semibold">Scale: 50% Preview · 100% Export</span>
           </div>
 
-          {/* Scaled Preview Wrapper */}
+          {/* Scaled Responsive Preview Wrapper */}
           <div
-            style={{
-              position: "relative",
-              width: "540px",
-              height: "540px",
-              overflow: "hidden",
-            }}
-            className="rounded-lg shadow-md border border-zinc-400 bg-black"
+            ref={containerRef}
+            className="w-full max-w-[540px] aspect-square relative overflow-hidden rounded-lg shadow-md border border-zinc-400 bg-black mx-auto"
           >
             {/* The 1080x1080 Actual Node */}
             <div
@@ -513,14 +545,14 @@ export function NewsCardStudio({
               style={{
                 width: "1080px",
                 height: "1080px",
-                transform: "scale(0.5)",
+                transform: `scale(${previewScale})`,
                 transformOrigin: "top left",
                 position: "absolute",
                 top: 0,
                 left: 0,
                 backgroundColor: activeTemplate.theme_bg,
                 color: activeTemplate.theme_text,
-                fontFamily: "var(--font-tamil), sans-serif",
+                fontFamily: "'Noto Sans Tamil', 'Latha', 'Mukta Malar', var(--font-tamil), sans-serif",
               }}
               className="p-16 flex flex-col justify-between box-border select-none overflow-hidden pointer-events-none"
             >
