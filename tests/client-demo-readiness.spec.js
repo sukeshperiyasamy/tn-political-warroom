@@ -144,8 +144,14 @@ test.describe('Phase 5: Client Demo & Deployment Readiness E2E Verification', ()
     await expect(studioTab).toBeVisible({ timeout: 10000 });
     await studioTab.evaluate((btn) => btn.click());
 
+    // Switch to Graphic Studio sub-tab
+    const graphicSubTab = page.getByRole('button', { name: /Social Graphic Studio/i });
+    if (await graphicSubTab.isVisible()) {
+      await graphicSubTab.click();
+    }
+
     // Verify Studio title and card canvas
-    await expect(page.getByText(/Tamil News Card Studio/i)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(/Social Graphic Studio/i)).toBeVisible({ timeout: 10000 });
     await expect(page.locator('#tamil-news-card-canvas')).toBeVisible({ timeout: 10000 });
 
     // Verify Tamil headline controls and preset chips

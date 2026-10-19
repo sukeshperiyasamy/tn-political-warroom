@@ -53,7 +53,6 @@ import {
   triggerIngest,
   fetchClientConfig,
 } from "../lib/api";
-import { FALLBACK_ARTICLES } from "../lib/seed-fallback";
 import {
   FileQuestion,
   RefreshCw,
@@ -86,7 +85,7 @@ export default function WarRoomDashboard() {
 
   // Drawer & Studio Active Item
   const [drawerArticle, setDrawerArticle] = useState<NewsArticle | null>(null);
-  const [studioArticle, setStudioArticle] = useState<NewsArticle | null>(FALLBACK_ARTICLES[0] || null);
+  const [studioArticle, setStudioArticle] = useState<NewsArticle | null>(null);
   const [clientConfig, setClientConfig] = useState<ClientConfig | null>(null);
 
   // Initial load
@@ -138,10 +137,6 @@ export default function WarRoomDashboard() {
     }));
   };
 
-  const handleModeToggle = (newMode: "live" | "demo") => {
-    setFilters((prev) => ({ ...prev, mode: newMode }));
-  };
-
   const handleSelectPartyFromMetrics = (partyCode: string) => {
     setFilters((prev) => ({ ...prev, party: prev.party === partyCode ? "" : partyCode }));
     setActiveTab("news");
@@ -182,8 +177,6 @@ export default function WarRoomDashboard() {
     }
   };
 
-  const isLive = (filters.mode || "live") === "live";
-
   return (
     <div className="min-h-screen bg-[#FBFBFA] text-zinc-900 flex flex-col w-full overflow-x-hidden min-w-0">
       {/* Editorial Navigation */}
@@ -193,55 +186,42 @@ export default function WarRoomDashboard() {
         searchQuery={filters.search}
         onSearchChange={(q) => setFilters((prev) => ({ ...prev, search: q }))}
         articleCount={articles.length}
-        mode={isLive ? "live" : "demo"}
-        onModeToggle={handleModeToggle}
         clientConfig={clientConfig}
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-[1720px] w-full mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 py-4 sm:py-8 min-w-0">
+      <main className="flex-1 max-w-[1720px] w-full mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 pt-5 sm:pt-7 pb-12 min-w-0">
         {/* Compact Editorial Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-[#E8E8E2]">
-          <div className="min-w-0 max-w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6 pb-4 border-b border-[#E8E8E2]">
+          <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-zinc-900 font-serif break-words">
                 TN 2026 Assembly War Room Intelligence
               </h1>
-              {isLive ? (
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
-                  Real Tamil Media Stream ({articles.length} reports)
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-zinc-100 text-zinc-700 border border-zinc-200">
-                  <FlaskConical className="w-3 h-3 text-zinc-500" />
-                  Curated Demo Mode ({articles.length} reports)
-                </span>
-              )}
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                Live Regional Media Stream ({articles.length} reports)
+              </span>
             </div>
-            <p className="text-xs text-zinc-500 font-tamil mt-1">
-              {isLive
-                ? "தமிழ்நாட்டு அரசியல் செய்திகள், கட்சி ஊடகப் பங்கீடு மற்றும் 1080p செய்தி அட்டை ஸ்டுடியோ"
-                : "2026 தமிழ்நாடு சட்டமன்ற தேர்தல் காட்சி மாதிரி தரவுத்தொகுப்பு"}
+            <p className="text-xs text-zinc-500 font-tamil mt-1.5">
+              தமிழ்நாட்டு அரசியல் செய்திகள், கட்சி ஊடகப் பங்கீடு மற்றும் 1080p செய்தி அட்டை ஸ்டுடியோ
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-            {isLive && (
-              <button
-                onClick={handleTriggerQuickIngest}
-                disabled={isQuickIngesting}
-                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded text-xs font-semibold bg-white hover:bg-[#F4F4F0] border border-[#E2E2DC] text-zinc-800 shadow-2xs transition-colors cursor-pointer disabled:opacity-50 min-h-[40px] sm:min-h-[36px]"
-                title="Poll registered RSS feeds for new stories"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isQuickIngesting ? "animate-spin text-zinc-600" : ""}`} />
-                <span>{isQuickIngesting ? "Polling Feeds..." : "Poll Feeds"}</span>
-              </button>
-            )}
+          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+            <button
+              onClick={handleTriggerQuickIngest}
+              disabled={isQuickIngesting}
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded text-xs font-semibold bg-white hover:bg-[#F4F4F0] border border-[#E2E2DC] text-zinc-800 shadow-2xs transition-colors cursor-pointer disabled:opacity-50 min-h-[38px] sm:min-h-[36px]"
+              title="Poll registered RSS feeds for new stories"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isQuickIngesting ? "animate-spin text-zinc-600" : ""}`} />
+              <span>{isQuickIngesting ? "Polling Feeds..." : "Poll Feeds"}</span>
+            </button>
 
             <button
               onClick={() => setActiveTab("studio")}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-1.5 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs transition-colors cursor-pointer min-h-[40px] sm:min-h-[36px]"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-1.5 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs transition-colors cursor-pointer min-h-[38px] sm:min-h-[36px]"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               <span>Card Studio</span>
@@ -282,7 +262,7 @@ export default function WarRoomDashboard() {
             <div className="mt-8">
               <div className="flex items-center justify-between mb-4 pb-2 border-b border-[#F0F0EB]">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
-                  {isLive ? "Latest Wire Dispatches" : "Top Monitored Reports"} ({articles.length})
+                  Latest Wire Dispatches ({articles.length})
                 </h2>
                 <button
                   onClick={() => setActiveTab("news")}
@@ -332,9 +312,7 @@ export default function WarRoomDashboard() {
                 <FileQuestion className="w-10 h-10 text-zinc-400 mx-auto" />
                 <h3 className="text-sm font-bold text-zinc-800">No articles match your filter criteria</h3>
                 <p className="text-xs text-zinc-500">
-                  {isLive
-                    ? "No live articles collected for this filter combination. Clear your filters or check the source registry."
-                    : "Try clearing filters to display the demo scenario articles."}
+                  No live articles collected for this filter combination. Clear your filters or check the source registry.
                 </p>
                 <div className="flex items-center justify-center gap-2 pt-2">
                   <button
@@ -343,15 +321,13 @@ export default function WarRoomDashboard() {
                   >
                     Reset All Filters
                   </button>
-                  {isLive && (
-                    <button
-                      onClick={() => setActiveTab("sources")}
-                      className="px-3.5 py-1.5 rounded text-xs font-semibold bg-[#F4F4F0] text-zinc-800 hover:bg-zinc-200 border border-[#E2E2DC] transition-colors cursor-pointer flex items-center gap-1.5"
-                    >
-                      <Radio className="w-3.5 h-3.5" />
-                      <span>Source Registry</span>
-                    </button>
-                  )}
+                  <button
+                    onClick={() => setActiveTab("sources")}
+                    className="px-3.5 py-1.5 rounded text-xs font-semibold bg-[#F4F4F0] text-zinc-800 hover:bg-zinc-200 border border-[#E2E2DC] transition-colors cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Radio className="w-3.5 h-3.5" />
+                    <span>Source Registry</span>
+                  </button>
                 </div>
               </div>
             ) : (
@@ -370,10 +346,10 @@ export default function WarRoomDashboard() {
         )}
 
         {/* Tab 3: Social Media Intelligence & Trending Pulse */}
-        {activeTab === "social" && <SocialIntelligenceView mode={isLive ? "live" : "demo"} />}
+        {activeTab === "social" && <SocialIntelligenceView mode="live" />}
 
         {/* Tab 3.5: Social Discovery & Trending Intelligence Lab (Phase 4) */}
-        {activeTab === "lab" && <SocialDiscoveryLab mode={isLive ? "live" : "demo"} onModeToggle={handleModeToggle} />}
+        {activeTab === "lab" && <SocialDiscoveryLab mode="live" />}
 
         {/* Tab 4: Sources & Ingestion Hub */}
         {activeTab === "sources" && (
@@ -390,12 +366,12 @@ export default function WarRoomDashboard() {
             leaders={leaders}
             onOpenArticle={handleOpenDrawer}
             onCreateCard={handleCreateCardFromArticle}
-            mode={isLive ? "live" : "demo"}
+            mode="live"
           />
         )}
 
         {/* Tab 5: Political Intelligence Brief */}
-        {activeTab === "brief" && <IntelligenceBriefView mode={isLive ? "live" : "demo"} />}
+        {activeTab === "brief" && <IntelligenceBriefView mode="live" />}
 
         {/* Tab 6: Tamil News Card Studio */}
         {activeTab === "studio" && (
@@ -420,7 +396,7 @@ export default function WarRoomDashboard() {
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
             <span className="font-mono text-zinc-700 font-medium">
-              TN Political Media Intelligence Wire ({isLive ? "Live RSS Ingestion Active" : "Demo Mode"})
+              TN Political Media Intelligence Wire (Live RSS Ingestion Active)
             </span>
           </div>
           <div className="flex items-center gap-3 text-[11px] text-zinc-500">

@@ -24,8 +24,8 @@ interface NavbarProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
   articleCount: number;
-  mode: "live" | "demo";
-  onModeToggle: (mode: "live" | "demo") => void;
+  mode?: "live" | "demo";
+  onModeToggle?: (mode: "live" | "demo") => void;
   clientConfig?: ClientConfig | null;
 }
 
@@ -35,7 +35,7 @@ export function Navbar({
   searchQuery,
   onSearchChange,
   articleCount,
-  mode,
+  mode = "live",
   onModeToggle,
   clientConfig,
 }: NavbarProps) {
@@ -123,14 +123,14 @@ export function Navbar({
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-[#E8E8E2] bg-white/98 backdrop-blur-xs">
+    <header className="sticky top-0 z-40 w-full border-b border-[#E8E8E2] bg-white shadow-xs">
       {/* Top Editorial Hairline Indicator */}
       <div className="h-[2px] w-full bg-zinc-900" />
 
       <div className="max-w-[1720px] w-full mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-15 sm:h-17 gap-2 lg:gap-4 min-w-0">
+        <div className="flex items-center justify-between h-14 sm:h-16 gap-2 lg:gap-4 min-w-0">
           {/* Masthead Brand Block */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0 max-w-[65%] sm:max-w-none">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0 max-w-[calc(100%-48px)] sm:max-w-[280px] xl:max-w-[260px] 2xl:max-w-none">
             {clientConfig?.logo_url ? (
               <img
                 src={clientConfig.logo_url}
@@ -150,17 +150,10 @@ export function Navbar({
                 <span className="text-xs sm:text-sm font-bold tracking-wider text-zinc-900 uppercase truncate">
                   {clientName}
                 </span>
-                {mode === "live" ? (
-                  <span className="hidden md:inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80 shrink-0">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
-                    LIVE RSS
-                  </span>
-                ) : (
-                  <span className="hidden md:inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200 shrink-0">
-                    <FlaskConical className="w-3 h-3 text-zinc-500" />
-                    DEMO
-                  </span>
-                )}
+                <span className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80 shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                  LIVE WIRE
+                </span>
               </div>
               <p className="text-[10px] sm:text-[11px] text-zinc-500 font-tamil leading-none mt-0.5 truncate">
                 {clientTagline}
@@ -172,7 +165,7 @@ export function Navbar({
           <nav
             role="tablist"
             aria-label="Main Navigation"
-            className="hidden lg:flex items-center justify-center flex-1 min-w-0 px-1"
+            className="hidden xl:flex items-center justify-center flex-1 min-w-0 px-2"
           >
             <div className="flex items-center bg-[#F4F4F0] p-0.5 rounded-lg border border-[#E4E4DE] shrink-0">
               <button
@@ -180,7 +173,7 @@ export function Navbar({
                 aria-label="Dashboard Overview"
                 aria-selected={activeTab === "dashboard"}
                 onClick={() => onTabChange("dashboard")}
-                className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex items-center gap-1 px-1.5 2xl:px-2 py-1 rounded-md text-[11px] 2xl:text-xs transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "dashboard"
                     ? "bg-white text-zinc-900 shadow-2xs border border-zinc-200/80 font-bold"
                     : "text-zinc-600 hover:text-zinc-900 hover:bg-white/50 font-medium"
@@ -195,7 +188,7 @@ export function Navbar({
                 aria-label="News Intelligence"
                 aria-selected={activeTab === "news"}
                 onClick={() => onTabChange("news")}
-                className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex items-center gap-1 px-1.5 2xl:px-2 py-1 rounded-md text-[11px] 2xl:text-xs transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "news"
                     ? "bg-white text-zinc-900 shadow-2xs border border-zinc-200/80 font-bold"
                     : "text-zinc-600 hover:text-zinc-900 hover:bg-white/50 font-medium"
@@ -213,7 +206,7 @@ export function Navbar({
                 aria-label="Social Intelligence"
                 aria-selected={activeTab === "social"}
                 onClick={() => onTabChange("social")}
-                className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex items-center gap-1 px-1.5 2xl:px-2 py-1 rounded-md text-[11px] 2xl:text-xs transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "social"
                     ? "bg-white text-zinc-900 shadow-2xs border border-zinc-200/80 font-bold"
                     : "text-zinc-600 hover:text-zinc-900 hover:bg-white/50 font-medium"
@@ -231,7 +224,7 @@ export function Navbar({
                 aria-label="Social Discovery Lab"
                 aria-selected={activeTab === "lab"}
                 onClick={() => onTabChange("lab")}
-                className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex items-center gap-1 px-1.5 2xl:px-2 py-1 rounded-md text-[11px] 2xl:text-xs transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "lab"
                     ? "bg-white text-zinc-900 shadow-2xs border border-zinc-200/80 font-bold"
                     : "text-zinc-600 hover:text-zinc-900 hover:bg-white/50 font-medium"
@@ -249,7 +242,7 @@ export function Navbar({
                 aria-label="Intelligence Brief"
                 aria-selected={activeTab === "brief"}
                 onClick={() => onTabChange("brief")}
-                className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex items-center gap-1 px-1.5 2xl:px-2 py-1 rounded-md text-[11px] 2xl:text-xs transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "brief"
                     ? "bg-white text-zinc-900 shadow-2xs border border-zinc-200/80 font-bold"
                     : "text-zinc-600 hover:text-zinc-900 hover:bg-white/50 font-medium"
@@ -264,7 +257,7 @@ export function Navbar({
                 aria-label="Party Comparison"
                 aria-selected={activeTab === "comparison"}
                 onClick={() => onTabChange("comparison")}
-                className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex items-center gap-1 px-1.5 2xl:px-2 py-1 rounded-md text-[11px] 2xl:text-xs transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "comparison"
                     ? "bg-white text-zinc-900 shadow-2xs border border-zinc-200/80 font-bold"
                     : "text-zinc-600 hover:text-zinc-900 hover:bg-white/50 font-medium"
@@ -279,7 +272,7 @@ export function Navbar({
                 aria-label="Sources & Ingestion"
                 aria-selected={activeTab === "sources"}
                 onClick={() => onTabChange("sources")}
-                className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex items-center gap-1 px-1.5 2xl:px-2 py-1 rounded-md text-[11px] 2xl:text-xs transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "sources"
                     ? "bg-white text-zinc-900 shadow-2xs border border-zinc-200/80 font-bold"
                     : "text-zinc-600 hover:text-zinc-900 hover:bg-white/50 font-medium"
@@ -294,7 +287,7 @@ export function Navbar({
                 aria-label="News Card Studio"
                 aria-selected={activeTab === "studio"}
                 onClick={() => onTabChange("studio")}
-                className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-all cursor-pointer whitespace-nowrap ${
+                className={`flex items-center gap-1 px-1.5 2xl:px-2 py-1 rounded-md text-[11px] 2xl:text-xs transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "studio"
                     ? "bg-zinc-900 text-white shadow-2xs font-bold"
                     : "text-zinc-700 hover:text-zinc-900 hover:bg-white/50 font-medium"
@@ -309,10 +302,10 @@ export function Navbar({
             </div>
           </nav>
 
-          {/* Right Controls: Desktop Search, Mode Toggle & Mobile Hamburger */}
+          {/* Right Controls: Desktop/Tablet Search & Mobile Hamburger */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-            {/* Quick Keyword Search on Desktop */}
-            <div className="relative hidden xl:block w-36 2xl:w-48 shrink-0">
+            {/* Quick Keyword Search on Tablet & Desktop */}
+            <div className="relative hidden md:block w-36 lg:w-44 xl:w-48 shrink-0">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
               <input
                 type="text"
@@ -324,44 +317,11 @@ export function Navbar({
               />
             </div>
 
-            {/* Segmented Mode Selector (Compact on mobile) */}
-            <div className="flex items-center bg-[#F4F4F0] p-0.5 rounded-md border border-[#E2E2DC] text-xs font-semibold shrink-0">
-              <button
-                type="button"
-                onClick={() => onModeToggle("live")}
-                className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded text-xs transition-all cursor-pointer ${
-                  mode === "live"
-                    ? "bg-zinc-900 text-white font-bold shadow-2xs"
-                    : "text-zinc-600 hover:text-zinc-900"
-                }`}
-                title="Live RSS Ingestion Mode: Real regional Tamil media feeds"
-                aria-label="Switch to Live RSS mode"
-              >
-                <span className={`w-1.5 h-1.5 rounded-full ${mode === "live" ? "bg-emerald-400 animate-pulse" : "bg-zinc-400"}`} />
-                <span className="font-mono text-[10px] sm:text-[11px]">LIVE</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onModeToggle("demo")}
-                className={`flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded text-xs transition-all cursor-pointer ${
-                  mode === "demo"
-                    ? "bg-zinc-900 text-white font-bold shadow-2xs"
-                    : "text-zinc-600 hover:text-zinc-900"
-                }`}
-                title="Demo Mode: Curated baseline dataset"
-                aria-label="Switch to Demo mode"
-              >
-                <FlaskConical className="w-3 h-3" />
-                <span className="font-mono text-[10px] sm:text-[11px]">DEMO</span>
-              </button>
-            </div>
-
-            {/* Mobile Hamburger Menu Toggle Button */}
+            {/* Mobile/Tablet Hamburger Menu Toggle Button */}
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-[#F4F4F0] hover:bg-zinc-200 border border-[#E2E2DC] text-zinc-800 transition-colors cursor-pointer"
+              className="xl:hidden flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-[#F4F4F0] hover:bg-zinc-200 border border-[#E2E2DC] text-zinc-800 transition-colors cursor-pointer shrink-0"
               aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
               aria-expanded={isMobileMenuOpen}
             >
@@ -374,8 +334,8 @@ export function Navbar({
           </div>
         </div>
 
-        {/* Mobile Quick Tap Pill Bar (Smooth horizontal swipe with zero document blowout) */}
-        <div className="flex lg:hidden items-center py-2 border-t border-[#E8E8E2] overflow-x-auto gap-1.5 w-full min-w-0 scrollbar-none">
+        {/* Quick Tap Pill Bar (Smooth horizontal swipe with zero document blowout) */}
+        <div className="flex xl:hidden items-center py-2 border-t border-[#E8E8E2] overflow-x-auto gap-1.5 w-full min-w-0 scrollbar-none">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -412,7 +372,7 @@ export function Navbar({
           role="dialog"
           aria-modal="true"
           aria-label="Mobile Navigation Menu"
-          className="lg:hidden fixed inset-x-0 top-[62px] bottom-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col"
+          className="xl:hidden fixed inset-x-0 top-[112px] sm:top-[120px] bottom-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col"
         >
           <div className="bg-white border-b border-[#E8E8E2] shadow-2xl p-4 sm:p-5 max-h-[85vh] overflow-y-auto space-y-4 animate-in slide-in-from-top-2 duration-150">
             {/* Mobile Wire Search Bar */}
@@ -484,11 +444,11 @@ export function Navbar({
               })}
             </div>
 
-            {/* Mode Explanation & Drawer Close */}
+            {/* Status & Drawer Close */}
             <div className="pt-3 border-t border-[#F0F0EB] flex items-center justify-between text-xs text-zinc-500">
               <div className="flex items-center gap-1.5 font-mono text-[11px]">
-                <span className={`w-2 h-2 rounded-full ${mode === "live" ? "bg-emerald-500 animate-pulse" : "bg-zinc-400"}`} />
-                <span>Active Mode: <strong className="text-zinc-800 uppercase">{mode}</strong></span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>System: <strong className="text-zinc-800 uppercase">Live Intelligence Wire</strong></span>
               </div>
               <button
                 type="button"
