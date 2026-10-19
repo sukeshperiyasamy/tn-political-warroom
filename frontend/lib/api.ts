@@ -575,8 +575,11 @@ export async function saveEditorialFinal(
 // ==========================================
 
 export async function fetchAdminSystemStatus(): Promise<AdminSystemStatus> {
-  const res = await fetchWithTimeout(`${API_BASE}/api/admin/system-status`, {}, 6000);
-  if (!res.ok) throw new Error("Failed to fetch admin system status");
+  const res = await fetchWithTimeout(`${API_BASE}/api/admin/system-status`, {}, 30000);
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => "");
+    throw new Error(`Failed to fetch admin system status (${res.status} ${res.statusText}${errorText ? `: ${errorText}` : ""})`);
+  }
   return await res.json();
 }
 
@@ -591,8 +594,11 @@ export async function fetchKeywords(
   if (activeOnly) params.append("active_only", "true");
 
   const url = `${API_BASE}/api/admin/keywords${params.toString() ? `?${params.toString()}` : ""}`;
-  const res = await fetchWithTimeout(url, {}, 6000);
-  if (!res.ok) throw new Error("Failed to fetch registered keywords");
+  const res = await fetchWithTimeout(url, {}, 30000);
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => "");
+    throw new Error(`Failed to fetch registered keywords (${res.status} ${res.statusText}${errorText ? `: ${errorText}` : ""})`);
+  }
   return await res.json();
 }
 
@@ -601,10 +607,10 @@ export async function createKeyword(payload: KeywordCreatePayload): Promise<Keyw
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
-  }, 8000);
+  }, 30000);
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: "Failed to create keyword" }));
-    throw new Error(err.detail || "Failed to create keyword");
+    throw new Error(err.detail || `Failed to create keyword (${res.status})`);
   }
   return await res.json();
 }
@@ -617,10 +623,10 @@ export async function updateKeyword(
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
-  }, 8000);
+  }, 30000);
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: "Failed to update keyword" }));
-    throw new Error(err.detail || "Failed to update keyword");
+    throw new Error(err.detail || `Failed to update keyword (${res.status})`);
   }
   return await res.json();
 }
@@ -628,22 +634,31 @@ export async function updateKeyword(
 export async function toggleKeyword(id: string): Promise<{ id: string; is_active: boolean }> {
   const res = await fetchWithTimeout(`${API_BASE}/api/admin/keywords/${encodeURIComponent(id)}/toggle`, {
     method: "POST",
-  }, 6000);
-  if (!res.ok) throw new Error("Failed to toggle keyword status");
+  }, 30000);
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => "");
+    throw new Error(`Failed to toggle keyword status (${res.status} ${res.statusText}${errorText ? `: ${errorText}` : ""})`);
+  }
   return await res.json();
 }
 
 export async function deleteKeyword(id: string): Promise<{ status: string; id: string; name_en: string }> {
   const res = await fetchWithTimeout(`${API_BASE}/api/admin/keywords/${encodeURIComponent(id)}`, {
     method: "DELETE",
-  }, 6000);
-  if (!res.ok) throw new Error("Failed to delete keyword");
+  }, 30000);
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => "");
+    throw new Error(`Failed to delete keyword (${res.status} ${res.statusText}${errorText ? `: ${errorText}` : ""})`);
+  }
   return await res.json();
 }
 
 export async function fetchTrendingConfig(): Promise<TrendingConfig> {
-  const res = await fetchWithTimeout(`${API_BASE}/api/admin/trending-config`, {}, 6000);
-  if (!res.ok) throw new Error("Failed to fetch trending configuration");
+  const res = await fetchWithTimeout(`${API_BASE}/api/admin/trending-config`, {}, 30000);
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => "");
+    throw new Error(`Failed to fetch trending configuration (${res.status} ${res.statusText}${errorText ? `: ${errorText}` : ""})`);
+  }
   return await res.json();
 }
 
@@ -657,10 +672,10 @@ export async function updateTrendingConfig(weights: {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(weights),
-  }, 8000);
+  }, 30000);
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: "Failed to update trending configuration" }));
-    throw new Error(err.detail || "Failed to update trending configuration");
+    throw new Error(err.detail || `Failed to update trending configuration (${res.status})`);
   }
   return await res.json();
 }
@@ -668,14 +683,20 @@ export async function updateTrendingConfig(weights: {
 export async function resetTrendingConfig(): Promise<TrendingConfig> {
   const res = await fetchWithTimeout(`${API_BASE}/api/admin/trending-config/reset`, {
     method: "POST",
-  }, 6000);
-  if (!res.ok) throw new Error("Failed to reset trending configuration");
+  }, 30000);
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => "");
+    throw new Error(`Failed to reset trending configuration (${res.status} ${res.statusText}${errorText ? `: ${errorText}` : ""})`);
+  }
   return await res.json();
 }
 
 export async function fetchSafeSettings(): Promise<SafeSettingsResponse> {
-  const res = await fetchWithTimeout(`${API_BASE}/api/admin/settings`, {}, 6000);
-  if (!res.ok) throw new Error("Failed to fetch application settings");
+  const res = await fetchWithTimeout(`${API_BASE}/api/admin/settings`, {}, 30000);
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => "");
+    throw new Error(`Failed to fetch application settings (${res.status} ${res.statusText}${errorText ? `: ${errorText}` : ""})`);
+  }
   return await res.json();
 }
 
@@ -686,10 +707,10 @@ export async function updateSafeSettings(
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(settings),
-  }, 8000);
+  }, 30000);
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: "Failed to update application settings" }));
-    throw new Error(err.detail || "Failed to update application settings");
+    throw new Error(err.detail || `Failed to update application settings (${res.status})`);
   }
   return await res.json();
 }

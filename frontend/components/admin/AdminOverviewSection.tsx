@@ -26,16 +26,19 @@ interface AdminOverviewSectionProps {
 export function AdminOverviewSection({ onNavigateTab }: AdminOverviewSectionProps) {
   const [status, setStatus] = useState<AdminSystemStatus | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [ingesting, setIngesting] = useState(false);
   const [ingestSuccess, setIngestSuccess] = useState<string | null>(null);
 
   const loadStatus = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await fetchAdminSystemStatus();
       setStatus(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to load admin system status:", err);
+      setError(err?.message || "Failed to load admin system status. Please verify backend service connection.");
     } finally {
       setLoading(false);
     }
@@ -61,9 +64,37 @@ export function AdminOverviewSection({ onNavigateTab }: AdminOverviewSectionProp
 
   if (loading && !status) {
     return (
-      <div className="p-16 text-center text-zinc-500 bg-white border border-[#E8E8E2] rounded-xl">
+      <div className="p-16 text-center text-zinc-500 bg-white border border-[#E8E8E2] rounded-xl shadow-2xs">
         <RefreshCw className="w-6 h-6 border-2 border-zinc-800 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
         <p className="text-xs font-medium">Gathering war room system diagnostics...</p>
+      </div>
+    );
+  }
+
+  if (error && !status) {
+    return (
+      <div className="p-8 sm:p-12 text-center bg-white border border-rose-200 rounded-xl space-y-4 shadow-2xs">
+        <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-100">
+          <AlertTriangle className="w-6 h-6" />
+        </div>
+        <div className="max-w-md mx-auto space-y-1">
+          <h3 className="text-sm font-bold text-zinc-900 font-serif">
+            Unable to Connect to Admin Backend
+          </h3>
+          <p className="text-xs text-zinc-600 font-mono break-words bg-zinc-50 p-2.5 rounded-md border border-zinc-200 text-left mt-2">
+            {error}
+          </p>
+          <p className="text-xs text-zinc-500 mt-2">
+            The war room backend service may be spinning up or restarting.
+          </p>
+        </div>
+        <button
+          onClick={loadStatus}
+          className="px-4 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+        >
+          <RefreshCw className="w-3.5 h-3.5" />
+          <span>Retry Connection</span>
+        </button>
       </div>
     );
   }
