@@ -157,8 +157,19 @@ export function SocialIntelligenceView({ mode }: SocialIntelligenceViewProps) {
         fetchConnectors(),
       ]);
 
-      setPosts(pRes.posts || []);
-      setTotalPostsCount(pRes.total_count || 0);
+      // Deduplicate posts defensively by ID and normalized platform+title to guarantee no duplicate alerts render
+      const uniquePosts: SocialPost[] = [];
+      const seenKeys = new Set<string>();
+      for (const p of pRes.posts || []) {
+        const titleKey = (p.title || "").trim().toLowerCase();
+        const key = titleKey ? `${p.platform}_${titleKey}` : p.id;
+        if (!seenKeys.has(key)) {
+          seenKeys.add(key);
+          uniquePosts.push(p);
+        }
+      }
+      setPosts(uniquePosts);
+      setTotalPostsCount(uniquePosts.length);
       setTrendingTopics(tRes.trending_topics || []);
       setClusters(cRes.clusters || []);
       setPlatformStats(mRes.platforms || []);
@@ -475,7 +486,10 @@ export function SocialIntelligenceView({ mode }: SocialIntelligenceViewProps) {
               {loading ? (
                 <div className="py-8 text-center text-xs text-zinc-500">Computing trending formula...</div>
               ) : trendingTopics.length === 0 ? (
-                <div className="py-6 text-center text-xs text-zinc-500">No trending topics in this window.</div>
+                <div className="py-6 text-center text-xs text-zinc-500">
+                  <p className="font-medium text-zinc-700 mb-1">No relevant political trends currently available</p>
+                  <p className="text-[11px] text-zinc-400">Trends require verified Tamil Nadu political entities or policy debates.</p>
+                </div>
               ) : (
                 <div className="space-y-2.5">
                   {trendingTopics.map((item, idx) => (
@@ -599,10 +613,16 @@ export function SocialIntelligenceView({ mode }: SocialIntelligenceViewProps) {
                   <Activity className="w-6 h-6 text-zinc-400" />
                 </div>
                 <h3 className="font-serif text-base font-bold text-zinc-900 mb-1">
-                  {mode === "live" ? "No Live Social Posts Matching Filter" : "No Demo Posts Matching Filter"}
+                  {platformFilter === "google_trends"
+                    ? "No relevant political trends currently available"
+                    : mode === "live"
+                    ? "No Live Social Posts Matching Filter"
+                    : "No Demo Posts Matching Filter"}
                 </h3>
                 <p className="text-xs text-zinc-500 max-w-md mx-auto mb-4">
-                  {mode === "live"
+                  {platformFilter === "google_trends"
+                    ? "Google Trends regional search wire is filtered for verified Tamil Nadu political entities, electoral movements, and governance topics. Unrelated sports, lotteries, and general queries are excluded."
+                    : mode === "live"
                     ? "Tamil News Wire is active. External social connectors (YouTube, 𝕏, Meta) require API credentials in backend/.env to stream live social posts."
                     : "Try selecting 'All Sources' or switching the active time window."}
                 </p>

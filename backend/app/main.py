@@ -1,8 +1,8 @@
 import os
+from datetime import datetime, timezone
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import news, metrics, intelligence, cards, sources, social_intelligence, client_config
-from datetime import datetime, timezone
+from .routers import news, metrics, intelligence, cards, sources, social_intelligence, client_config, admin
 import sqlite3
 from .data.migrations import DB_PATH
 from .data.db import get_database_url
@@ -78,9 +78,10 @@ app.include_router(cards.router)
 app.include_router(sources.router)
 app.include_router(social_intelligence.router)
 app.include_router(client_config.router)
+app.include_router(admin.router)
 
-@app.get("/health")
-@app.get("/api/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
+@app.api_route("/api/health", methods=["GET", "HEAD"])
 def health_check():
     db_healthy = False
     journal_mode = "unknown"

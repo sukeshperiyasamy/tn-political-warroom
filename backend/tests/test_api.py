@@ -5,11 +5,16 @@ from backend.app.main import app
 client = TestClient(app)
 
 def test_health_check():
+    # Verify GET
     response = client.get("/api/health")
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "healthy"
     assert data["service"] == "tn-political-warroom-backend"
+
+    # Verify HEAD (used by uptime monitors like Better Stack, Pingdom, StatusCake)
+    head_resp = client.head("/api/health")
+    assert head_resp.status_code == 200
 
 def test_get_news_all():
     response = client.get("/api/news")

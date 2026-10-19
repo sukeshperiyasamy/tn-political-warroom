@@ -14,13 +14,14 @@ import {
   Menu,
   X,
   ChevronRight,
+  ShieldCheck,
 } from "lucide-react";
 
 import { ClientConfig } from "../types/political";
 
 interface NavbarProps {
-  activeTab: "dashboard" | "news" | "social" | "lab" | "sources" | "comparison" | "studio" | "brief";
-  onTabChange: (tab: "dashboard" | "news" | "social" | "lab" | "sources" | "comparison" | "studio" | "brief") => void;
+  activeTab: "dashboard" | "news" | "social" | "lab" | "sources" | "comparison" | "studio" | "brief" | "admin";
+  onTabChange: (tab: "dashboard" | "news" | "social" | "lab" | "sources" | "comparison" | "studio" | "brief" | "admin") => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   articleCount: number;
@@ -54,7 +55,7 @@ export function Navbar({
   const clientTagline = clientConfig?.client_tagline || "Public Opinion & Media Analytics Command";
   const initials = clientName.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "TN";
 
-  const handleMobileNavClick = (tab: "dashboard" | "news" | "social" | "lab" | "sources" | "comparison" | "studio" | "brief") => {
+  const handleMobileNavClick = (tab: "dashboard" | "news" | "social" | "lab" | "sources" | "comparison" | "studio" | "brief" | "admin") => {
     onTabChange(tab);
     setIsMobileMenuOpen(false);
   };
@@ -106,19 +107,20 @@ export function Navbar({
       badge: null,
     },
     {
-      id: "sources" as const,
-      label: "All Sources",
-      tamilLabel: "ஊடக மூலங்கள்",
-      icon: Radio,
-      badge: null,
-    },
-    {
       id: "studio" as const,
       label: "Card Studio",
       tamilLabel: "1080p அட்டை ஸ்டுடியோ",
       icon: Sparkles,
       badge: "1080p",
       badgeColor: "bg-zinc-900 text-amber-300",
+    },
+    {
+      id: "admin" as const,
+      label: "Admin",
+      tamilLabel: "நிர்வாகம்",
+      icon: ShieldCheck,
+      badge: "ADMIN",
+      badgeColor: "bg-amber-100 text-amber-900",
     },
   ];
 
@@ -269,21 +271,6 @@ export function Navbar({
 
               <button
                 role="tab"
-                aria-label="Sources & Ingestion"
-                aria-selected={activeTab === "sources"}
-                onClick={() => onTabChange("sources")}
-                className={`flex items-center gap-1 px-1.5 2xl:px-2 py-1 rounded-md text-[11px] 2xl:text-xs transition-all cursor-pointer whitespace-nowrap ${
-                  activeTab === "sources"
-                    ? "bg-white text-zinc-900 shadow-2xs border border-zinc-200/80 font-bold"
-                    : "text-zinc-600 hover:text-zinc-900 hover:bg-white/50 font-medium"
-                }`}
-              >
-                <Radio className="w-3.5 h-3.5 text-zinc-600" />
-                <span>Sources</span>
-              </button>
-
-              <button
-                role="tab"
                 aria-label="News Card Studio"
                 aria-selected={activeTab === "studio"}
                 onClick={() => onTabChange("studio")}
@@ -297,6 +284,24 @@ export function Navbar({
                 <span>Studio</span>
                 <span className="px-1 py-0.2 text-[9px] font-mono font-bold rounded bg-zinc-800 text-amber-300 uppercase">
                   1080p
+                </span>
+              </button>
+
+              <button
+                role="tab"
+                aria-label="Admin Panel"
+                aria-selected={activeTab === "admin"}
+                onClick={() => onTabChange("admin")}
+                className={`flex items-center gap-1 px-1.5 2xl:px-2 py-1 rounded-md text-[11px] 2xl:text-xs transition-all cursor-pointer whitespace-nowrap ${
+                  activeTab === "admin"
+                    ? "bg-zinc-900 text-white shadow-2xs font-bold"
+                    : "text-zinc-700 hover:text-zinc-900 hover:bg-white/50 font-medium"
+                }`}
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
+                <span>Admin</span>
+                <span className="px-1 py-0.2 text-[9px] font-mono font-bold rounded bg-amber-100 text-amber-900 uppercase">
+                  ADMIN
                 </span>
               </button>
             </div>

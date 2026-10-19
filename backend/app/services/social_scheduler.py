@@ -113,8 +113,13 @@ class SocialScheduler:
                 cursor = conn.cursor()
 
                 for post in posts:
-                    cursor.execute("SELECT id, published_at, last_seen_at FROM social_posts WHERE platform = ? AND platform_post_id = ?",
-                                   (post.platform, post.platform_post_id))
+                    cursor.execute("""
+                        SELECT id, published_at, last_seen_at FROM social_posts 
+                        WHERE platform = ? AND (
+                            platform_post_id = ? OR 
+                            (title IS NOT NULL AND title != '' AND LOWER(TRIM(title)) = LOWER(TRIM(?)))
+                        )
+                    """, (post.platform, post.platform_post_id, post.title or ""))
                     existing = cursor.fetchone()
 
                     if existing:

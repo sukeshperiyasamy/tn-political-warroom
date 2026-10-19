@@ -35,6 +35,9 @@ import {
   SocialDiscoveryLab,
 } from "../components/SocialDiscoveryLab";
 import {
+  AdminPanel,
+} from "../components/admin/AdminPanel";
+import {
   NewsArticle,
   PoliticalParty,
   PoliticalLeader,
@@ -63,7 +66,18 @@ import {
 } from "lucide-react";
 
 export default function WarRoomDashboard() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "news" | "social" | "lab" | "sources" | "comparison" | "studio" | "brief">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "news" | "social" | "lab" | "sources" | "comparison" | "studio" | "brief" | "admin">("dashboard");
+
+  // Check URL tab parameter on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      const tabParam = sp.get("tab");
+      if (tabParam === "admin" || tabParam === "sources") {
+        setActiveTab("admin");
+      }
+    }
+  }, []);
   const [filters, setFilters] = useState<FilterState>({
     search: "",
     party: "",
@@ -351,11 +365,22 @@ export default function WarRoomDashboard() {
         {/* Tab 3.5: Social Discovery & Trending Intelligence Lab (Phase 4) */}
         {activeTab === "lab" && <SocialDiscoveryLab mode="live" />}
 
-        {/* Tab 4: Sources & Ingestion Hub */}
-        {activeTab === "sources" && (
-          <SourceManagementView
+        {/* Tab: Central Administration Panel */}
+        {activeTab === "admin" && (
+          <AdminPanel
+            onBackToWarroom={() => setActiveTab("dashboard")}
             clientConfig={clientConfig}
             onConfigUpdated={setClientConfig}
+          />
+        )}
+
+        {/* Tab 4: Sources & Ingestion Hub (now managed within Admin) */}
+        {activeTab === "sources" && (
+          <AdminPanel
+            onBackToWarroom={() => setActiveTab("dashboard")}
+            clientConfig={clientConfig}
+            onConfigUpdated={setClientConfig}
+            initialSubTab="sources"
           />
         )}
 

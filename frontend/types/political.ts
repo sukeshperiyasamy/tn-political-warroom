@@ -710,3 +710,93 @@ export interface EditorialFinalizeRequest {
   version_3_social_content?: string;
 }
 
+export interface KeywordItem {
+  id: string;
+  name_en: string;
+  name_ta: string;
+  category: string;
+  keywords_en: string[];
+  keywords_ta: string[];
+  hashtags: string[];
+  negative_keywords: string[];
+  related_party_codes: string[];
+  related_leader_names: string[];
+  last_reviewed_at?: string | null;
+  is_active: boolean;
+}
+
+export interface KeywordsResponse {
+  count: number;
+  categories: string[];
+  keywords: KeywordItem[];
+  reprocessing_note: string;
+}
+
+export interface KeywordCreatePayload {
+  id?: string;
+  name_en: string;
+  name_ta: string;
+  category: string;
+  keywords_en: string[];
+  keywords_ta: string[];
+  hashtags: string[];
+  negative_keywords: string[];
+  related_party_codes: string[];
+  related_leader_names: string[];
+  is_active?: boolean;
+}
+
+export interface AdminSystemStatus {
+  status: string;
+  service: string;
+  timestamp: string;
+  publishers: {
+    total: number;
+    enabled: number;
+    disabled: number;
+    healthy: number;
+    warning_or_error: number;
+  };
+  content: {
+    total_articles: number;
+    total_topics: number;
+    active_topics: number;
+    last_ingestion_at?: string | null;
+  };
+  recent_logs: IngestionLog[];
+}
+
+export interface TrendingConfig {
+  weights: {
+    momentum_weight: number;
+    volume_growth_weight: number;
+    cross_source_weight: number;
+    recency_weight: number;
+  };
+  default_weights: {
+    momentum_weight: number;
+    volume_growth_weight: number;
+    cross_source_weight: number;
+    recency_weight: number;
+  };
+  formula: string;
+  description: string;
+  is_customized: boolean;
+}
+
+export interface SafeSettingsResponse {
+  branding: {
+    client_name?: string;
+    client_tagline?: string;
+    logo_url?: string;
+    brand_color?: string;
+    accent_color?: string;
+  };
+  preferences: {
+    default_language?: string;
+    polling_interval_minutes: number;
+    default_demo_scenario?: string;
+  };
+  security_notice: string;
+}
+

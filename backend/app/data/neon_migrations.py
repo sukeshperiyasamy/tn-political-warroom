@@ -304,6 +304,19 @@ ALTER TABLE ingestion_logs ADD COLUMN IF NOT EXISTS http_status INTEGER DEFAULT 
 ALTER TABLE ingestion_logs ADD COLUMN IF NOT EXISTS new_items_added INTEGER DEFAULT 0;
 ALTER TABLE ingestion_logs ADD COLUMN IF NOT EXISTS skipped_duplicates INTEGER DEFAULT 0;
 ALTER TABLE ingestion_logs ALTER COLUMN id SET DEFAULT gen_random_uuid()::text;
+
+ALTER TABLE topic_registry ADD COLUMN IF NOT EXISTS name_en TEXT;
+ALTER TABLE topic_registry ADD COLUMN IF NOT EXISTS name_ta TEXT;
+ALTER TABLE topic_registry ADD COLUMN IF NOT EXISTS keywords_en TEXT DEFAULT '[]';
+ALTER TABLE topic_registry ADD COLUMN IF NOT EXISTS keywords_ta TEXT DEFAULT '[]';
+ALTER TABLE topic_registry ADD COLUMN IF NOT EXISTS hashtags TEXT DEFAULT '[]';
+ALTER TABLE topic_registry ADD COLUMN IF NOT EXISTS negative_keywords TEXT DEFAULT '[]';
+ALTER TABLE topic_registry ADD COLUMN IF NOT EXISTS related_party_codes TEXT DEFAULT '[]';
+ALTER TABLE topic_registry ADD COLUMN IF NOT EXISTS related_leader_names TEXT DEFAULT '[]';
+ALTER TABLE topic_registry ADD COLUMN IF NOT EXISTS last_reviewed_at TEXT;
+ALTER TABLE topic_registry ADD COLUMN IF NOT EXISTS is_active INTEGER DEFAULT 1;
+UPDATE topic_registry SET name_en = name WHERE name_en IS NULL AND name IS NOT NULL;
+UPDATE topic_registry SET name_ta = tamil_name WHERE name_ta IS NULL AND tamil_name IS NOT NULL;
 """
 
 def migrate_neon():

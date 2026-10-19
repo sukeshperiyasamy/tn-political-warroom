@@ -31,10 +31,20 @@ import {
   ScenarioBriefResponse,
   ArticleEditorialVersionsResponse,
   EditorialFinalizeRequest,
+  KeywordItem,
+  KeywordsResponse,
+  KeywordCreatePayload,
+  AdminSystemStatus,
+  TrendingConfig,
+  SafeSettingsResponse,
 } from "../types/political";
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === "production"
+    ? "https://tn-political-warroom.onrender.com"
+    : "http://127.0.0.1:8000");
 
-async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs = 10000) {
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs = 45000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -557,6 +567,130 @@ export async function saveEditorialFinal(
     body: JSON.stringify(payload),
   }, 8000);
   if (!res.ok) throw new Error(`Failed to save finalized editorial version for article ${articleId}`);
+  return await res.json();
+}
+
+// ==========================================
+// Admin Panel Intelligence & Config Services
+// ==========================================
+
+export async function fetchAdminSystemStatus(): Promise<AdminSystemStatus> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/admin/system-status`, {}, 6000);
+  if (!res.ok) throw new Error("Failed to fetch admin system status");
+  return await res.json();
+}
+
+export async function fetchKeywords(
+  search?: string,
+  category?: string,
+  activeOnly?: boolean
+): Promise<KeywordsResponse> {
+  const params = new URLSearchParams();
+  if (search) params.append("search", search);
+  if (category && category !== "All") params.append("category", category);
+  if (activeOnly) params.append("active_only", "true");
+
+  const url = `${API_BASE}/api/admin/keywords${params.toString() ? `?${params.toString()}` : ""}`;
+  const res = await fetchWithTimeout(url, {}, 6000);
+  if (!res.ok) throw new Error("Failed to fetch registered keywords");
+  return await res.json();
+}
+
+export async function createKeyword(payload: KeywordCreatePayload): Promise<KeywordItem> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/admin/keywords`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  }, 8000);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Failed to create keyword" }));
+    throw new Error(err.detail || "Failed to create keyword");
+  }
+  return await res.json();
+}
+
+export async function updateKeyword(
+  id: string,
+  payload: Partial<KeywordCreatePayload>
+): Promise<KeywordItem> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/admin/keywords/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  }, 8000);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Failed to update keyword" }));
+    throw new Error(err.detail || "Failed to update keyword");
+  }
+  return await res.json();
+}
+
+export async function toggleKeyword(id: string): Promise<{ id: string; is_active: boolean }> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/admin/keywords/${encodeURIComponent(id)}/toggle`, {
+    method: "POST",
+  }, 6000);
+  if (!res.ok) throw new Error("Failed to toggle keyword status");
+  return await res.json();
+}
+
+export async function deleteKeyword(id: string): Promise<{ status: string; id: string; name_en: string }> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/admin/keywords/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  }, 6000);
+  if (!res.ok) throw new Error("Failed to delete keyword");
+  return await res.json();
+}
+
+export async function fetchTrendingConfig(): Promise<TrendingConfig> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/admin/trending-config`, {}, 6000);
+  if (!res.ok) throw new Error("Failed to fetch trending configuration");
+  return await res.json();
+}
+
+export async function updateTrendingConfig(weights: {
+  momentum_weight: number;
+  volume_growth_weight: number;
+  cross_source_weight: number;
+  recency_weight: number;
+}): Promise<TrendingConfig> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/admin/trending-config`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(weights),
+  }, 8000);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Failed to update trending configuration" }));
+    throw new Error(err.detail || "Failed to update trending configuration");
+  }
+  return await res.json();
+}
+
+export async function resetTrendingConfig(): Promise<TrendingConfig> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/admin/trending-config/reset`, {
+    method: "POST",
+  }, 6000);
+  if (!res.ok) throw new Error("Failed to reset trending configuration");
+  return await res.json();
+}
+
+export async function fetchSafeSettings(): Promise<SafeSettingsResponse> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/admin/settings`, {}, 6000);
+  if (!res.ok) throw new Error("Failed to fetch application settings");
+  return await res.json();
+}
+
+export async function updateSafeSettings(
+  settings: Partial<SafeSettingsResponse["branding"]>
+): Promise<SafeSettingsResponse> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/admin/settings`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(settings),
+  }, 8000);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Failed to update application settings" }));
+    throw new Error(err.detail || "Failed to update application settings");
+  }
   return await res.json();
 }
 

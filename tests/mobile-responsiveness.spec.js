@@ -79,7 +79,7 @@ test.describe('Mobile Responsiveness & Viewport Audit Suite', () => {
     await expect(drawer.getByRole('button', { name: /Discovery Lab/i })).toBeVisible();
     await expect(drawer.getByRole('button', { name: /Intelligence Brief/i })).toBeVisible();
     await expect(drawer.getByRole('button', { name: /Party Compare/i })).toBeVisible();
-    await expect(drawer.getByRole('button', { name: /All Sources/i })).toBeVisible();
+    await expect(drawer.getByRole('button', { name: /Admin/i })).toBeVisible();
     await expect(drawer.getByRole('button', { name: /Card Studio/i })).toBeVisible();
 
     await captureScreenshot(page, '31_mobile_nav_drawer_open.png');
@@ -163,14 +163,22 @@ test.describe('Mobile Responsiveness & Viewport Audit Suite', () => {
     await captureScreenshot(page, '33_studio_graphic_canvas_mobile.png');
   });
 
-  test('All Sources & Trending Now Layout on Mobile: Stacks vertically and tabs wrap cleanly', async ({ page }) => {
+  test('Admin Sources & Publishers Layout on Mobile: Stacks vertically and tabs wrap cleanly', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('http://127.0.0.1:3000');
     await page.waitForLoadState('networkidle');
 
-    // Navigate to All Sources via header pill bar
-    const sourcesBtn = page.locator('header').getByRole('button', { name: /All Sources/i }).first();
-    await sourcesBtn.click();
+    // Navigate to Admin via header pill bar
+    const adminBtn = page.locator('header').getByRole('button', { name: /Admin/i }).first();
+    await adminBtn.click();
+
+    // Fill demo credentials
+    await page.getByRole('button', { name: /Fill Predefined Demo Credentials/i }).click();
+    await page.getByRole('button', { name: /Sign In to Admin Panel/i }).click();
+
+    // Switch to Sources & Publishers tab
+    const sourcesTab = page.getByRole('button', { name: /Sources & Publishers/i });
+    await sourcesTab.click();
 
     // Verify Source Management Hub loads
     await expect(page.getByText(/Source Management & Feed Freshness Hub/i)).toBeVisible({ timeout: 10000 });

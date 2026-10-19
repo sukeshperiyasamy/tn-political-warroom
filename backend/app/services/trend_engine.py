@@ -195,6 +195,8 @@ class TrendEngine:
                 p["platform"], p["views_count"], p["likes_count"], p["comments_count"], p["shares_count"]
             )
             for t in t_list:
+                if not t or t == "General Governance":
+                    continue
                 prior_counts[t] = prior_counts.get(t, 0) + 1
                 prior_engagement_by_topic[t] = prior_engagement_by_topic.get(t, 0.0) + eng
 
@@ -215,6 +217,8 @@ class TrendEngine:
                 pub_dt = now
 
             for t in t_list:
+                if not t or t == "General Governance":
+                    continue
                 if t not in topic_aggregates:
                     topic_aggregates[t] = {
                         "topic": t,
@@ -481,6 +485,9 @@ class TrendEngine:
                 where_clauses.append("topics LIKE ?")
                 params.append(f'%"{topic}"%')
 
+            # Exclude unclassified non-political fallback posts
+            where_clauses.append("NOT (topics = '[\"General Governance\"]' AND (party_codes = '[]' OR party_codes IS NULL) AND (leader_names = '[]' OR leader_names IS NULL))")
+
             where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
 
             # Count total
@@ -512,9 +519,16 @@ class TrendEngine:
 
             rows = cursor.fetchall()
             posts: List[Dict[str, Any]] = []
+            seen_titles = set()
 
             for r in rows:
                 p = dict(r)
+                # Deduplication guard: drop duplicate alerts with identical platform and title
+                t_clean = (p.get("title") or "").strip().lower()
+                dedup_key = f"{p.get('platform')}:{t_clean}" if t_clean else p.get("id")
+                if dedup_key in seen_titles:
+                    continue
+                seen_titles.add(dedup_key)
                 p["party_codes"] = json.loads(p.get("party_codes") or "[]")
                 p["leader_names"] = json.loads(p.get("leader_names") or "[]")
                 p["topics"] = json.loads(p.get("topics") or "[]")
