@@ -128,6 +128,8 @@ export interface CompareResponse {
 export interface CardTemplate {
   id: string;
   name: string;
+  channel_name?: string;
+  image_url?: string;
   style_category: string;
   theme_bg: string;
   theme_text: string;

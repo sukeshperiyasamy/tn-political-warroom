@@ -123,17 +123,13 @@ test.describe('Visual and Functional Verification Suite', () => {
     // 8. Card Templates & Controls
     await expect(page.locator('#tamil-news-card-canvas')).toBeVisible();
 
-    // Switch to Dravidian Horizon template
-    const dmkTemplateBtn = page.getByRole('button', { name: /Dravidian Horizon/i });
-    await dmkTemplateBtn.click();
+    // Switch to News Trends Tamil template
+    const trendsTemplateBtn = page.getByRole('button', { name: /NEWS TRENDS தமிழ்|News Trends Tamil/i });
+    await trendsTemplateBtn.click();
 
-    // Switch to Puratchi Green template
-    const aiadmkTemplateBtn = page.getByRole('button', { name: /Puratchi Green/i });
-    await aiadmkTemplateBtn.click();
-
-    // Switch to Vettri Gold template
-    const tvkTemplateBtn = page.getByRole('button', { name: /Vettri Gold/i });
-    await tvkTemplateBtn.click();
+    // Switch to News Clicks template
+    const clicksTemplateBtn = page.getByRole('button', { name: /NEWS CLICKS|News Clicks/i });
+    await clicksTemplateBtn.click();
 
     // Select preset
     const presetBtn = page.getByRole('button', { name: 'தவெக விஜய் மாநாடு' });

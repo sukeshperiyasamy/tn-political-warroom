@@ -290,6 +290,8 @@ class IntelligenceResponse(BaseModel):
 class CardTemplate(BaseModel):
     id: str
     name: str
+    channel_name: Optional[str] = None
+    image_url: Optional[str] = None
     style_category: str
     theme_bg: str
     theme_text: str

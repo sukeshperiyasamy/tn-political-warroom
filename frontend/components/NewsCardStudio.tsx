@@ -36,7 +36,7 @@ import {
 
 interface NewsCardStudioProps {
   article: NewsArticle | null;
-  parties: PoliticalParty[];
+  parties?: PoliticalParty[];
   templates: CardTemplate[];
 }
 
@@ -78,10 +78,7 @@ export function NewsCardStudio({
     article?.tamil_summary || "தொழில்துறை வளர்ச்சியை தென் மாவட்டங்களுக்கும் விரிவுபடுத்தும் வரலாற்றுத் திட்டத்தை தமிழ்நாடு அரசு முறைப்படி தொடங்கியுள்ளது."
   );
   const [categoryTag, setCategoryTag] = useState<string>("தேர்தல் களம் 2026");
-  const [selectedPartyCode, setSelectedPartyCode] = useState<string>(
-    article?.party_codes[0] || "DMK"
-  );
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("warroom_dark");
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("news_clicks");
   const [sourceAttribution, setSourceAttribution] = useState<string>(
     article?.source || "The Hindu (Tamil)"
   );
@@ -133,9 +130,6 @@ export function NewsCardStudio({
       setHeadline(article.tamil_title || article.title || "");
       setSubheadline(article.tamil_summary || article.summary || "");
       setSourceAttribution(article.source || "");
-      if (article.party_codes && article.party_codes.length > 0) {
-        setSelectedPartyCode(article.party_codes[0]);
-      }
       loadEditorialVersions(article.id);
     }
   }, [article?.id]);
@@ -156,31 +150,39 @@ export function NewsCardStudio({
     };
   }, [activeStudioTab]);
 
-  const fallbackTemplate: CardTemplate = {
-    id: "warroom_dark",
-    name: "War Room Dark",
-    style_category: "editorial",
-    theme_bg: "#0B0F19",
-    theme_text: "#FFFFFF",
-    accent_color: "#E11D48",
-    border_style: "solid",
-    badge_style: "dark",
-  };
-  const activeTemplate = (templates && templates.length > 0)
-    ? (templates.find((t) => t.id === selectedTemplateId) || templates[0])
-    : fallbackTemplate;
+  const fallbackTemplates: CardTemplate[] = [
+    {
+      id: "news_clicks",
+      name: "News Clicks",
+      channel_name: "NEWS CLICKS",
+      image_url: "/studio-cards/news-clicks.jpeg",
+      style_category: "Broadcast Red",
+      theme_bg: "#4D0407",
+      theme_text: "#FFFFFF",
+      accent_color: "#E11D48",
+      border_style: "2px solid #FFFFFF",
+      badge_style: "bg-rose-600 text-white",
+    },
+    {
+      id: "news_trends_tamil",
+      name: "News Trends Tamil",
+      channel_name: "NEWS TRENDS தமிழ்",
+      image_url: "/studio-cards/news-trends-tamil.jpeg",
+      style_category: "Tamil News Red",
+      theme_bg: "#660B0B",
+      theme_text: "#FFFFFF",
+      accent_color: "#F59E0B",
+      border_style: "2px solid #FFFFFF",
+      badge_style: "bg-amber-500 text-black",
+    },
+  ];
 
-  const fallbackParty: PoliticalParty = {
-    code: "DMK",
-    name: "Dravida Munnetra Kazhagam",
-    color: "#DC2626",
-    tamil_name: "திராவிட முன்னேற்றக் கழகம்",
-    symbol: "Rising Sun",
-    alliance: "INDIA",
-  };
-  const activeParty = (parties && parties.length > 0)
-    ? (parties.find((p) => p.code === selectedPartyCode) || parties[0])
-    : fallbackParty;
+  const filteredTemplates = (templates && templates.length > 0)
+    ? templates.filter((t) => t.id === "news_clicks" || t.id === "news_trends_tamil")
+    : [];
+  const displayTemplates = filteredTemplates.length === 2 ? filteredTemplates : fallbackTemplates;
+  const activeTemplate =
+    displayTemplates.find((t) => t.id === selectedTemplateId) || displayTemplates[0];
 
   // Quick preset headlines
   const quickPresets = [
@@ -189,28 +191,24 @@ export function NewsCardStudio({
       category: "அரசு நலத்திட்டம்",
       title: "மகளிர் உரிமைத் தொகையில் கூடுதலாக 8 லட்சம் தாய்மார்கள் இணைப்பு: தமிழ்நாடு அரசு!",
       sub: "குடும்பத் தலைவிகளின் பொருளாதார தற்சார்பை உறுதிசெய்யும் சமூகநீதி திட்டத்தின் அடுத்த கட்ட விரிவாக்கம்.",
-      party: "DMK",
     },
     {
-      label: "எடப்பாடி சூறாவளி உரை",
+      label: "எதிர்க்கட்சி அறிக்கை",
       category: "எதிர்க்கட்சி கண்டனம்",
-      title: "மின்கட்டண உயர்வால் மக்கள் அவதி: விடியா அரசுக்கு பாடம் புகட்டுவோம் என ஈபிஎஸ் முழக்கம்!",
-      sub: "கொங்கு மண்டலத்தில் பல்லாயிரக்கணக்கான தொண்டர்கள் மத்தியில் அதிமுக பொதுச்செயலாளர் ஆவேச உரை.",
-      party: "AIADMK",
+      title: "மின்கட்டண உயர்வால் மக்கள் அவதி: உடனடி நடவடிக்கை தேவை என எதிர்க்கட்சி பொதுச்செயலாளர் அறிக்கை!",
+      sub: "கொங்கு மண்டலத்தில் பல்லாயிரக்கணக்கான தொண்டர்கள் மத்தியில் முக்கிய அரசியல் தலைவர்கள் ஆவேச உரை.",
     },
     {
       label: "தவெக விஜய் மாநாடு",
       category: "மாற்று அரசியல்",
-      title: "‘இரு துருவ அரசியலுக்கு முடிவு கட்டுவோம்!’ — லட்சக்கணக்கான இளைஞர்கள் மத்தியில் விஜய் சூளுரை!",
-      sub: "2026 தமிழ்நாடு சட்டமன்ற தேர்தல் களத்தில் புதிய அரசியல் சக்தியாக உருவெடுக்கும் தமிழக வெற்றிக் கழகம்.",
-      party: "TVK",
+      title: "‘இரு துருவ அரசியலுக்கு முடிவு கட்டுவோம்!’ — இளைஞர்கள் மத்தியில் தீவிர அரசியல் சூளுரை!",
+      sub: "2026 தமிழ்நாடு சட்டமன்ற தேர்தல் களத்தில் புதிய மாற்றத்திற்கான அரசியல் முன்னெடுப்பு.",
     },
     {
-      label: "அண்ணாமலை வெள்ளை அறிக்கை",
-      category: "பாஜக அதிரடி",
-      title: "மத்திய திட்ட நிதியை தமிழக அரசு முறையாக செலவிடவில்லை: அண்ணாமலை சரமாரி குற்றச்சாட்டு!",
-      sub: "ஜல் ஜீவன் மற்றும் வீட்டுவசதி திட்டங்களுக்கான நிதி பயன்பாடு குறித்து பாஜக பகிரங்க அறிக்கை.",
-      party: "BJP",
+      label: "மத்திய நிதி அறிக்கை",
+      category: "திட்ட ஆய்வு",
+      title: "மத்திய திட்ட நிதியை தமிழக அரசு முறையாக செலவிடவில்லை: விரிவான அறிக்கை வெளியீடு!",
+      sub: "ஜல் ஜீவன் மற்றும் வீட்டுவசதி திட்டங்களுக்கான நிதி பயன்பாடு குறித்து பகிரங்க புள்ளிவிவர அறிக்கை.",
     },
   ];
 
@@ -218,7 +216,6 @@ export function NewsCardStudio({
     setCategoryTag(preset.category);
     setHeadline(preset.title);
     setSubheadline(preset.sub);
-    setSelectedPartyCode(preset.party);
   };
 
   const handleApplyVariation = (variation: TamilVariation) => {
@@ -315,27 +312,48 @@ export function NewsCardStudio({
     x: number,
     y: number,
     maxWidth: number,
-    lineHeight: number
+    lineHeight: number,
+    maxY?: number
   ): number => {
-    const words = text.split(" ");
-    let line = "";
-    for (let n = 0; n < words.length; n++) {
-      const testLine = line + words[n] + " ";
-      const metrics = ctx.measureText(testLine);
-      const testWidth = metrics.width;
-      if (testWidth > maxWidth && n > 0) {
-        ctx.fillText(line, x, y);
-        line = words[n] + " ";
-        y += lineHeight;
-      } else {
-        line = testLine;
+    const paragraphs = text.split("\n");
+    let currentY = y;
+
+    for (let p = 0; p < paragraphs.length; p++) {
+      const paragraph = paragraphs[p].trim();
+      if (!paragraph) {
+        currentY += lineHeight * 0.5;
+        continue;
+      }
+      const words = paragraph.split(" ");
+      let line = "";
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + " ";
+        const metrics = ctx.measureText(testLine);
+        const testWidth = metrics.width;
+        if (testWidth > maxWidth && n > 0) {
+          if (maxY && currentY + lineHeight > maxY) {
+            ctx.fillText(line.trim() + "...", x, currentY);
+            return currentY;
+          }
+          ctx.fillText(line.trim(), x, currentY);
+          line = words[n] + " ";
+          currentY += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      if (line.trim()) {
+        if (maxY && currentY > maxY) {
+          return currentY;
+        }
+        ctx.fillText(line.trim(), x, currentY);
+        currentY += lineHeight;
       }
     }
-    ctx.fillText(line, x, y);
-    return y;
+    return currentY;
   };
 
-  // 1080x1080 High-Performance PNG Export Action
+  // 1080x1080 High-Performance PNG Export Action using Original Template Background
   const handleExportPNG = async () => {
     setIsExporting(true);
     setDownloadSuccess(null);
@@ -346,127 +364,177 @@ export function NewsCardStudio({
       canvas.height = 1080;
       const ctx = canvas.getContext("2d");
 
-      if (ctx) {
-        // 1. Background
-        ctx.fillStyle = activeTemplate.theme_bg;
-        ctx.fillRect(0, 0, 1080, 1080);
-
-        // 2. Ambient radial glow
-        const g1 = ctx.createRadialGradient(900, 150, 50, 900, 150, 450);
-        g1.addColorStop(0, activeTemplate.accent_color + "40");
-        g1.addColorStop(1, "transparent");
-        ctx.fillStyle = g1;
-        ctx.fillRect(0, 0, 1080, 1080);
-
-        const g2 = ctx.createRadialGradient(150, 950, 50, 150, 950, 450);
-        g2.addColorStop(0, activeParty.color + "30");
-        g2.addColorStop(1, "transparent");
-        ctx.fillStyle = g2;
-        ctx.fillRect(0, 0, 1080, 1080);
-
-        // 3. Top divider
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(64, 180);
-        ctx.lineTo(1016, 180);
-        ctx.stroke();
-
-        // Party Badge
-        ctx.fillStyle = activeParty.color;
-        ctx.beginPath();
-        if (typeof ctx.roundRect === "function") {
-          ctx.roundRect(64, 64, 84, 84, 18);
-        } else {
-          ctx.rect(64, 64, 84, 84);
-        }
-        ctx.fill();
-
-        ctx.fillStyle = "#FFFFFF";
-        ctx.font = "bold 32px sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(activeParty.code, 106, 106);
-
-        // Party Name
-        ctx.textAlign = "left";
-        ctx.textBaseline = "alphabetic";
-        ctx.fillStyle = activeTemplate.theme_text;
-        ctx.font = "bold 26px sans-serif";
-        ctx.fillText(activeParty.name, 168, 98);
-
-        ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-        ctx.font = "20px sans-serif";
-        ctx.fillText(activeParty.tamil_name, 168, 134);
-
-        // Category Tag (Right)
-        ctx.textAlign = "right";
-        ctx.fillStyle = activeTemplate.accent_color;
-        ctx.font = "bold 22px monospace";
-        ctx.fillText(categoryTag.toUpperCase(), 1016, 98);
-
-        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-        ctx.font = "16px monospace";
-        const dateStr = `TN WARROOM • ${new Date().toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}`;
-        ctx.fillText(dateStr, 1016, 130);
-
-        // 4. Accent stripe
-        ctx.fillStyle = activeTemplate.accent_color;
-        const stripeX = textAlign === "center" ? 490 : 64;
-        ctx.fillRect(stripeX, 290, 100, 10);
-
-        // 5. Headline Text
-        ctx.fillStyle = "#FFFFFF";
-        ctx.font = `bold ${titleFontSize * 1.6}px 'Noto Sans Tamil', 'Latha', 'Mukta Malar', sans-serif`;
-        ctx.textAlign = textAlign;
-        const headlineX = textAlign === "center" ? 540 : 64;
-        const headlineY = wrapText(ctx, headline, headlineX, 360, 952, titleFontSize * 2.0);
-
-        // 6. Subheadline
-        ctx.fillStyle = "rgba(255, 255, 255, 0.88)";
-        ctx.font = "34px 'Noto Sans Tamil', 'Latha', 'Mukta Malar', sans-serif";
-        ctx.textAlign = textAlign;
-        wrapText(ctx, subheadline, headlineX, headlineY + 50, 952, 48);
-
-        // 7. Footer Divider & Attribution
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(64, 950);
-        ctx.lineTo(1016, 950);
-        ctx.stroke();
-
-        ctx.textAlign = "left";
-        ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
-        ctx.font = "18px monospace";
-        ctx.fillText("EDITORIAL SOURCE / ஊடகம்:", 64, 995);
-
-        ctx.fillStyle = "#FFFFFF";
-        ctx.font = "bold 26px 'Noto Sans Tamil', 'Latha', 'Mukta Malar', sans-serif";
-        ctx.fillText(sourceAttribution, 64, 1030);
-
-        // Right Branding Stamp
-        ctx.textAlign = "right";
-        ctx.fillStyle = "#F59E0B";
-        ctx.font = "bold 22px monospace";
-        ctx.fillText("TN POLITICAL WAR ROOM", 1016, 995);
-
-        ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
-        ctx.font = "18px 'Noto Sans Tamil', 'Latha', 'Mukta Malar', sans-serif";
-        ctx.fillText("அரசியல் ஊடக நுண்ணறிவு & பகுப்பாய்வு மையம்", 1016, 1030);
-
-        // Trigger Download
-        const dataUrl = canvas.toDataURL("image/png");
-        const a = document.createElement("a");
-        const filename = `TN_NewsCard_${activeParty.code}_${Date.now()}.png`;
-        a.href = dataUrl;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-
-        setDownloadSuccess(filename);
+      if (!ctx) {
+        throw new Error("Unable to create canvas 2D context");
       }
+
+      // 1. Draw Original Template Background Image
+      const bgImg = new Image();
+      bgImg.crossOrigin = "anonymous";
+      const imgSrc =
+        activeTemplate.image_url ||
+        (activeTemplate.id === "news_trends_tamil"
+          ? "/studio-cards/news-trends-tamil.jpeg"
+          : "/studio-cards/news-clicks.jpeg");
+
+      await new Promise<void>((resolve) => {
+        bgImg.onload = () => resolve();
+        bgImg.onerror = () => {
+          // If image fails to load via URL, still proceed with template background fill
+          resolve();
+        };
+        bgImg.src = imgSrc;
+      });
+
+      if (bgImg.complete && bgImg.naturalWidth > 0) {
+        ctx.drawImage(bgImg, 0, 0, 1080, 1080);
+      } else {
+        ctx.fillStyle = activeTemplate.theme_bg || "#4D0407";
+        ctx.fillRect(0, 0, 1080, 1080);
+      }
+
+      // Safe content area bounds strictly inside template borders & below top-right logo
+      const contentLeft = 105;
+      const contentRight = 975;
+      const contentWidth = contentRight - contentLeft; // 870px
+      const topY = 180;
+      const bottomY = 960;
+
+      const channelDisplayName =
+        activeTemplate.channel_name ||
+        (activeTemplate.id === "news_trends_tamil" ? "NEWS TRENDS தமிழ்" : "NEWS CLICKS");
+
+      // 2. Top Metadata inside Content Area (Category Pill, Channel & Date)
+      ctx.save();
+      ctx.fillStyle = "rgba(255, 255, 255, 0.16)";
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
+      ctx.lineWidth = 1.5;
+      const catText = (categoryTag || "செய்தி அறிக்கை").toUpperCase();
+      ctx.font = "bold 18px 'Noto Sans Tamil', 'Latha', sans-serif";
+      const catWidth = ctx.measureText(catText).width + 28;
+
+      if (typeof ctx.roundRect === "function") {
+        ctx.beginPath();
+        ctx.roundRect(contentLeft, topY, catWidth, 36, 8);
+        ctx.fill();
+        ctx.stroke();
+      } else {
+        ctx.fillRect(contentLeft, topY, catWidth, 36);
+      }
+
+      ctx.fillStyle = "#FFFFFF";
+      ctx.textBaseline = "middle";
+      ctx.fillText(catText, contentLeft + 14, topY + 18);
+
+      // Channel name indicator beside category pill
+      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+      ctx.font = "bold 20px 'Noto Sans Tamil', sans-serif";
+      ctx.fillText(channelDisplayName, contentLeft + catWidth + 16, topY + 18);
+
+      // Date on top right
+      ctx.textAlign = "right";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
+      ctx.font = "16px monospace";
+      const dateStr = new Date().toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+      ctx.fillText(dateStr, contentRight, topY + 18);
+
+      // Top divider below header
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(contentLeft, topY + 46);
+      ctx.lineTo(contentRight, topY + 46);
+      ctx.stroke();
+      ctx.restore();
+
+      // 3. Main Headline & Supporting News Text
+      ctx.save();
+      ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 3;
+
+      // Decorative Accent Stripe
+      const stripeX = textAlign === "center" ? 540 - 45 : contentLeft;
+      ctx.fillStyle = "#F59E0B";
+      ctx.fillRect(stripeX, topY + 70, 90, 6);
+
+      // White Bold Headline
+      ctx.fillStyle = "#FFFFFF";
+      const headlineFontSize = Math.min(Math.max(titleFontSize, 32), 60);
+      ctx.font = `bold ${headlineFontSize}px 'Noto Sans Tamil', 'Latha', 'Mukta Malar', sans-serif`;
+      ctx.textAlign = textAlign;
+      const textX = textAlign === "center" ? 540 : contentLeft;
+      const headlineStartY = topY + 125;
+      const headlineEndY = wrapText(
+        ctx,
+        headline,
+        textX,
+        headlineStartY,
+        contentWidth,
+        headlineFontSize * 1.35,
+        bottomY - 140
+      );
+
+      // Supporting News Content in Clean White/Off-White Readable Font
+      ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+      ctx.font = "500 26px 'Noto Sans Tamil', 'Latha', 'Mukta Malar', sans-serif";
+      wrapText(
+        ctx,
+        subheadline,
+        textX,
+        headlineEndY + 45,
+        contentWidth,
+        42,
+        bottomY - 45
+      );
+      ctx.restore();
+
+      // 4. Footer Divider & Source Attribution inside Content Area
+      ctx.save();
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(contentLeft, bottomY - 32);
+      ctx.lineTo(contentRight, bottomY - 32);
+      ctx.stroke();
+
+      // Source Attribution (Left)
+      ctx.textAlign = "left";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.font = "14px monospace";
+      ctx.fillText("EDITORIAL SOURCE / செய்தி மூலம்:", contentLeft, bottomY - 10);
+
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = "bold 22px 'Noto Sans Tamil', 'Latha', sans-serif";
+      ctx.fillText(sourceAttribution || "Official News Wire", contentLeft, bottomY + 18);
+
+      // Channel Stamp (Right)
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#F59E0B";
+      ctx.font = "bold 20px 'Noto Sans Tamil', sans-serif";
+      ctx.fillText(channelDisplayName, contentRight, bottomY - 10);
+
+      ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
+      ctx.font = "15px 'Noto Sans Tamil', sans-serif";
+      ctx.fillText("தமிழ்நாடு அரசியல் ஊடக களம்", contentRight, bottomY + 18);
+      ctx.restore();
+
+      // 5. Trigger High-Res PNG Download
+      const dataUrl = canvas.toDataURL("image/png");
+      const a = document.createElement("a");
+      const filename = `${activeTemplate.id}_news_card_${Date.now()}.png`;
+      a.href = dataUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      setDownloadSuccess(filename);
     } catch (err) {
       console.error("Canvas export failed:", err);
       alert("Failed to render card canvas. Please try again.");
@@ -930,55 +998,79 @@ export function NewsCardStudio({
             </div>
           )}
 
-          {/* Template Theme Selector */}
+          {/* Template Selection: Exactly 2 Channels */}
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">
-              Design Theme (6 Styles)
-            </label>
-            <div className="grid grid-cols-3 gap-1.5">
-              {templates.map((tpl) => (
-                <button
-                  key={tpl.id}
-                  onClick={() => setSelectedTemplateId(tpl.id)}
-                  className={`p-2 rounded border text-left transition-all cursor-pointer ${
-                    selectedTemplateId === tpl.id
-                      ? "border-zinc-900 bg-[#F4F4F0] text-zinc-900 font-bold"
-                      : "border-[#E8E8E2] bg-[#F9F9F7] text-zinc-600 hover:border-zinc-300"
-                  }`}
-                >
-                  <div
-                    className="w-full h-2 rounded-xs mb-1"
-                    style={{ backgroundColor: tpl.accent_color }}
-                  />
-                  <div className="text-[11px] font-bold text-zinc-800 truncate">{tpl.name}</div>
-                </button>
-              ))}
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-600 block font-mono">
+                Select News Channel Template
+              </label>
+              <span className="text-[10px] font-mono text-zinc-400">2 Templates Available</span>
             </div>
-          </div>
 
-          {/* Party Branding Selection */}
-          <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">
-              Party Branding Badge
-            </label>
-            <div className="grid grid-cols-4 gap-1.5">
-              {parties.map((p) => (
-                <button
-                  key={p.code}
-                  onClick={() => setSelectedPartyCode(p.code)}
-                  className={`flex items-center gap-1.5 p-1.5 rounded border text-xs font-semibold transition-all cursor-pointer ${
-                    selectedPartyCode === p.code
-                      ? "border-zinc-900 bg-zinc-900 text-white font-bold"
-                      : "border-[#E8E8E2] bg-[#F9F9F7] text-zinc-700 hover:border-zinc-300"
-                  }`}
-                >
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: p.color }}
-                  />
-                  <span>{p.code}</span>
-                </button>
-              ))}
+            <div className="grid grid-cols-2 gap-3">
+              {displayTemplates.map((tpl) => {
+                const isSelected = selectedTemplateId === tpl.id;
+                const channelDisplayName =
+                  tpl.channel_name ||
+                  (tpl.id === "news_trends_tamil" ? "NEWS TRENDS தமிழ்" : "NEWS CLICKS");
+                const previewImg =
+                  tpl.image_url ||
+                  (tpl.id === "news_trends_tamil"
+                    ? "/studio-cards/news-trends-tamil.jpeg"
+                    : "/studio-cards/news-clicks.jpeg");
+
+                return (
+                  <button
+                    key={tpl.id}
+                    type="button"
+                    onClick={() => setSelectedTemplateId(tpl.id)}
+                    className={`group flex flex-col p-2.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden ${
+                      isSelected
+                        ? "border-rose-600 bg-rose-50/40 ring-2 ring-rose-600 shadow-sm"
+                        : "border-[#E8E8E2] bg-[#FAF9F6] hover:border-zinc-400 hover:bg-white"
+                    }`}
+                    aria-pressed={isSelected}
+                    aria-label={`Select ${channelDisplayName} template`}
+                  >
+                    {/* Active selection badge */}
+                    {isSelected ? (
+                      <div className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-rose-600 text-white flex items-center gap-1 shadow-2xs">
+                        <Check className="w-2.5 h-2.5 stroke-[3]" />
+                        <span>SELECTED</span>
+                      </div>
+                    ) : (
+                      <div className="absolute top-2 right-2 z-10 px-1.5 py-0.5 rounded text-[9px] font-mono font-medium bg-black/60 text-white/90 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                        Click to select
+                      </div>
+                    )}
+
+                    {/* Template Preview Image */}
+                    <div className="w-full aspect-square rounded-lg overflow-hidden border border-black/10 bg-black mb-2 relative">
+                      <img
+                        src={previewImg}
+                        alt={channelDisplayName}
+                        className="w-full h-full object-cover select-none"
+                      />
+                    </div>
+
+                    {/* Channel Name */}
+                    <div className="mt-auto">
+                      <div className={`text-xs font-bold leading-tight ${isSelected ? "text-rose-950 font-extrabold" : "text-zinc-800"}`}>
+                        {tpl.id === "news_trends_tamil" ? (
+                          <span className="font-tamil">
+                            NEWS TRENDS <span className="text-rose-700">தமிழ்</span>
+                          </span>
+                        ) : (
+                          <span>{channelDisplayName}</span>
+                        )}
+                      </div>
+                      <div className="text-[10px] font-mono text-zinc-500 mt-0.5">
+                        1080×1080 Social Card
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -1077,7 +1169,7 @@ export function NewsCardStudio({
           {/* Scaled Responsive Preview Wrapper */}
           <div
             ref={containerRef}
-            className="w-full max-w-[540px] aspect-square relative overflow-hidden rounded-lg shadow-md border border-zinc-400 bg-black mx-auto"
+            className="w-full max-w-[540px] aspect-square relative overflow-hidden rounded-xl shadow-lg border border-zinc-500/30 bg-black mx-auto"
           >
             {/* The 1080x1080 Actual Node */}
             <div
@@ -1095,119 +1187,114 @@ export function NewsCardStudio({
                 color: activeTemplate.theme_text,
                 fontFamily: "'Noto Sans Tamil', 'Latha', 'Mukta Malar', var(--font-tamil), sans-serif",
               }}
-              className="p-16 flex flex-col justify-between box-border select-none overflow-hidden pointer-events-none"
+              className="box-border select-none overflow-hidden relative pointer-events-none"
             >
-              {/* Background Geometric Layer */}
-              <div
-                className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-20 blur-3xl"
-                style={{ backgroundColor: activeTemplate.accent_color }}
+              {/* 1. Original Template Background Image */}
+              <img
+                src={
+                  activeTemplate.image_url ||
+                  (activeTemplate.id === "news_trends_tamil"
+                    ? "/studio-cards/news-trends-tamil.jpeg"
+                    : "/studio-cards/news-clicks.jpeg")
+                }
+                alt=""
+                className="absolute inset-0 w-[1080px] h-[1080px] object-cover pointer-events-none select-none z-0"
               />
+
+              {/* 2. Designated Content Area inside template's border & safe from top-right logo */}
               <div
-                className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full opacity-15 blur-3xl"
-                style={{ backgroundColor: activeParty.color }}
-              />
-
-              {/* Top Bar: Brand, Category, Date */}
-              <div className="relative z-10 flex items-center justify-between border-b border-white/10 pb-8">
-                {/* Brand & Symbol Badge */}
-                <div className="flex items-center gap-4">
-                  <div
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-extrabold shadow-lg"
-                    style={{
-                      backgroundColor: activeParty.color,
-                      color: "#FFFFFF",
-                    }}
-                  >
-                    {activeParty.code}
-                  </div>
-                  <div>
-                    <span className="text-xl font-bold tracking-wider uppercase font-mono block">
-                      {activeParty.name}
-                    </span>
-                    <span className="text-lg opacity-80 font-tamil">
-                      {activeParty.tamil_name}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Category Pill & Verification */}
-                <div className="text-right">
-                  <span
-                    className="inline-block px-5 py-2 rounded-full text-base font-bold uppercase tracking-wider font-mono shadow-sm"
-                    style={{
-                      backgroundColor: `${activeTemplate.accent_color}25`,
-                      color: activeTemplate.accent_color,
-                      border: `2px solid ${activeTemplate.accent_color}60`,
-                    }}
-                  >
-                    {categoryTag}
-                  </span>
-                  <div className="text-sm opacity-60 font-mono mt-2">
-                    TN WARROOM • {new Date().toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
-                  </div>
-                </div>
-              </div>
-
-              {/* Main Headline & Context (Middle) */}
-              <div
-                className="relative z-10 my-auto py-8"
-                style={{ textAlign: textAlign }}
+                className="absolute inset-0 z-10 flex flex-col justify-between"
+                style={{
+                  padding: "180px 105px 105px 105px",
+                }}
               >
-                {/* Party Visual Stripe */}
-                <div
-                  className="w-24 h-2.5 rounded-full mb-8"
-                  style={{
-                    backgroundColor: activeTemplate.accent_color,
-                    margin: textAlign === "center" ? "0 auto 2rem auto" : "0 0 2rem 0",
-                  }}
-                />
-
-                {/* Primary Tamil Headline */}
-                <h1
-                  style={{
-                    fontSize: `${titleFontSize}px`,
-                    lineHeight: 1.25,
-                    fontWeight: 800,
-                  }}
-                  className="font-tamil tracking-tight text-white mb-8 drop-shadow-sm"
-                >
-                  {headline}
-                </h1>
-
-                {/* Tamil Subheadline */}
-                <p
-                  style={{
-                    fontSize: "26px",
-                    lineHeight: 1.5,
-                  }}
-                  className="font-tamil text-slate-300 opacity-90 max-w-4xl"
-                >
-                  {subheadline}
-                </p>
-              </div>
-
-              {/* Bottom Card Footer: Source, Verification, Brand Stamp */}
-              <div className="relative z-10 pt-8 border-t border-white/10 flex items-end justify-between">
-                <div>
-                  <span className="text-sm uppercase tracking-wider font-mono opacity-60 block mb-1">
-                    Verified Editorial Reporting:
-                  </span>
-                  <span className="text-xl font-bold font-tamil text-white">
-                    {sourceAttribution}
-                  </span>
-                </div>
-
-                {/* War Room Stamp */}
-                <div className="text-right">
-                  <div className="flex items-center gap-2 justify-end">
-                    <span className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span className="text-base font-extrabold uppercase tracking-wider font-mono text-amber-400">
-                      TN POLITICAL WAR ROOM
+                {/* Top bar inside content area: Category & Channel Indicator */}
+                <div className="flex items-center justify-between pb-3.5 border-b border-white/20">
+                  <div className="flex items-center gap-3">
+                    <span className="px-3.5 py-1.5 rounded-md text-xs font-mono font-bold tracking-wider uppercase bg-white/20 text-white border border-white/30 backdrop-blur-xs shadow-xs">
+                      {categoryTag || "செய்தி அறிக்கை"}
+                    </span>
+                    <span className="text-white/90 font-mono text-sm tracking-wide font-bold">
+                      {activeTemplate.id === "news_trends_tamil" ? (
+                        <span className="font-tamil">NEWS TRENDS தமிழ்</span>
+                      ) : (
+                        <span>NEWS CLICKS</span>
+                      )}
                     </span>
                   </div>
-                  <span className="text-sm opacity-60 font-tamil block mt-1">
-                    அரசியல் ஊடக நுண்ணறிவு & பகுப்பாய்வு மையம்
-                  </span>
+
+                  <div className="text-right text-white/80 font-mono text-xs">
+                    {new Date().toLocaleDateString("en-IN", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </div>
+                </div>
+
+                {/* Center content: Headline & Supporting News Text */}
+                <div
+                  className="my-auto py-4 space-y-5"
+                  style={{ textAlign: textAlign }}
+                >
+                  {/* Subtle Accent Stripe */}
+                  <div
+                    className="w-20 h-1.5 rounded-full bg-amber-400 shadow-xs"
+                    style={{
+                      margin: textAlign === "center" ? "0 auto" : "0",
+                    }}
+                  />
+
+                  {/* Main Headline */}
+                  <h1
+                    style={{
+                      fontSize: `${titleFontSize}px`,
+                      lineHeight: 1.3,
+                      fontWeight: 800,
+                      textShadow: "0 2px 8px rgba(0, 0, 0, 0.85), 0 4px 16px rgba(0, 0, 0, 0.6)",
+                    }}
+                    className="font-tamil text-white tracking-tight break-words"
+                  >
+                    {headline}
+                  </h1>
+
+                  {/* Supporting News Text */}
+                  <p
+                    style={{
+                      fontSize: "26px",
+                      lineHeight: 1.55,
+                      fontWeight: 500,
+                      textShadow: "0 2px 6px rgba(0, 0, 0, 0.8)",
+                    }}
+                    className="font-tamil text-white/95 max-w-4xl break-words"
+                  >
+                    {subheadline}
+                  </p>
+                </div>
+
+                {/* Bottom card footer inside border: Source Attribution & Channel Tag */}
+                <div className="pt-3.5 border-t border-white/20 flex items-end justify-between text-white">
+                  <div>
+                    <span className="text-[11px] uppercase tracking-wider font-mono text-white/70 block mb-0.5">
+                      EDITORIAL SOURCE / செய்தி மூலம்:
+                    </span>
+                    <span className="text-lg font-bold font-tamil text-white drop-shadow-xs">
+                      {sourceAttribution || "Official News Wire"}
+                    </span>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-xs uppercase font-mono tracking-widest text-amber-400 font-bold block">
+                      {activeTemplate.id === "news_trends_tamil" ? (
+                        <span className="font-tamil">NEWS TRENDS தமிழ்</span>
+                      ) : (
+                        <span>NEWS CLICKS</span>
+                      )}
+                    </span>
+                    <span className="text-[11px] text-white/75 font-tamil block mt-0.5">
+                      தமிழ்நாடு அரசியல் ஊடக களம்
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
