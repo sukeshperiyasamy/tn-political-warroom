@@ -28,11 +28,11 @@ import {
   TamilVariation,
   EditorialVersionItem,
   ArticleEditorialVersionsResponse,
-} from "../types/political";
+} from "../../types/political";
 import {
   fetchEditorialVersions,
   saveEditorialFinal,
-} from "../lib/api";
+} from "../../lib/api";
 
 interface NewsCardStudioProps {
   article: NewsArticle | null;
@@ -586,11 +586,11 @@ export function NewsCardStudio({
     <div className="space-y-6">
       {/* Selected Article Context Masthead & Legal Guardrail */}
       {article && (
-        <div className="bg-white border border-[#E8E8E2] rounded-lg p-4 sm:p-5 shadow-2xs space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#F0F0EB] pb-3 text-xs">
+        <div className="bg-surface border border-line rounded-xl p-4 sm:p-5 shadow-card space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3 text-xs">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-mono uppercase text-zinc-500 font-bold text-[10px]">Active Story Context:</span>
-              <span className="font-bold font-mono text-zinc-900">{article.source}</span>
+              <span className="font-mono uppercase text-ink-muted font-bold text-[10px]">Active Story Context:</span>
+              <span className="font-bold font-mono text-ink">{article.source}</span>
               <span className="text-zinc-300">•</span>
               {article.source_type === "INFLUENCER" ? (
                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-50 text-purple-800 border border-purple-200">
@@ -603,10 +603,10 @@ export function NewsCardStudio({
                   NEWS MEDIA
                 </span>
               )}
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-zinc-100 text-zinc-600 border border-zinc-200 uppercase">
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-subtle text-ink-soft border border-line uppercase">
                 {article.platform || "web"}
               </span>
-              <span className="text-zinc-400 font-mono text-[10px]">
+              <span className="text-ink-muted font-mono text-[10px]">
                 {new Date(article.published_at).toLocaleString("en-IN", {
                   month: "short",
                   day: "numeric",
@@ -621,7 +621,7 @@ export function NewsCardStudio({
                 href={article.source_url}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-zinc-600 hover:text-zinc-900 hover:underline"
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-ink-soft hover:text-ink hover:underline"
               >
                 <span>Original Dispatch</span>
                 <ExternalLink className="w-3 h-3" />
@@ -629,7 +629,7 @@ export function NewsCardStudio({
             )}
           </div>
 
-          <h1 className="font-tamil font-bold text-base sm:text-lg text-zinc-900 leading-snug">
+          <h1 className="font-tamil font-bold text-base sm:text-lg text-ink leading-snug">
             {article.tamil_title || article.title}
           </h1>
 
@@ -649,14 +649,14 @@ export function NewsCardStudio({
       )}
 
       {/* Studio Sub-Tab Switcher */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F4F4F0] p-1.5 rounded-lg border border-[#E8E8E2]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-subtle p-1.5 rounded-lg border border-line">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
           <button
             onClick={() => setActiveStudioTab("editorial")}
             className={`flex items-center justify-center gap-1.5 px-3.5 py-2.5 sm:py-2 rounded text-xs font-bold transition-all cursor-pointer min-h-[42px] sm:min-h-[36px] ${
               activeStudioTab === "editorial"
-                ? "bg-zinc-900 text-white shadow-2xs"
-                : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200"
+                ? "bg-ink text-white shadow-card"
+                : "text-ink-soft hover:text-ink hover:bg-line"
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
@@ -672,8 +672,8 @@ export function NewsCardStudio({
             onClick={() => setActiveStudioTab("graphic")}
             className={`flex items-center justify-center gap-1.5 px-3.5 py-2.5 sm:py-2 rounded text-xs font-bold transition-all cursor-pointer min-h-[42px] sm:min-h-[36px] ${
               activeStudioTab === "graphic"
-                ? "bg-zinc-900 text-white shadow-2xs"
-                : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200"
+                ? "bg-ink text-white shadow-card"
+                : "text-ink-soft hover:text-ink hover:bg-line"
             }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
@@ -686,7 +686,7 @@ export function NewsCardStudio({
             id="export-png-btn"
             onClick={handleExportPNG}
             disabled={isExporting}
-            className="flex items-center justify-center gap-1.5 px-4 py-2 sm:py-1.5 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs transition-colors cursor-pointer disabled:opacity-50 min-h-[42px] sm:min-h-[36px] w-full sm:w-auto"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 sm:py-1.5 rounded text-xs font-semibold bg-ink hover:bg-ink-soft text-white shadow-card transition-colors cursor-pointer disabled:opacity-50 min-h-[42px] sm:min-h-[36px] w-full sm:w-auto"
           >
             {isExporting ? (
               <>
@@ -723,7 +723,7 @@ export function NewsCardStudio({
               </div>
               <button
                 onClick={() => setFinalSuccessMessage(null)}
-                className="text-zinc-400 hover:text-zinc-700 text-xs cursor-pointer"
+                className="text-ink-muted hover:text-ink-soft text-xs cursor-pointer"
               >
                 ✕
               </button>
@@ -731,13 +731,13 @@ export function NewsCardStudio({
           )}
 
           {editorialLoading ? (
-            <div className="p-16 text-center bg-white border border-[#E8E8E2] rounded-lg text-zinc-500">
-              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-zinc-400" />
+            <div className="p-16 text-center bg-surface border border-line rounded-xl text-ink-muted">
+              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-ink-muted" />
               <p className="text-xs font-medium">Synthesizing 3 guarded editorial versions with verified context...</p>
             </div>
           ) : !editorialData ? (
-            <div className="p-12 text-center bg-white border border-[#E8E8E2] rounded-lg space-y-2">
-              <p className="text-xs text-zinc-600">Select an article from the news wire to generate editorial variations.</p>
+            <div className="p-12 text-center bg-surface border border-line rounded-xl space-y-2">
+              <p className="text-xs text-ink-soft">Select an article from the news wire to generate editorial variations.</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -753,29 +753,29 @@ export function NewsCardStudio({
                       onClick={() => setActiveVersionType(ver.type)}
                       className={`p-4 rounded-lg border text-left transition-all cursor-pointer relative ${
                         isCurrent
-                          ? "bg-white border-zinc-900 shadow-sm ring-1 ring-zinc-900"
-                          : "bg-[#FAFAFA] border-[#E8E8E2] hover:border-zinc-400 hover:bg-white"
+                          ? "bg-surface border-zinc-900 shadow-sm ring-1 ring-zinc-900"
+                          : "bg-canvas border-line hover:border-line-strong hover:bg-surface"
                       }`}
                     >
                       {isFinal && (
-                        <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-600 text-white flex items-center gap-1 shadow-2xs">
+                        <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-600 text-white flex items-center gap-1 shadow-card">
                           <Check className="w-2.5 h-2.5" />
                           <span>FINAL</span>
                         </div>
                       )}
 
-                      <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                      <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-ink-muted mb-1">
                         Version {ver.num}: {ver.titleEn}
                       </div>
-                      <div className="font-bold text-zinc-900 text-sm mb-0.5 font-tamil">
+                      <div className="font-bold text-ink text-sm mb-0.5 font-tamil">
                         {ver.item.title}
                       </div>
-                      <div className="text-xs text-zinc-600 mb-2 font-tamil">
+                      <div className="text-xs text-ink-soft mb-2 font-tamil">
                         {ver.tamilLabel}
                       </div>
 
                       <div className="flex items-center gap-1.5 text-[10px] font-mono">
-                        <span className="px-1.5 py-0.2 rounded bg-zinc-100 text-zinc-700 border border-zinc-200">
+                        <span className="px-1.5 py-0.2 rounded bg-subtle text-ink-soft border border-line">
                           {ver.item.version_type}
                         </span>
                         {ver.item.status_label && (
@@ -783,7 +783,7 @@ export function NewsCardStudio({
                             {ver.item.status_label}
                           </span>
                         )}
-                        <span className="text-zinc-400 ml-auto">{ver.item.word_count || 120} words</span>
+                        <span className="text-ink-muted ml-auto">{ver.item.word_count || 120} words</span>
                       </div>
                     </div>
                   );
@@ -792,12 +792,12 @@ export function NewsCardStudio({
 
               {/* Active Version Detailed In-Place Editor */}
               {activeItem && (
-                <div className="bg-white border border-[#E8E8E2] rounded-lg p-5 shadow-2xs space-y-5">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#F0F0EB] pb-4">
+                <div className="bg-surface border border-line rounded-xl p-5 shadow-card space-y-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line pb-4">
                     <div>
                       <div className="flex items-center gap-2">
-                        <Edit3 className="w-4 h-4 text-zinc-700" />
-                        <h3 className="text-sm font-bold text-zinc-900">
+                        <Edit3 className="w-4 h-4 text-ink-soft" />
+                        <h3 className="text-sm font-bold text-ink">
                           {activeItem.version_label || activeItem.title}
                         </h3>
                         {editorialData.final_version_type === activeVersionType && (
@@ -806,7 +806,7 @@ export function NewsCardStudio({
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-zinc-500 font-tamil mt-0.5">
+                      <p className="text-xs text-ink-muted font-tamil mt-0.5">
                         {activeVersionType === "summary"
                           ? "சுருக்கமான செய்தி அறிக்கை — Factual & Concise summary"
                           : activeVersionType === "detailed"
@@ -818,7 +818,7 @@ export function NewsCardStudio({
                     <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                       <button
                         onClick={() => handleCopyVersionText(activeItem)}
-                        className="flex-1 sm:flex-initial flex items-center justify-center gap-1 px-3 py-2 sm:py-1.5 rounded text-xs font-semibold bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-800 border border-[#E2E2DC] transition-colors cursor-pointer min-h-[42px] sm:min-h-[36px]"
+                        className="flex-1 sm:flex-initial flex items-center justify-center gap-1 px-3 py-2 sm:py-1.5 rounded text-xs font-semibold bg-subtle hover:bg-line text-ink border border-line transition-colors cursor-pointer min-h-[42px] sm:min-h-[36px]"
                         title="Copy text to clipboard"
                         aria-label="Copy text to clipboard"
                       >
@@ -829,7 +829,7 @@ export function NewsCardStudio({
                           </>
                         ) : (
                           <>
-                            <Copy className="w-3.5 h-3.5 text-zinc-600" />
+                            <Copy className="w-3.5 h-3.5 text-ink-soft" />
                             <span>Copy Text</span>
                           </>
                         )}
@@ -837,7 +837,7 @@ export function NewsCardStudio({
 
                       <button
                         onClick={() => handlePushToGraphicCard(activeItem)}
-                        className="flex-1 sm:flex-initial flex items-center justify-center gap-1 px-3 py-2 sm:py-1.5 rounded text-xs font-semibold bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-800 border border-[#E2E2DC] transition-colors cursor-pointer min-h-[42px] sm:min-h-[36px]"
+                        className="flex-1 sm:flex-initial flex items-center justify-center gap-1 px-3 py-2 sm:py-1.5 rounded text-xs font-semibold bg-subtle hover:bg-line text-ink border border-line transition-colors cursor-pointer min-h-[42px] sm:min-h-[36px]"
                         title="Load into 1080×1080 Graphic Studio"
                         aria-label="Send to 1080p Card"
                       >
@@ -850,8 +850,8 @@ export function NewsCardStudio({
                         disabled={savingFinal}
                         className={`w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 sm:py-1.5 rounded text-xs font-bold transition-all cursor-pointer min-h-[42px] sm:min-h-[36px] ${
                           editorialData.final_version_type === activeVersionType
-                            ? "bg-emerald-700 hover:bg-emerald-800 text-white shadow-2xs"
-                            : "bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs"
+                            ? "bg-emerald-700 hover:bg-emerald-800 text-white shadow-card"
+                            : "bg-ink hover:bg-ink-soft text-white shadow-card"
                         }`}
                         aria-label="Select as final output"
                       >
@@ -876,35 +876,35 @@ export function NewsCardStudio({
 
                   {/* Editable Headline */}
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 mb-1 font-mono">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-ink-soft mb-1 font-mono">
                       Headline / Lead Hook (தலைப்பு)
                     </label>
                     <textarea
                       rows={2}
                       value={activeEdit.title ?? activeItem.title}
                       onChange={(e) => handleTitleChange(activeVersionType, e.target.value)}
-                      className="w-full bg-[#FAFBFD] border border-[#E2E2DC] rounded-lg px-3 py-2 text-sm font-tamil text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white font-bold leading-relaxed"
+                      className="w-full bg-canvas border border-line rounded-lg px-3 py-2 text-sm font-tamil text-ink focus:outline-hidden focus:border-zinc-500 focus:bg-surface font-bold leading-relaxed"
                     />
                   </div>
 
                   {/* Editable Body Content */}
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 mb-1 font-mono">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-ink-soft mb-1 font-mono">
                       Body Content & Editorial Discourse (முழு செய்தி / விவாதம்)
                     </label>
                     <textarea
                       rows={8}
                       value={activeEdit.content ?? activeItem.content}
                       onChange={(e) => handleContentChange(activeVersionType, e.target.value)}
-                      className="w-full bg-[#FAFBFD] border border-[#E2E2DC] rounded-lg px-3 py-2.5 text-xs font-tamil text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white leading-loose"
+                      className="w-full bg-canvas border border-line rounded-lg px-3 py-2.5 text-xs font-tamil text-ink focus:outline-hidden focus:border-zinc-500 focus:bg-surface leading-loose"
                     />
                   </div>
 
                   {/* Version 3 Specific: Lead Hook & Guarded Hashtags */}
                   {activeVersionType === "social" && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-[#F0F0EB]">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-line">
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 mb-1.5 font-mono">
+                        <label className="block text-xs font-bold uppercase tracking-wider text-ink-soft mb-1.5 font-mono">
                           Social Opening Hook (ஈர்ப்பு வாசகம்)
                         </label>
                         <input
@@ -916,19 +916,19 @@ export function NewsCardStudio({
                               social: { ...(prev.social || {}), hook: e.target.value },
                             }))
                           }
-                          className="w-full bg-[#FAFBFD] border border-[#E2E2DC] rounded px-2.5 py-1.5 text-xs font-tamil text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white"
+                          className="w-full bg-canvas border border-line rounded px-2.5 py-1.5 text-xs font-tamil text-ink focus:outline-hidden focus:border-zinc-500 focus:bg-surface"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 mb-1.5 font-mono">
+                        <label className="block text-xs font-bold uppercase tracking-wider text-ink-soft mb-1.5 font-mono">
                           Guarded Hashtags (அங்கீகரிக்கப்பட்ட ஹேஷ்டேக்குகள்)
                         </label>
                         <div className="flex flex-wrap gap-1.5 mb-2">
                           {(activeEdit.tags ?? activeItem.tags ?? []).map((ht: string, idx: number) => (
                             <span
                               key={idx}
-                              className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-zinc-100 text-zinc-800 border border-zinc-200"
+                              className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-subtle text-ink border border-line"
                             >
                               {ht}
                             </span>
@@ -942,7 +942,7 @@ export function NewsCardStudio({
                             const tags = e.target.value.split(" ").filter(Boolean);
                             handleTagsChange(tags);
                           }}
-                          className="w-full bg-[#FAFBFD] border border-[#E2E2DC] rounded px-2.5 py-1.5 text-xs font-mono text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white"
+                          className="w-full bg-canvas border border-line rounded px-2.5 py-1.5 text-xs font-mono text-ink focus:outline-hidden focus:border-zinc-500 focus:bg-surface"
                         />
                       </div>
                     </div>
@@ -958,10 +958,10 @@ export function NewsCardStudio({
       {activeStudioTab === "graphic" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Controls */}
-        <div className="lg:col-span-5 xl:col-span-4 space-y-4 bg-white border border-[#E8E8E2] rounded-lg p-4 sm:p-5 shadow-2xs">
+        <div className="lg:col-span-5 xl:col-span-4 space-y-4 bg-surface border border-line rounded-xl p-4 sm:p-5 shadow-card">
           {/* Quick Presets */}
           <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 block mb-1.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-ink-muted block mb-1.5">
               Quick Editorial Presets
             </span>
             <div className="grid grid-cols-2 gap-1.5">
@@ -969,7 +969,7 @@ export function NewsCardStudio({
                 <button
                   key={pr.label}
                   onClick={() => handleApplyPreset(pr)}
-                  className="px-2.5 py-1.5 rounded bg-[#F9F9F7] hover:bg-zinc-100 border border-[#E8E8E2] text-[11px] font-tamil font-semibold text-zinc-700 text-left truncate transition-colors cursor-pointer"
+                  className="px-2.5 py-1.5 rounded bg-canvas hover:bg-subtle border border-line text-[11px] font-tamil font-semibold text-ink-soft text-left truncate transition-colors cursor-pointer"
                 >
                   {pr.label}
                 </button>
@@ -979,8 +979,8 @@ export function NewsCardStudio({
 
           {/* Article Variations if present */}
           {article?.tamil_variations && article.tamil_variations.length > 0 && (
-            <div className="p-3 rounded bg-[#FDFBF7] border border-[#E8E0D5]">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-700 block mb-1.5">
+            <div className="p-3 rounded bg-canvas border border-line">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-ink-soft block mb-1.5">
                 Load Article Variation:
               </span>
               <div className="space-y-1">
@@ -988,9 +988,9 @@ export function NewsCardStudio({
                   <button
                     key={v.style}
                     onClick={() => handleApplyVariation(v)}
-                    className="w-full text-left p-1.5 rounded bg-white hover:bg-[#F9F9F7] border border-[#E8E8E2] text-xs text-zinc-800 font-tamil truncate transition-colors cursor-pointer"
+                    className="w-full text-left p-1.5 rounded bg-surface hover:bg-canvas border border-line text-xs text-ink font-tamil truncate transition-colors cursor-pointer"
                   >
-                    <span className="text-zinc-600 font-mono text-[10px] font-bold block">{v.style}:</span>
+                    <span className="text-ink-soft font-mono text-[10px] font-bold block">{v.style}:</span>
                     {v.headline}
                   </button>
                 ))}
@@ -1001,10 +1001,10 @@ export function NewsCardStudio({
           {/* Template Selection: Exactly 2 Channels */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-600 block font-mono">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-ink-soft block font-mono">
                 Select News Channel Template
               </label>
-              <span className="text-[10px] font-mono text-zinc-400">2 Templates Available</span>
+              <span className="text-[10px] font-mono text-ink-muted">2 Templates Available</span>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -1027,14 +1027,14 @@ export function NewsCardStudio({
                     className={`group flex flex-col p-2.5 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden ${
                       isSelected
                         ? "border-rose-600 bg-rose-50/40 ring-2 ring-rose-600 shadow-sm"
-                        : "border-[#E8E8E2] bg-[#FAF9F6] hover:border-zinc-400 hover:bg-white"
+                        : "border-line bg-canvas hover:border-line-strong hover:bg-surface"
                     }`}
                     aria-pressed={isSelected}
                     aria-label={`Select ${channelDisplayName} template`}
                   >
                     {/* Active selection badge */}
                     {isSelected ? (
-                      <div className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-rose-600 text-white flex items-center gap-1 shadow-2xs">
+                      <div className="absolute top-2 right-2 z-10 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-rose-600 text-white flex items-center gap-1 shadow-card">
                         <Check className="w-2.5 h-2.5 stroke-[3]" />
                         <span>SELECTED</span>
                       </div>
@@ -1055,7 +1055,7 @@ export function NewsCardStudio({
 
                     {/* Channel Name */}
                     <div className="mt-auto">
-                      <div className={`text-xs font-bold leading-tight ${isSelected ? "text-rose-950 font-extrabold" : "text-zinc-800"}`}>
+                      <div className={`text-xs font-bold leading-tight ${isSelected ? "text-rose-950 font-extrabold" : "text-ink"}`}>
                         {tpl.id === "news_trends_tamil" ? (
                           <span className="font-tamil">
                             NEWS TRENDS <span className="text-rose-700">தமிழ்</span>
@@ -1064,7 +1064,7 @@ export function NewsCardStudio({
                           <span>{channelDisplayName}</span>
                         )}
                       </div>
-                      <div className="text-[10px] font-mono text-zinc-500 mt-0.5">
+                      <div className="text-[10px] font-mono text-ink-muted mt-0.5">
                         1080×1080 Social Card
                       </div>
                     </div>
@@ -1076,47 +1076,47 @@ export function NewsCardStudio({
 
           {/* Category Tag Input */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 mb-1">
+            <label className="block text-xs font-semibold text-ink-soft mb-1">
               Top Category Tag (மேல் வரி பேட்ஜ்)
             </label>
             <input
               type="text"
               value={categoryTag}
               onChange={(e) => setCategoryTag(e.target.value)}
-              className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-2.5 py-1.5 text-xs text-zinc-900 font-tamil focus:outline-hidden focus:border-zinc-500 focus:bg-white font-medium"
+              className="w-full bg-canvas border border-line rounded px-2.5 py-1.5 text-xs text-ink font-tamil focus:outline-hidden focus:border-zinc-500 focus:bg-surface font-medium"
             />
           </div>
 
           {/* Tamil Headline Textarea */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 mb-1">
+            <label className="block text-xs font-semibold text-ink-soft mb-1">
               Main Tamil Headline (முக்கிய தலைப்பு)
             </label>
             <textarea
               rows={3}
               value={headline}
               onChange={(e) => setHeadline(e.target.value)}
-              className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-2.5 py-1.5 text-xs text-zinc-900 font-tamil focus:outline-hidden focus:border-zinc-500 focus:bg-white leading-relaxed font-medium"
+              className="w-full bg-canvas border border-line rounded px-2.5 py-1.5 text-xs text-ink font-tamil focus:outline-hidden focus:border-zinc-500 focus:bg-surface leading-relaxed font-medium"
             />
           </div>
 
           {/* Tamil Subheadline Textarea */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 mb-1">
+            <label className="block text-xs font-semibold text-ink-soft mb-1">
               Subheadline / Impact (துணைத் தலைப்பு)
             </label>
             <textarea
               rows={3}
               value={subheadline}
               onChange={(e) => setSubheadline(e.target.value)}
-              className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-2.5 py-1.5 text-xs text-zinc-900 font-tamil focus:outline-hidden focus:border-zinc-500 focus:bg-white leading-relaxed font-medium"
+              className="w-full bg-canvas border border-line rounded px-2.5 py-1.5 text-xs text-ink font-tamil focus:outline-hidden focus:border-zinc-500 focus:bg-surface leading-relaxed font-medium"
             />
           </div>
 
           {/* Typography & Alignment Controls */}
-          <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-[#F0F0EB]">
+          <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-line">
             <div>
-              <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
+              <label className="block text-[11px] font-semibold text-ink-soft mb-1">
                 Headline Size: {titleFontSize}px
               </label>
               <input
@@ -1130,7 +1130,7 @@ export function NewsCardStudio({
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-zinc-700 mb-1">
+              <label className="block text-[11px] font-semibold text-ink-soft mb-1">
                 Text Alignment
               </label>
               <div className="flex gap-1.5">
@@ -1138,8 +1138,8 @@ export function NewsCardStudio({
                   onClick={() => setTextAlign("left")}
                   className={`flex-1 flex items-center justify-center p-1.5 rounded border text-xs font-semibold cursor-pointer ${
                     textAlign === "left"
-                      ? "bg-zinc-900 text-white border-zinc-900"
-                      : "bg-[#F9F9F7] text-zinc-600 border-[#E8E8E2] hover:border-zinc-300"
+                      ? "bg-ink text-white border-zinc-900"
+                      : "bg-canvas text-ink-soft border-line hover:border-line-strong"
                   }`}
                 >
                   <AlignLeft className="w-3.5 h-3.5 mr-1" /> Left
@@ -1148,8 +1148,8 @@ export function NewsCardStudio({
                   onClick={() => setTextAlign("center")}
                   className={`flex-1 flex items-center justify-center p-1.5 rounded border text-xs font-semibold cursor-pointer ${
                     textAlign === "center"
-                      ? "bg-zinc-900 text-white border-zinc-900"
-                      : "bg-[#F9F9F7] text-zinc-600 border-[#E8E8E2] hover:border-zinc-300"
+                      ? "bg-ink text-white border-zinc-900"
+                      : "bg-canvas text-ink-soft border-line hover:border-line-strong"
                   }`}
                 >
                   <AlignCenter className="w-3.5 h-3.5 mr-1" /> Center
@@ -1161,9 +1161,9 @@ export function NewsCardStudio({
 
         {/* Right Column: Live 1080x1080 Canvas Easel */}
         <div className="lg:col-span-7 xl:col-span-8 flex flex-col items-center">
-          <div className="w-full max-w-[540px] flex items-center justify-between text-xs text-zinc-500 font-medium mb-2 px-1">
+          <div className="w-full max-w-[540px] flex items-center justify-between text-xs text-ink-muted font-medium mb-2 px-1">
             <span className="font-mono text-[11px]">1080×1080 Native Social Canvas (1:1 Ratio)</span>
-            <span className="text-[11px] text-zinc-600 font-mono font-semibold">Scale: 50% Preview · 100% Export</span>
+            <span className="text-[11px] text-ink-soft font-mono font-semibold">Scale: 50% Preview · 100% Export</span>
           </div>
 
           {/* Scaled Responsive Preview Wrapper */}
@@ -1211,7 +1211,7 @@ export function NewsCardStudio({
                 {/* Top bar inside content area: Category & Channel Indicator */}
                 <div className="flex items-center justify-between pb-3.5 border-b border-white/20">
                   <div className="flex items-center gap-3">
-                    <span className="px-3.5 py-1.5 rounded-md text-xs font-mono font-bold tracking-wider uppercase bg-white/20 text-white border border-white/30 backdrop-blur-xs shadow-xs">
+                    <span className="px-3.5 py-1.5 rounded-md text-xs font-mono font-bold tracking-wider uppercase bg-white/20 text-white border border-white/30 backdrop-blur-xs shadow-card">
                       {categoryTag || "செய்தி அறிக்கை"}
                     </span>
                     <span className="text-white/90 font-mono text-sm tracking-wide font-bold">
@@ -1239,7 +1239,7 @@ export function NewsCardStudio({
                 >
                   {/* Subtle Accent Stripe */}
                   <div
-                    className="w-20 h-1.5 rounded-full bg-amber-400 shadow-xs"
+                    className="w-20 h-1.5 rounded-full bg-amber-400 shadow-card"
                     style={{
                       margin: textAlign === "center" ? "0 auto" : "0",
                     }}
@@ -1278,7 +1278,7 @@ export function NewsCardStudio({
                     <span className="text-[11px] uppercase tracking-wider font-mono text-white/70 block mb-0.5">
                       EDITORIAL SOURCE / செய்தி மூலம்:
                     </span>
-                    <span className="text-lg font-bold font-tamil text-white drop-shadow-xs">
+                    <span className="text-lg font-bold font-tamil text-white drop-shadow-card">
                       {sourceAttribution || "Official News Wire"}
                     </span>
                   </div>
@@ -1301,11 +1301,11 @@ export function NewsCardStudio({
           </div>
 
           {/* Export Guidance */}
-          <div className="w-full max-w-[540px] mt-3 p-3 rounded bg-white border border-[#E8E8E2] text-xs text-zinc-600 flex items-center justify-between shadow-2xs">
+          <div className="w-full max-w-[540px] mt-3 p-3 rounded bg-surface border border-line text-xs text-ink-soft flex items-center justify-between shadow-card">
             <span>Outputs authentic high-res 1080×1080 PNG</span>
             <button
               onClick={handleExportPNG}
-              className="text-zinc-900 hover:text-black font-semibold cursor-pointer"
+              className="text-ink hover:text-black font-semibold cursor-pointer"
             >
               Export Now →
             </button>

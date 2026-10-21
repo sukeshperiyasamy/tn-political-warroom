@@ -37,7 +37,7 @@ import {
   IngestResponse,
   ClientConfig,
   TrendingTopic,
-} from "../types/political";
+} from "../../types/political";
 import {
   fetchSources,
   toggleSource,
@@ -50,7 +50,7 @@ import {
   updateClientConfig,
   resetClientConfig,
   fetchTrendingPulse,
-} from "../lib/api";
+} from "../../lib/api";
 
 function formatTimestamp(isoString?: string | null): string {
   if (!isoString) return "Never";
@@ -72,7 +72,7 @@ function getFetchStatusBadge(source: NewsSource) {
   const status = source.last_fetch_status;
   if (!source.is_enabled) {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-zinc-100 text-zinc-600 border border-zinc-200">
+      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-subtle text-ink-soft border border-line">
         <span className="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
         Disabled
       </span>
@@ -81,7 +81,7 @@ function getFetchStatusBadge(source: NewsSource) {
 
   if (status === "not_modified_304") {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold bg-zinc-100 text-zinc-800 border border-zinc-300" title="HTTP 304 Not Modified: Feed XML unchanged on server">
+      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold bg-subtle text-ink border border-line-strong" title="HTTP 304 Not Modified: Feed XML unchanged on server">
         <span className="w-1.5 h-1.5 rounded-full bg-zinc-600"></span>
         HTTP 304 Unchanged
       </span>
@@ -99,7 +99,7 @@ function getFetchStatusBadge(source: NewsSource) {
 
   if (status === "no_new_articles") {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200" title="HTTP 200 OK: Items parsed but already persisted">
+      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-subtle text-ink-soft border border-line" title="HTTP 200 OK: Items parsed but already persisted">
         <span className="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
         No New Articles
       </span>
@@ -445,16 +445,16 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
   return (
     <div className="space-y-6">
       {/* Top Header Card */}
-      <div className="bg-white border border-[#E8E8E2] rounded-lg p-4 sm:p-5 shadow-2xs">
+      <div className="bg-surface border border-line rounded-xl p-4 sm:p-5 shadow-card">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Radio className="w-4 h-4 text-zinc-700" />
-              <h2 className="text-base sm:text-lg font-bold text-zinc-900 tracking-tight font-serif">
+              <Radio className="w-4 h-4 text-ink-soft" />
+              <h2 className="text-base sm:text-lg font-bold text-ink tracking-tight font-serif">
                 {adminTab === "sources" ? "Source Management & Feed Freshness Hub" : "Client Workspace & Branding Administration"}
               </h2>
             </div>
-            <p className="text-xs text-zinc-500 font-medium">
+            <p className="text-xs text-ink-muted font-medium">
               {adminTab === "sources"
                 ? "Regional media syndication registry with conditional ETag validation, HTTP 304 caching, and canonical deduplication"
                 : "Manage client organization profile, brand assets, targeted parties, monitored topics, and deployment defaults"}
@@ -462,12 +462,12 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex p-1 bg-[#F4F4F0] rounded-md border border-[#E2E2DC] mr-1">
+            <div className="inline-flex p-1 bg-subtle rounded-md border border-line mr-1">
               <button
                 type="button"
                 onClick={() => setAdminTab("sources")}
                 className={`px-3 py-1 text-xs font-semibold rounded transition-colors cursor-pointer ${
-                  adminTab === "sources" ? "bg-white text-zinc-900 shadow-2xs" : "text-zinc-600 hover:text-zinc-900"
+                  adminTab === "sources" ? "bg-surface text-ink shadow-card" : "text-ink-soft hover:text-ink"
                 }`}
               >
                 Media Feeds Hub
@@ -476,10 +476,10 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                 type="button"
                 onClick={() => setAdminTab("branding")}
                 className={`px-3 py-1 text-xs font-semibold rounded transition-colors flex items-center gap-1.5 cursor-pointer ${
-                  adminTab === "branding" ? "bg-white text-zinc-900 shadow-2xs" : "text-zinc-600 hover:text-zinc-900"
+                  adminTab === "branding" ? "bg-surface text-ink shadow-card" : "text-ink-soft hover:text-ink"
                 }`}
               >
-                <Sliders className="w-3 h-3 text-zinc-600" />
+                <Sliders className="w-3 h-3 text-ink-soft" />
                 <span>Client Settings</span>
               </button>
             </div>
@@ -488,16 +488,16 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
               <>
                 <button
                   onClick={() => setShowAddForm(!showAddForm)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-800 border border-[#E2E2DC] transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold bg-subtle hover:bg-line text-ink border border-line transition-colors cursor-pointer"
                 >
-                  <Plus className="w-3.5 h-3.5 text-zinc-600" />
+                  <Plus className="w-3.5 h-3.5 text-ink-soft" />
                   <span>{showAddForm ? "Close Form" : "Add Publisher"}</span>
                 </button>
 
                 <button
                   onClick={handleIngestAll}
                   disabled={ingesting}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-ink hover:bg-ink-soft text-white shadow-card transition-colors cursor-pointer disabled:opacity-50"
                 >
                   <Play className={`w-3.5 h-3.5 ${ingesting ? "animate-spin" : ""}`} />
                   <span>{ingesting ? "Ingesting Feeds..." : "Ingest All Feeds"}</span>
@@ -508,15 +508,15 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                 <button
                   onClick={handleResetConfig}
                   disabled={savingConfig}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-700 border border-[#E2E2DC] transition-colors cursor-pointer disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold bg-subtle hover:bg-line text-ink-soft border border-line transition-colors cursor-pointer disabled:opacity-50"
                 >
-                  <RotateCcw className="w-3.5 h-3.5 text-zinc-500" />
+                  <RotateCcw className="w-3.5 h-3.5 text-ink-muted" />
                   <span>Reset Defaults</span>
                 </button>
                 <button
                   onClick={handleSaveConfig}
                   disabled={savingConfig}
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-bold bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-bold bg-ink hover:bg-ink-soft text-white shadow-card transition-colors cursor-pointer disabled:opacity-50"
                 >
                   <Save className="w-3.5 h-3.5 text-zinc-100" />
                   <span>{savingConfig ? "Saving..." : "Save Configuration"}</span>
@@ -528,32 +528,32 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
 
         {/* Status banner */}
         {ingestStatus && (
-          <div className="mt-3 p-2.5 rounded bg-[#F9F9F7] border border-[#E8E8E2] text-xs font-mono text-zinc-800 flex items-center justify-between">
+          <div className="mt-3 p-2.5 rounded bg-canvas border border-line text-xs font-mono text-ink flex items-center justify-between">
             <span>{ingestStatus}</span>
-            <button onClick={() => setIngestStatus(null)} className="text-zinc-400 hover:text-zinc-700 text-xs ml-2 cursor-pointer">
+            <button onClick={() => setIngestStatus(null)} className="text-ink-muted hover:text-ink-soft text-xs ml-2 cursor-pointer">
               ✕
             </button>
           </div>
         )}
 
         {/* Operational Statistics */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-[#F0F0EB]">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-line">
           <div>
-            <div className="text-[10px] font-mono uppercase text-zinc-500 font-bold">Registered Publishers</div>
-            <div className="text-xl font-bold font-mono text-zinc-900 mt-0.5">
+            <div className="text-[10px] font-mono uppercase text-ink-muted font-bold">Registered Publishers</div>
+            <div className="text-xl font-bold font-mono text-ink mt-0.5">
               {activeSourcesCount} / {sources.length}
             </div>
           </div>
           <div>
-            <div className="text-[10px] font-mono uppercase text-zinc-500 font-bold">Real Articles Ingested</div>
-            <div className="text-xl font-bold font-mono text-zinc-900 mt-0.5">{totalArticles}</div>
+            <div className="text-[10px] font-mono uppercase text-ink-muted font-bold">Real Articles Ingested</div>
+            <div className="text-xl font-bold font-mono text-ink mt-0.5">{totalArticles}</div>
           </div>
           <div>
-            <div className="text-[10px] font-mono uppercase text-zinc-500 font-bold">Duplicates Prevented</div>
-            <div className="text-xl font-bold font-mono text-zinc-700 mt-0.5">{totalDuplicatesSkipped}</div>
+            <div className="text-[10px] font-mono uppercase text-ink-muted font-bold">Duplicates Prevented</div>
+            <div className="text-xl font-bold font-mono text-ink-soft mt-0.5">{totalDuplicatesSkipped}</div>
           </div>
           <div>
-            <div className="text-[10px] font-mono uppercase text-zinc-500 font-bold">Pipeline Freshness</div>
+            <div className="text-[10px] font-mono uppercase text-ink-muted font-bold">Pipeline Freshness</div>
             <div className="text-xl font-bold font-mono text-emerald-800 mt-0.5">
               {healthyCount} / {sources.length}
             </div>
@@ -582,7 +582,7 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
               </div>
               <button
                 onClick={() => setConfigFeedback(null)}
-                className="text-zinc-400 hover:text-zinc-700 text-xs cursor-pointer"
+                className="text-ink-muted hover:text-ink-soft text-xs cursor-pointer"
               >
                 ✕
               </button>
@@ -590,25 +590,25 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
           )}
 
           {/* Section 1: Client Organization & Brand Identity */}
-          <div className="bg-white border border-[#E8E8E2] rounded-lg p-5 shadow-2xs space-y-4">
-            <div className="border-b border-[#F0F0EB] pb-3 flex items-center justify-between">
+          <div className="bg-surface border border-line rounded-xl p-5 shadow-card space-y-4">
+            <div className="border-b border-line pb-3 flex items-center justify-between">
               <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 flex items-center gap-2">
-                  <Building className="w-4 h-4 text-zinc-700" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-ink flex items-center gap-2">
+                  <Building className="w-4 h-4 text-ink-soft" />
                   <span>Organization & Visual Branding</span>
                 </h3>
-                <p className="text-xs text-zinc-500 mt-0.5">
+                <p className="text-xs text-ink-muted mt-0.5">
                   Customizes the platform banner, report headers, and dashboard identity for the client.
                 </p>
               </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 border border-zinc-200">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-subtle text-ink-soft border border-line">
                 DB-Backed Profile
               </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                <label className="block text-xs font-semibold text-ink-soft mb-1">
                   Client / Bureau Display Name *
                 </label>
                 <input
@@ -616,12 +616,12 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                   value={configState.client_name || ""}
                   onChange={(e) => setConfigState({ ...configState, client_name: e.target.value })}
                   placeholder="e.g. Tamil Nadu Strategic Intelligence Bureau"
-                  className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-2 text-xs text-zinc-900 font-medium focus:outline-hidden focus:border-zinc-500 focus:bg-white"
+                  className="w-full bg-canvas border border-line rounded px-3 py-2 text-xs text-ink font-medium focus:outline-hidden focus:border-zinc-500 focus:bg-surface"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                <label className="block text-xs font-semibold text-ink-soft mb-1">
                   Tagline / Operational Subtitle
                 </label>
                 <input
@@ -629,12 +629,12 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                   value={configState.client_tagline || ""}
                   onChange={(e) => setConfigState({ ...configState, client_tagline: e.target.value })}
                   placeholder="e.g. Public Opinion & Media Analytics Command"
-                  className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-2 text-xs text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white"
+                  className="w-full bg-canvas border border-line rounded px-3 py-2 text-xs text-ink focus:outline-hidden focus:border-zinc-500 focus:bg-surface"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                <label className="block text-xs font-semibold text-ink-soft mb-1">
                   Logo Image URL (Optional)
                 </label>
                 <input
@@ -642,13 +642,13 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                   value={configState.logo_url || ""}
                   onChange={(e) => setConfigState({ ...configState, logo_url: e.target.value })}
                   placeholder="https://example.com/logo.png"
-                  className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-2 text-xs text-zinc-900 font-mono focus:outline-hidden focus:border-zinc-500 focus:bg-white"
+                  className="w-full bg-canvas border border-line rounded px-3 py-2 text-xs text-ink font-mono focus:outline-hidden focus:border-zinc-500 focus:bg-surface"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  <label className="block text-xs font-semibold text-ink-soft mb-1">
                     Primary Brand Color
                   </label>
                   <div className="flex items-center gap-2">
@@ -656,19 +656,19 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                       type="color"
                       value={configState.brand_color || "#0F172A"}
                       onChange={(e) => setConfigState({ ...configState, brand_color: e.target.value })}
-                      className="w-8 h-8 rounded border border-[#E2E2DC] p-0.5 cursor-pointer bg-white"
+                      className="w-8 h-8 rounded border border-line p-0.5 cursor-pointer bg-surface"
                     />
                     <input
                       type="text"
                       value={configState.brand_color || "#0F172A"}
                       onChange={(e) => setConfigState({ ...configState, brand_color: e.target.value })}
-                      className="flex-1 bg-[#F9F9F7] border border-[#E2E2DC] rounded px-2.5 py-1.5 text-xs font-mono text-zinc-800"
+                      className="flex-1 bg-canvas border border-line rounded px-2.5 py-1.5 text-xs font-mono text-ink"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  <label className="block text-xs font-semibold text-ink-soft mb-1">
                     Accent Color
                   </label>
                   <div className="flex items-center gap-2">
@@ -676,13 +676,13 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                       type="color"
                       value={configState.accent_color || "#2563EB"}
                       onChange={(e) => setConfigState({ ...configState, accent_color: e.target.value })}
-                      className="w-8 h-8 rounded border border-[#E2E2DC] p-0.5 cursor-pointer bg-white"
+                      className="w-8 h-8 rounded border border-line p-0.5 cursor-pointer bg-surface"
                     />
                     <input
                       type="text"
                       value={configState.accent_color || "#2563EB"}
                       onChange={(e) => setConfigState({ ...configState, accent_color: e.target.value })}
-                      className="flex-1 bg-[#F9F9F7] border border-[#E2E2DC] rounded px-2.5 py-1.5 text-xs font-mono text-zinc-800"
+                      className="flex-1 bg-canvas border border-line rounded px-2.5 py-1.5 text-xs font-mono text-ink"
                     />
                   </div>
                 </div>
@@ -691,20 +691,20 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
           </div>
 
           {/* Section 2: Targeted Political Entities */}
-          <div className="bg-white border border-[#E8E8E2] rounded-lg p-5 shadow-2xs space-y-4">
-            <div className="border-b border-[#F0F0EB] pb-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 flex items-center gap-2">
-                <Tag className="w-4 h-4 text-zinc-700" />
+          <div className="bg-surface border border-line rounded-xl p-5 shadow-card space-y-4">
+            <div className="border-b border-line pb-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-ink flex items-center gap-2">
+                <Tag className="w-4 h-4 text-ink-soft" />
                 <span>Monitored Political Parties & Key Leaders</span>
               </h3>
-              <p className="text-xs text-zinc-500 mt-0.5">
+              <p className="text-xs text-ink-muted mt-0.5">
                 Toggle the parties and prominent leaders included in comparative analytics and brief synthesis.
               </p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-2">
+                <label className="block text-xs font-semibold text-ink-soft mb-2">
                   Targeted Political Parties
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -717,8 +717,8 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                         onClick={() => toggleArrayItem("selected_parties", party)}
                         className={`px-3 py-1.5 rounded text-xs font-semibold transition-all cursor-pointer border ${
                           isSelected
-                            ? "bg-zinc-900 text-white border-zinc-900 shadow-2xs"
-                            : "bg-[#F9F9F7] text-zinc-600 border-[#E2E2DC] hover:border-zinc-400"
+                            ? "bg-ink text-white border-zinc-900 shadow-card"
+                            : "bg-canvas text-ink-soft border-line hover:border-line-strong"
                         }`}
                       >
                         {isSelected ? "✓ " : "+ "}
@@ -730,7 +730,7 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-2">
+                <label className="block text-xs font-semibold text-ink-soft mb-2">
                   Key Monitored Leaders
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -752,8 +752,8 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                         onClick={() => toggleArrayItem("selected_leaders", leader)}
                         className={`px-3 py-1.5 rounded text-xs font-medium transition-all cursor-pointer border ${
                           isSelected
-                            ? "bg-blue-900 text-white border-blue-900 shadow-2xs"
-                            : "bg-[#F9F9F7] text-zinc-600 border-[#E2E2DC] hover:border-zinc-400"
+                            ? "bg-blue-900 text-white border-blue-900 shadow-card"
+                            : "bg-canvas text-ink-soft border-line hover:border-line-strong"
                         }`}
                       >
                         {isSelected ? "✓ " : "+ "}
@@ -767,20 +767,20 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
           </div>
 
           {/* Section 3: Topics & Channels Configuration */}
-          <div className="bg-white border border-[#E8E8E2] rounded-lg p-5 shadow-2xs space-y-4">
-            <div className="border-b border-[#F0F0EB] pb-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 flex items-center gap-2">
-                <Sliders className="w-4 h-4 text-zinc-700" />
+          <div className="bg-surface border border-line rounded-xl p-5 shadow-card space-y-4">
+            <div className="border-b border-line pb-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-ink flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-ink-soft" />
                 <span>Policy Topics & Authorized Channels</span>
               </h3>
-              <p className="text-xs text-zinc-500 mt-0.5">
+              <p className="text-xs text-ink-muted mt-0.5">
                 Select prioritized policy areas and specify which multi-source channels are activated for intelligence discovery.
               </p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-2">
+                <label className="block text-xs font-semibold text-ink-soft mb-2">
                   Policy Topics of Interest
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -804,8 +804,8 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                         onClick={() => toggleArrayItem("topics_of_interest", topic)}
                         className={`px-3 py-1.5 rounded text-xs font-medium transition-all cursor-pointer border ${
                           isSelected
-                            ? "bg-emerald-900 text-white border-emerald-900 shadow-2xs"
-                            : "bg-[#F9F9F7] text-zinc-600 border-[#E2E2DC] hover:border-zinc-400"
+                            ? "bg-emerald-900 text-white border-emerald-900 shadow-card"
+                            : "bg-canvas text-ink-soft border-line hover:border-line-strong"
                         }`}
                       >
                         {isSelected ? "✓ " : "+ "}
@@ -817,7 +817,7 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-2">
+                <label className="block text-xs font-semibold text-ink-soft mb-2">
                   Authorized Multi-Source Connectors
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -837,8 +837,8 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                         onClick={() => toggleArrayItem("authorized_connectors", conn.id)}
                         className={`p-3 rounded border text-xs cursor-pointer transition-all ${
                           isAuth
-                            ? "bg-zinc-50 border-zinc-800 text-zinc-900 shadow-2xs"
-                            : "bg-[#F9F9F7] border-[#E8E8E2] text-zinc-400 opacity-60"
+                            ? "bg-subtle border-zinc-800 text-ink shadow-card"
+                            : "bg-canvas border-line text-ink-muted opacity-60"
                         }`}
                       >
                         <div className="flex items-center justify-between font-bold mb-0.5">
@@ -849,7 +849,7 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                             }`}
                           />
                         </div>
-                        <p className="text-[11px] text-zinc-500">{conn.desc}</p>
+                        <p className="text-[11px] text-ink-muted">{conn.desc}</p>
                       </div>
                     );
                   })}
@@ -858,13 +858,13 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  <label className="block text-xs font-semibold text-ink-soft mb-1">
                     Default Working Language
                   </label>
                   <select
                     value={configState.default_language || "ta"}
                     onChange={(e) => setConfigState({ ...configState, default_language: e.target.value })}
-                    className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-2 text-xs text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white cursor-pointer"
+                    className="w-full bg-canvas border border-line rounded px-3 py-2 text-xs text-ink focus:outline-hidden focus:border-zinc-500 focus:bg-surface cursor-pointer"
                   >
                     <option value="ta">Tamil (தமிழ்) — Primary</option>
                     <option value="en">English — Primary</option>
@@ -872,7 +872,7 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  <label className="block text-xs font-semibold text-ink-soft mb-1">
                     Default Client Demo Scenario
                   </label>
                   <select
@@ -880,7 +880,7 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                     onChange={(e) =>
                       setConfigState({ ...configState, default_demo_scenario: e.target.value })
                     }
-                    className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-2 text-xs text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white cursor-pointer"
+                    className="w-full bg-canvas border border-line rounded px-3 py-2 text-xs text-ink focus:outline-hidden focus:border-zinc-500 focus:bg-surface cursor-pointer"
                   >
                     <option value="scenario_policy_announcement">
                       Policy Announcement: Kalaignar Magalir Urimai Thogai Expansion
@@ -899,12 +899,12 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-[#F0F0EB]">
+            <div className="flex items-center justify-between pt-4 border-t border-line">
               <button
                 type="button"
                 onClick={handleResetConfig}
                 disabled={savingConfig}
-                className="px-3.5 py-2 rounded text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 border border-[#E2E2DC] cursor-pointer"
+                className="px-3.5 py-2 rounded text-xs font-medium text-ink-soft hover:text-ink hover:bg-subtle border border-line cursor-pointer"
               >
                 Reset to Bureau Defaults
               </button>
@@ -912,7 +912,7 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                 type="button"
                 onClick={handleSaveConfig}
                 disabled={savingConfig}
-                className="px-5 py-2 rounded text-xs font-bold bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs cursor-pointer flex items-center gap-2"
+                className="px-5 py-2 rounded text-xs font-bold bg-ink hover:bg-ink-soft text-white shadow-card cursor-pointer flex items-center gap-2"
               >
                 <Save className="w-3.5 h-3.5" />
                 <span>{savingConfig ? "Saving Client Settings..." : "Save Client Configuration"}</span>
@@ -924,12 +924,12 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
         <>
           {/* Add Source Drawer / Collapsible Form */}
           {showAddForm && (
-            <div className="bg-white border border-[#E8E8E2] rounded-lg p-5 shadow-sm space-y-4">
-              <div className="border-b border-[#F0F0EB] pb-2 flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
+            <div className="bg-surface border border-line rounded-xl p-5 shadow-sm space-y-4">
+              <div className="border-b border-line pb-2 flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-ink">
                   Register New Tamil Media Publisher
             </h3>
-            <button onClick={() => setShowAddForm(false)} className="text-xs text-zinc-400 hover:text-zinc-700 cursor-pointer">
+            <button onClick={() => setShowAddForm(false)} className="text-xs text-ink-muted hover:text-ink-soft cursor-pointer">
               Cancel
             </button>
           </div>
@@ -937,7 +937,7 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
           <form onSubmit={handleCreateSourceSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                <label className="block text-xs font-semibold text-ink-soft mb-1">
                   Publisher Name (English) *
                 </label>
                 <input
@@ -945,13 +945,13 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                   placeholder="e.g. Daily Thanthi"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-1.5 text-xs text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white"
+                  className="w-full bg-canvas border border-line rounded px-3 py-1.5 text-xs text-ink focus:outline-hidden focus:border-zinc-500 focus:bg-surface"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                <label className="block text-xs font-semibold text-ink-soft mb-1">
                   Publisher Name (தமிழ்)
                 </label>
                 <input
@@ -959,18 +959,18 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                   placeholder="e.g. தினத்தந்தி"
                   value={newTamilName}
                   onChange={(e) => setNewTamilName(e.target.value)}
-                  className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-1.5 text-xs font-tamil text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white"
+                  className="w-full bg-canvas border border-line rounded px-3 py-1.5 text-xs font-tamil text-ink focus:outline-hidden focus:border-zinc-500 focus:bg-surface"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                <label className="block text-xs font-semibold text-ink-soft mb-1">
                   Category
                 </label>
                 <select
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
-                  className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-1.5 text-xs text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white cursor-pointer"
+                  className="w-full bg-canvas border border-line rounded px-3 py-1.5 text-xs text-ink focus:outline-hidden focus:border-zinc-500 focus:bg-surface cursor-pointer"
                 >
                   <option value="Tamil News Portal">Tamil News Portal</option>
                   <option value="Television Broadcast">Television Broadcast</option>
@@ -984,13 +984,13 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                <label className="block text-xs font-semibold text-ink-soft mb-1">
                   Source Classification
                 </label>
                 <select
                   value={newSourceType}
                   onChange={(e) => setNewSourceType(e.target.value)}
-                  className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-1.5 text-xs text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white cursor-pointer"
+                  className="w-full bg-canvas border border-line rounded px-3 py-1.5 text-xs text-ink focus:outline-hidden focus:border-zinc-500 focus:bg-surface cursor-pointer"
                 >
                   <option value="NEWS_MEDIA">Group A: News Media (TV, Print, Portals)</option>
                   <option value="INFLUENCER">Group B: Influencer / Commentator</option>
@@ -1000,13 +1000,13 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                <label className="block text-xs font-semibold text-ink-soft mb-1">
                   Delivery Platform
                 </label>
                 <select
                   value={newPlatform}
                   onChange={(e) => setNewPlatform(e.target.value)}
-                  className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-1.5 text-xs text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white cursor-pointer"
+                  className="w-full bg-canvas border border-line rounded px-3 py-1.5 text-xs text-ink focus:outline-hidden focus:border-zinc-500 focus:bg-surface cursor-pointer"
                 >
                   <option value="web">Web (RSS / Atom XML)</option>
                   <option value="youtube">YouTube (Channel RSS)</option>
@@ -1016,7 +1016,7 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                <label className="block text-xs font-semibold text-ink-soft mb-1">
                   Main Website / Profile URL
                 </label>
                 <input
@@ -1024,12 +1024,12 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                   placeholder="https://www.dailythanthi.com or channel link"
                   value={newUrl}
                   onChange={(e) => setNewUrl(e.target.value)}
-                  className="w-full bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-1.5 text-xs text-zinc-900 focus:outline-hidden focus:border-zinc-500 focus:bg-white"
+                  className="w-full bg-canvas border border-line rounded px-3 py-1.5 text-xs text-ink focus:outline-hidden focus:border-zinc-500 focus:bg-surface"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                <label className="block text-xs font-semibold text-ink-soft mb-1">
                   RSS / Atom Feed URL *
                 </label>
                 <div className="flex gap-2">
@@ -1038,14 +1038,14 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                     placeholder="https://example.com/rss.xml"
                     value={newRssUrl}
                     onChange={(e) => setNewRssUrl(e.target.value)}
-                    className="flex-1 bg-[#F9F9F7] border border-[#E2E2DC] rounded px-3 py-1.5 text-xs text-zinc-900 font-mono focus:outline-hidden focus:border-zinc-500 focus:bg-white"
+                    className="flex-1 bg-canvas border border-line rounded px-3 py-1.5 text-xs text-ink font-mono focus:outline-hidden focus:border-zinc-500 focus:bg-surface"
                     required
                   />
                   <button
                     type="button"
                     onClick={handleTestFormUrl}
                     disabled={formTesting || !newRssUrl}
-                    className="px-3 py-1.5 rounded text-xs font-semibold bg-[#F4F4F0] text-zinc-800 border border-[#E2E2DC] hover:bg-zinc-200 transition-colors cursor-pointer disabled:opacity-50"
+                    className="px-3 py-1.5 rounded text-xs font-semibold bg-subtle text-ink border border-line hover:bg-line transition-colors cursor-pointer disabled:opacity-50"
                   >
                     {formTesting ? "Probing..." : "Test Endpoint"}
                   </button>
@@ -1093,13 +1093,13 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
               <button
                 type="button"
                 onClick={() => setShowAddForm(false)}
-                className="px-3 py-1.5 rounded text-xs text-zinc-600 hover:bg-zinc-100 cursor-pointer"
+                className="px-3 py-1.5 rounded text-xs text-ink-soft hover:bg-subtle cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-1.5 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs cursor-pointer"
+                className="px-4 py-1.5 rounded text-xs font-semibold bg-ink hover:bg-ink-soft text-white shadow-card cursor-pointer"
               >
                 Save & Activate Publisher
               </button>
@@ -1109,14 +1109,14 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
       )}
 
       {/* Source Classification Filter Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 bg-[#F4F4F0] p-1.5 rounded-lg border border-[#E8E8E2]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 bg-subtle p-1.5 rounded-lg border border-line">
         <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
           <button
             onClick={() => setSourceGroupTab("all")}
             className={`flex-1 sm:flex-initial px-3 py-2 sm:py-1.5 rounded text-xs font-semibold transition-all cursor-pointer min-h-[40px] sm:min-h-[34px] text-center ${
               sourceGroupTab === "all"
-                ? "bg-zinc-900 text-white shadow-2xs font-bold"
-                : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200"
+                ? "bg-ink text-white shadow-card font-bold"
+                : "text-ink-soft hover:text-ink hover:bg-line"
             }`}
           >
             All Sources ({sources.length})
@@ -1125,8 +1125,8 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
             onClick={() => setSourceGroupTab("news_media")}
             className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded text-xs font-semibold transition-all cursor-pointer min-h-[40px] sm:min-h-[34px] text-center ${
               sourceGroupTab === "news_media"
-                ? "bg-blue-600 text-white shadow-2xs font-bold"
-                : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200"
+                ? "bg-blue-600 text-white shadow-card font-bold"
+                : "text-ink-soft hover:text-ink hover:bg-line"
             }`}
           >
             <Tv className="w-3.5 h-3.5" />
@@ -1136,8 +1136,8 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
             onClick={() => setSourceGroupTab("influencers")}
             className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded text-xs font-semibold transition-all cursor-pointer min-h-[40px] sm:min-h-[34px] text-center ${
               sourceGroupTab === "influencers"
-                ? "bg-purple-600 text-white shadow-2xs font-bold"
-                : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200"
+                ? "bg-purple-600 text-white shadow-card font-bold"
+                : "text-ink-soft hover:text-ink hover:bg-line"
             }`}
           >
             <UserCheck className="w-3.5 h-3.5" />
@@ -1147,7 +1147,7 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
 
         <button
           onClick={loadData}
-          className="flex items-center justify-center gap-1 px-3 py-2 sm:py-1 rounded text-xs font-medium bg-white hover:bg-zinc-100 border border-[#E2E2DC] text-zinc-700 cursor-pointer shadow-2xs min-h-[40px] sm:min-h-[34px] w-full sm:w-auto"
+          className="flex items-center justify-center gap-1 px-3 py-2 sm:py-1 rounded text-xs font-medium bg-surface hover:bg-subtle border border-line text-ink-soft cursor-pointer shadow-card min-h-[40px] sm:min-h-[34px] w-full sm:w-auto"
         >
           <RefreshCw className="w-3 h-3" />
           <span>Refresh All</span>
@@ -1160,21 +1160,21 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
         <div className="lg:col-span-8 space-y-6 min-w-0">
           {/* GROUP A: News Media Publishers */}
           {(sourceGroupTab === "all" || sourceGroupTab === "news_media") && (
-            <div className="bg-white border border-[#E8E8E2] rounded-lg overflow-hidden shadow-2xs">
-              <div className="p-4 sm:p-5 border-b border-[#F0F0EB] flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-[#FAFBFD]">
+            <div className="bg-surface border border-line rounded-xl overflow-hidden shadow-card">
+              <div className="p-4 sm:p-5 border-b border-line flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-canvas">
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="p-1 rounded bg-blue-100 text-blue-700">
                       <Tv className="w-3.5 h-3.5" />
                     </span>
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 font-mono">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-ink font-mono">
                       Group A: News Media Publishers ({newsMediaSources.length})
                     </h3>
                     <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-50 text-blue-800 border border-blue-200">
                       NEWS_MEDIA
                     </span>
                   </div>
-                  <p className="text-xs text-zinc-500 mt-0.5">
+                  <p className="text-xs text-ink-muted mt-0.5">
                     Television channels, newspaper websites, and verified Tamil digital news portals
                   </p>
                 </div>
@@ -1182,7 +1182,7 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
 
               <div className="overflow-x-auto w-full">
                 <table className="w-full text-left text-xs min-w-[640px]">
-                  <thead className="bg-[#F4F4F0] text-zinc-600 font-mono border-b border-[#E8E8E2] uppercase text-[10px] tracking-wider">
+                  <thead className="bg-subtle text-ink-soft font-mono border-b border-line uppercase text-[10px] tracking-wider">
                     <tr>
                       <th className="py-2.5 px-4">Publisher & Feed URL</th>
                       <th className="py-2.5 px-3">Fetch Health</th>
@@ -1192,32 +1192,32 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                       <th className="py-2.5 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#F0F0EB] font-medium">
+                  <tbody className="divide-y divide-line font-medium">
                     {newsMediaSources.map((source) => (
-                      <tr key={source.id} className="hover:bg-[#F9F9F7] transition-colors">
+                      <tr key={source.id} className="hover:bg-canvas transition-colors">
                         <td className="py-3 px-4">
                           <div className="flex items-start gap-2.5">
                             <div className="w-7 h-7 rounded bg-blue-50 text-blue-900 border border-blue-200 flex items-center justify-center font-bold text-[10px] font-mono shrink-0 mt-0.5">
                               {source.name.slice(0, 2)}
                             </div>
                             <div className="min-w-0">
-                              <div className="font-bold text-zinc-900 flex items-center gap-1.5 flex-wrap">
+                              <div className="font-bold text-ink flex items-center gap-1.5 flex-wrap">
                                 <span>{source.name}</span>
                                 <span className="px-1 py-0.2 rounded text-[9px] bg-blue-50 text-blue-700 font-mono border border-blue-100">
                                   {source.category || "News Media"}
                                 </span>
-                                <span className="px-1 py-0.2 rounded text-[9px] bg-zinc-100 text-zinc-600 font-mono uppercase">
+                                <span className="px-1 py-0.2 rounded text-[9px] bg-subtle text-ink-soft font-mono uppercase">
                                   {source.platform || "web"}
                                 </span>
                               </div>
-                              <div className="text-[11px] text-zinc-500 font-tamil">{source.tamil_name}</div>
-                              <div className="flex items-center gap-1.5 mt-1 text-[11px] text-zinc-500 font-mono">
+                              <div className="text-[11px] text-ink-muted font-tamil">{source.tamil_name}</div>
+                              <div className="flex items-center gap-1.5 mt-1 text-[11px] text-ink-muted font-mono">
                                 <span className="truncate max-w-[180px]" title={source.rss_url}>
                                   {source.rss_url}
                                 </span>
                                 <button
                                   onClick={() => handleCopyUrl(source.rss_url)}
-                                  className="p-0.5 text-zinc-400 hover:text-zinc-700 cursor-pointer"
+                                  className="p-0.5 text-ink-muted hover:text-ink-soft cursor-pointer"
                                   title="Copy RSS URL"
                                 >
                                   {copiedUrl === source.rss_url ? (
@@ -1230,7 +1230,7 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                                   href={source.rss_url}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="p-0.5 text-zinc-400 hover:text-zinc-800"
+                                  className="p-0.5 text-ink-muted hover:text-ink"
                                   title="Open XML stream"
                                 >
                                   <ExternalLink className="w-3 h-3" />
@@ -1247,22 +1247,22 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                               {source.last_fetch_error}
                             </div>
                           ) : (
-                            <div className="text-[10px] text-zinc-500 mt-1 font-mono">15m interval</div>
+                            <div className="text-[10px] text-ink-muted mt-1 font-mono">15m interval</div>
                           )}
                         </td>
 
                         <td className="py-3 px-3 whitespace-nowrap font-mono text-[10px]">
-                          <div className="space-y-0.5 text-zinc-600">
-                            <div><span className="text-zinc-400">Succ:</span> {formatTimestamp(source.last_successful_fetch_at || source.last_fetched_at)}</div>
-                            <div><span className="text-zinc-400">Pub:</span> <span className="text-zinc-900 font-semibold">{formatTimestamp(source.last_publication_at)}</span></div>
+                          <div className="space-y-0.5 text-ink-soft">
+                            <div><span className="text-ink-muted">Succ:</span> {formatTimestamp(source.last_successful_fetch_at || source.last_fetched_at)}</div>
+                            <div><span className="text-ink-muted">Pub:</span> <span className="text-ink font-semibold">{formatTimestamp(source.last_publication_at)}</span></div>
                           </div>
                         </td>
 
                         <td className="py-3 px-3 whitespace-nowrap font-mono text-[11px]">
-                          <span className="font-bold text-zinc-900">
+                          <span className="font-bold text-ink">
                             {source.current_article_count || source.total_articles_fetched || 0}
                           </span>
-                          <div className="text-zinc-400 text-[10px]">
+                          <div className="text-ink-muted text-[10px]">
                             dup: {source.skipped_duplicates_count || 0}
                           </div>
                         </td>
@@ -1273,12 +1273,12 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                             aria-checked={source.is_enabled}
                             onClick={() => handleToggle(source.id)}
                             className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-pointer ${
-                              source.is_enabled ? "bg-zinc-900" : "bg-zinc-300"
+                              source.is_enabled ? "bg-ink" : "bg-zinc-300"
                             }`}
                             title={source.is_enabled ? "Active" : "Paused"}
                           >
                             <span
-                              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-surface transition-transform ${
                                 source.is_enabled ? "translate-x-4.5" : "translate-x-0.5"
                               }`}
                             />
@@ -1290,14 +1290,14 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                             <button
                               onClick={() => handleTestSource(source)}
                               disabled={testingSourceId === source.id}
-                              className="px-2 py-1 rounded text-xs font-semibold bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-700 transition-colors cursor-pointer"
+                              className="px-2 py-1 rounded text-xs font-semibold bg-subtle hover:bg-line text-ink-soft transition-colors cursor-pointer"
                             >
                               {testingSourceId === source.id ? "Probing..." : "Test"}
                             </button>
                             <button
                               onClick={() => handleIngestSingle(source)}
                               disabled={ingestingSourceId === source.id || !source.is_enabled}
-                              className="px-2 py-1 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white transition-colors cursor-pointer disabled:opacity-40"
+                              className="px-2 py-1 rounded text-xs font-semibold bg-ink hover:bg-ink-soft text-white transition-colors cursor-pointer disabled:opacity-40"
                             >
                               {ingestingSourceId === source.id ? (
                                 <RefreshCw className="w-3 h-3 animate-spin" />
@@ -1307,7 +1307,7 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                             </button>
                             <button
                               onClick={() => handleDelete(source.id, source.name)}
-                              className="p-1 rounded text-zinc-400 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
+                              className="p-1 rounded text-ink-muted hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -1323,21 +1323,21 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
 
           {/* GROUP B: Influencers & Social Media Creators */}
           {(sourceGroupTab === "all" || sourceGroupTab === "influencers") && (
-            <div className="bg-white border border-[#E8E8E2] rounded-lg overflow-hidden shadow-2xs">
-              <div className="p-4 sm:p-5 border-b border-[#F0F0EB] flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-[#FBF9FD]">
+            <div className="bg-surface border border-line rounded-xl overflow-hidden shadow-card">
+              <div className="p-4 sm:p-5 border-b border-line flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-canvas">
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="p-1 rounded bg-purple-100 text-purple-700">
                       <UserCheck className="w-3.5 h-3.5" />
                     </span>
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 font-mono">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-ink font-mono">
                       Group B: Influencers & Political Creators ({influencerSources.length})
                     </h3>
                     <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-50 text-purple-800 border border-purple-200">
                       INFLUENCER / SOCIAL
                     </span>
                   </div>
-                  <p className="text-xs text-zinc-500 mt-0.5">
+                  <p className="text-xs text-ink-muted mt-0.5">
                     Political commentators, investigative analysts, and high-impact Tamil YouTube channels
                   </p>
                 </div>
@@ -1345,7 +1345,7 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
 
               <div className="overflow-x-auto w-full">
                 <table className="w-full text-left text-xs min-w-[640px]">
-                  <thead className="bg-[#F4F4F0] text-zinc-600 font-mono border-b border-[#E8E8E2] uppercase text-[10px] tracking-wider">
+                  <thead className="bg-subtle text-ink-soft font-mono border-b border-line uppercase text-[10px] tracking-wider">
                     <tr>
                       <th className="py-2.5 px-4">Creator / Channel & Feed</th>
                       <th className="py-2.5 px-3">Fetch Health</th>
@@ -1355,16 +1355,16 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                       <th className="py-2.5 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#F0F0EB] font-medium">
+                  <tbody className="divide-y divide-line font-medium">
                     {influencerSources.map((source) => (
-                      <tr key={source.id} className="hover:bg-[#F9F9F7] transition-colors">
+                      <tr key={source.id} className="hover:bg-canvas transition-colors">
                         <td className="py-3 px-4">
                           <div className="flex items-start gap-2.5">
                             <div className="w-7 h-7 rounded bg-purple-50 text-purple-900 border border-purple-200 flex items-center justify-center font-bold text-[10px] font-mono shrink-0 mt-0.5">
                               {source.name.slice(0, 2)}
                             </div>
                             <div className="min-w-0">
-                              <div className="font-bold text-zinc-900 flex items-center gap-1.5 flex-wrap">
+                              <div className="font-bold text-ink flex items-center gap-1.5 flex-wrap">
                                 <span>{source.name}</span>
                                 <span className="px-1 py-0.2 rounded text-[9px] bg-purple-50 text-purple-700 font-mono border border-purple-100">
                                   {source.category || "Political Influencer"}
@@ -1373,14 +1373,14 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                                   {source.platform || "youtube"}
                                 </span>
                               </div>
-                              <div className="text-[11px] text-zinc-500 font-tamil">{source.tamil_name}</div>
-                              <div className="flex items-center gap-1.5 mt-1 text-[11px] text-zinc-500 font-mono">
+                              <div className="text-[11px] text-ink-muted font-tamil">{source.tamil_name}</div>
+                              <div className="flex items-center gap-1.5 mt-1 text-[11px] text-ink-muted font-mono">
                                 <span className="truncate max-w-[180px]" title={source.rss_url}>
                                   {source.rss_url}
                                 </span>
                                 <button
                                   onClick={() => handleCopyUrl(source.rss_url)}
-                                  className="p-0.5 text-zinc-400 hover:text-zinc-700 cursor-pointer"
+                                  className="p-0.5 text-ink-muted hover:text-ink-soft cursor-pointer"
                                   title="Copy Channel RSS URL"
                                 >
                                   {copiedUrl === source.rss_url ? (
@@ -1393,7 +1393,7 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                                   href={source.url || source.rss_url}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="p-0.5 text-zinc-400 hover:text-zinc-800"
+                                  className="p-0.5 text-ink-muted hover:text-ink"
                                   title="Open Channel / Profile"
                                 >
                                   <ExternalLink className="w-3 h-3" />
@@ -1410,22 +1410,22 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                               {source.last_fetch_error}
                             </div>
                           ) : (
-                            <div className="text-[10px] text-zinc-500 mt-1 font-mono">15m interval</div>
+                            <div className="text-[10px] text-ink-muted mt-1 font-mono">15m interval</div>
                           )}
                         </td>
 
                         <td className="py-3 px-3 whitespace-nowrap font-mono text-[10px]">
-                          <div className="space-y-0.5 text-zinc-600">
-                            <div><span className="text-zinc-400">Succ:</span> {formatTimestamp(source.last_successful_fetch_at || source.last_fetched_at)}</div>
-                            <div><span className="text-zinc-400">Pub:</span> <span className="text-zinc-900 font-semibold">{formatTimestamp(source.last_publication_at)}</span></div>
+                          <div className="space-y-0.5 text-ink-soft">
+                            <div><span className="text-ink-muted">Succ:</span> {formatTimestamp(source.last_successful_fetch_at || source.last_fetched_at)}</div>
+                            <div><span className="text-ink-muted">Pub:</span> <span className="text-ink font-semibold">{formatTimestamp(source.last_publication_at)}</span></div>
                           </div>
                         </td>
 
                         <td className="py-3 px-3 whitespace-nowrap font-mono text-[11px]">
-                          <span className="font-bold text-zinc-900">
+                          <span className="font-bold text-ink">
                             {source.current_article_count || source.total_articles_fetched || 0}
                           </span>
-                          <div className="text-zinc-400 text-[10px]">
+                          <div className="text-ink-muted text-[10px]">
                             dup: {source.skipped_duplicates_count || 0}
                           </div>
                         </td>
@@ -1436,12 +1436,12 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                             aria-checked={source.is_enabled}
                             onClick={() => handleToggle(source.id)}
                             className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-pointer ${
-                              source.is_enabled ? "bg-zinc-900" : "bg-zinc-300"
+                              source.is_enabled ? "bg-ink" : "bg-zinc-300"
                             }`}
                             title={source.is_enabled ? "Active" : "Paused"}
                           >
                             <span
-                              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-surface transition-transform ${
                                 source.is_enabled ? "translate-x-4.5" : "translate-x-0.5"
                               }`}
                             />
@@ -1453,14 +1453,14 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                             <button
                               onClick={() => handleTestSource(source)}
                               disabled={testingSourceId === source.id}
-                              className="px-2 py-1 rounded text-xs font-semibold bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-700 transition-colors cursor-pointer"
+                              className="px-2 py-1 rounded text-xs font-semibold bg-subtle hover:bg-line text-ink-soft transition-colors cursor-pointer"
                             >
                               {testingSourceId === source.id ? "Probing..." : "Test"}
                             </button>
                             <button
                               onClick={() => handleIngestSingle(source)}
                               disabled={ingestingSourceId === source.id || !source.is_enabled}
-                              className="px-2 py-1 rounded text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-white transition-colors cursor-pointer disabled:opacity-40"
+                              className="px-2 py-1 rounded text-xs font-semibold bg-ink hover:bg-ink-soft text-white transition-colors cursor-pointer disabled:opacity-40"
                             >
                               {ingestingSourceId === source.id ? (
                                 <RefreshCw className="w-3 h-3 animate-spin" />
@@ -1470,7 +1470,7 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                             </button>
                             <button
                               onClick={() => handleDelete(source.id, source.name)}
-                              className="p-1 rounded text-zinc-400 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
+                              className="p-1 rounded text-ink-muted hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -1487,11 +1487,11 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
 
         {/* Right Column: Trending Now Panel */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="bg-white border border-[#E8E8E2] rounded-lg p-4 sm:p-5 shadow-2xs">
-            <div className="flex items-center justify-between pb-3 border-b border-[#F0F0EB]">
+          <div className="bg-surface border border-line rounded-xl p-4 sm:p-5 shadow-card">
+            <div className="flex items-center justify-between pb-3 border-b border-line">
               <div className="flex items-center gap-2">
                 <Flame className="w-4 h-4 text-amber-500 animate-pulse" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 font-mono">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-ink font-mono">
                   Trending Now in TN Politics
                 </h3>
               </div>
@@ -1500,13 +1500,13 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
               </span>
             </div>
 
-            <p className="text-[11px] text-zinc-500 mt-2 mb-3 leading-relaxed">
+            <p className="text-[11px] text-ink-muted mt-2 mb-3 leading-relaxed">
               Algorithmic momentum combining News Media wire dispatches, Influencer commentary, and verified Tamil Nadu Google Trends.
             </p>
 
             {trendingTopics.length === 0 ? (
-              <div className="p-8 text-center bg-[#F9F9F7] rounded border border-dashed border-[#E2E2DC] text-zinc-500 text-xs">
-                <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-zinc-400" />
+              <div className="p-8 text-center bg-canvas rounded border border-dashed border-line text-ink-muted text-xs">
+                <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-ink-muted" />
                 <span>Aggregating real-time political momentum...</span>
               </div>
             ) : (
@@ -1516,14 +1516,14 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                   return (
                     <div
                       key={trend.id || idx}
-                      className="p-3 rounded-lg bg-[#FAFBFD] border border-[#E8EBF0] hover:border-zinc-400 transition-colors space-y-1.5"
+                      className="p-3 rounded-lg bg-canvas border border-line hover:border-line-strong transition-colors space-y-1.5"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className="w-5 h-5 rounded-full bg-zinc-900 text-white flex items-center justify-center font-mono text-[10px] font-bold shrink-0">
+                          <span className="w-5 h-5 rounded-full bg-ink text-white flex items-center justify-center font-mono text-[10px] font-bold shrink-0">
                             #{idx + 1}
                           </span>
-                          <span className="font-tamil font-bold text-zinc-900 text-xs leading-snug line-clamp-1">
+                          <span className="font-tamil font-bold text-ink text-xs leading-snug line-clamp-1">
                             {trend.tamil_topic || trend.topic}
                           </span>
                         </div>
@@ -1535,7 +1535,7 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                       </div>
 
                       {trend.tamil_topic && trend.topic && (
-                        <div className="text-[11px] text-zinc-600 font-medium pl-7 line-clamp-1">
+                        <div className="text-[11px] text-ink-soft font-medium pl-7 line-clamp-1">
                           {trend.topic}
                         </div>
                       )}
@@ -1560,11 +1560,11 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                         ))}
 
                         {trend.search_volume_display ? (
-                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-zinc-100 text-zinc-700 border border-zinc-200 ml-auto">
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-subtle text-ink-soft border border-line ml-auto">
                             {trend.search_volume_display}
                           </span>
                         ) : (
-                          <span className="text-[10px] font-mono text-zinc-500 ml-auto">
+                          <span className="text-[10px] font-mono text-ink-muted ml-auto">
                             Score: {Math.round(trend.trend_score || 80)}
                           </span>
                         )}
@@ -1575,7 +1575,7 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
               </div>
             )}
 
-            <div className="mt-4 pt-3 border-t border-[#F0F0EB] text-[10px] text-zinc-500 font-mono leading-relaxed">
+            <div className="mt-4 pt-3 border-t border-line text-[10px] text-ink-muted font-mono leading-relaxed">
               Standardized weighted formula (0.40 momentum + 0.30 volume + 0.20 cross-source presence + 0.10 recency). Filtered strictly for Tamil Nadu political entities.
             </div>
           </div>
@@ -1585,17 +1585,17 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
       {/* Live Feed Test Details Modal */}
       {activeTestResult && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-lg w-full border border-[#E8E8E2] shadow-xl overflow-hidden">
-            <div className="p-4 border-b border-[#F0F0EB] flex items-center justify-between">
+          <div className="bg-surface rounded-lg max-w-lg w-full border border-line shadow-xl overflow-hidden">
+            <div className="p-4 border-b border-line flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-zinc-900">
+                <h3 className="text-sm font-bold text-ink">
                   Endpoint Inspection: {activeTestResult.sourceName}
                 </h3>
-                <p className="text-xs text-zinc-500">Live RSS/Atom XML response & conditional headers</p>
+                <p className="text-xs text-ink-muted">Live RSS/Atom XML response & conditional headers</p>
               </div>
               <button
                 onClick={() => setActiveTestResult(null)}
-                className="text-zinc-400 hover:text-zinc-800 cursor-pointer"
+                className="text-ink-muted hover:text-ink cursor-pointer"
               >
                 ✕
               </button>
@@ -1603,38 +1603,38 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
 
             <div className="p-4 space-y-3 max-h-[70vh] overflow-y-auto text-xs">
               <div className="grid grid-cols-3 gap-2">
-                <div className="p-2.5 bg-[#F9F9F7] rounded border border-[#E8E8E2] text-center">
-                  <div className="text-[10px] text-zinc-500 font-mono">Status</div>
-                  <div className="text-sm font-mono font-bold text-zinc-900 mt-0.5">
+                <div className="p-2.5 bg-canvas rounded border border-line text-center">
+                  <div className="text-[10px] text-ink-muted font-mono">Status</div>
+                  <div className="text-sm font-mono font-bold text-ink mt-0.5">
                     HTTP {activeTestResult.result.status_code}
                   </div>
                 </div>
-                <div className="p-2.5 bg-[#F9F9F7] rounded border border-[#E8E8E2] text-center">
-                  <div className="text-[10px] text-zinc-500 font-mono">Latency</div>
-                  <div className="text-sm font-mono font-bold text-zinc-900 mt-0.5">
+                <div className="p-2.5 bg-canvas rounded border border-line text-center">
+                  <div className="text-[10px] text-ink-muted font-mono">Latency</div>
+                  <div className="text-sm font-mono font-bold text-ink mt-0.5">
                     {activeTestResult.result.latency_ms} ms
                   </div>
                 </div>
-                <div className="p-2.5 bg-[#F9F9F7] rounded border border-[#E8E8E2] text-center">
-                  <div className="text-[10px] text-zinc-500 font-mono">Parsed Items</div>
-                  <div className="text-sm font-mono font-bold text-zinc-900 mt-0.5">
+                <div className="p-2.5 bg-canvas rounded border border-line text-center">
+                  <div className="text-[10px] text-ink-muted font-mono">Parsed Items</div>
+                  <div className="text-sm font-mono font-bold text-ink mt-0.5">
                     {activeTestResult.result.items_count}
                   </div>
                 </div>
               </div>
 
               {(activeTestResult.result.etag || activeTestResult.result.last_modified) && (
-                <div className="p-2.5 rounded bg-[#F9F9F7] border border-[#E8E8E2] text-[11px] font-mono space-y-1">
+                <div className="p-2.5 rounded bg-canvas border border-line text-[11px] font-mono space-y-1">
                   {activeTestResult.result.etag && (
                     <div>
-                      <span className="text-zinc-500">ETag: </span>
-                      <span className="text-zinc-800">{activeTestResult.result.etag}</span>
+                      <span className="text-ink-muted">ETag: </span>
+                      <span className="text-ink">{activeTestResult.result.etag}</span>
                     </div>
                   )}
                   {activeTestResult.result.last_modified && (
                     <div>
-                      <span className="text-zinc-500">Last-Modified: </span>
-                      <span className="text-zinc-800">{activeTestResult.result.last_modified}</span>
+                      <span className="text-ink-muted">Last-Modified: </span>
+                      <span className="text-ink">{activeTestResult.result.last_modified}</span>
                     </div>
                   )}
                 </div>
@@ -1648,22 +1648,22 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
 
               {/* Sample Articles from XML Stream */}
               {activeTestResult.result.sample_items && activeTestResult.result.sample_items.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-[#F0F0EB]">
-                  <h4 className="text-xs font-bold text-zinc-800 uppercase tracking-wider mb-2">
+                <div className="mt-3 pt-3 border-t border-line">
+                  <h4 className="text-xs font-bold text-ink uppercase tracking-wider mb-2">
                     Sample Articles from XML Stream
                   </h4>
                   <div className="space-y-2">
                     {activeTestResult.result.sample_items.slice(0, 4).map((item, idx) => (
-                      <div key={idx} className="p-2.5 bg-[#F9F9F7] rounded border border-[#E8E8E2] text-xs">
-                        <div className="font-bold text-zinc-900 font-tamil leading-snug">{item.title}</div>
+                      <div key={idx} className="p-2.5 bg-canvas rounded border border-line text-xs">
+                        <div className="font-bold text-ink font-tamil leading-snug">{item.title}</div>
                         {item.pub_date && (
-                          <div className="text-[10px] text-zinc-500 font-mono mt-0.5">{item.pub_date}</div>
+                          <div className="text-[10px] text-ink-muted font-mono mt-0.5">{item.pub_date}</div>
                         )}
                         <a
                           href={item.link}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-[11px] text-zinc-800 hover:underline flex items-center gap-1 mt-1 font-mono truncate"
+                          className="text-[11px] text-ink hover:underline flex items-center gap-1 mt-1 font-mono truncate"
                         >
                           <span>{item.link}</span>
                           <ExternalLink className="w-3 h-3 shrink-0" />
@@ -1675,10 +1675,10 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
               )}
             </div>
 
-            <div className="p-3 bg-[#F9F9F7] border-t border-[#E8E8E2] flex justify-end">
+            <div className="p-3 bg-canvas border-t border-line flex justify-end">
               <button
                 onClick={() => setActiveTestResult(null)}
-                className="px-3 py-1 rounded text-xs font-semibold bg-zinc-900 text-white cursor-pointer"
+                className="px-3 py-1 rounded text-xs font-semibold bg-ink text-white cursor-pointer"
               >
                 Close Inspector
               </button>
@@ -1688,20 +1688,20 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
       )}
 
       {/* Ingestion Audit Trail Table */}
-      <div className="bg-white border border-[#E8E8E2] rounded-lg overflow-hidden shadow-2xs">
-        <div className="p-4 border-b border-[#F0F0EB] flex items-center justify-between">
+      <div className="bg-surface border border-line rounded-xl overflow-hidden shadow-card">
+        <div className="p-4 border-b border-line flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Clock className="w-3.5 h-3.5 text-zinc-700" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900">
+            <Clock className="w-3.5 h-3.5 text-ink-soft" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-ink">
               Live Ingestion Audit Logs
             </h3>
           </div>
-          <span className="text-[11px] text-zinc-500 font-mono">Last 30 polling events</span>
+          <span className="text-[11px] text-ink-muted font-mono">Last 30 polling events</span>
         </div>
 
         <div className="overflow-x-auto max-h-72 overflow-y-auto">
           <table className="w-full text-left text-xs font-mono">
-            <thead className="bg-[#F4F4F0] text-zinc-600 border-b border-[#E8E8E2] uppercase text-[10px] sticky top-0">
+            <thead className="bg-subtle text-ink-soft border-b border-line uppercase text-[10px] sticky top-0">
               <tr>
                 <th className="py-2 px-3">Timestamp</th>
                 <th className="py-2 px-3">Publisher</th>
@@ -1713,42 +1713,42 @@ export function SourceManagementView({ clientConfig, onConfigUpdated }: SourceMa
                 <th className="py-2 px-3">Latency</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#F0F0EB] text-[11px]">
+            <tbody className="divide-y divide-line text-[11px]">
               {logs.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-4 text-center text-zinc-400">
+                  <td colSpan={8} className="py-4 text-center text-ink-muted">
                     No ingestion logs recorded yet.
                   </td>
                 </tr>
               ) : (
                 logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-[#F9F9F7]">
-                    <td className="py-1.5 px-3 text-zinc-500 whitespace-nowrap">
+                  <tr key={log.id} className="hover:bg-canvas">
+                    <td className="py-1.5 px-3 text-ink-muted whitespace-nowrap">
                       {formatTimestamp(log.timestamp)}
                     </td>
-                    <td className="py-1.5 px-3 font-bold text-zinc-800 whitespace-nowrap">
+                    <td className="py-1.5 px-3 font-bold text-ink whitespace-nowrap">
                       {log.source_name}
                     </td>
                     <td className="py-1.5 px-3 whitespace-nowrap">
                       <span
                         className={`px-1.5 py-0.2 rounded text-[10px] ${
                           log.status === "not_modified_304"
-                            ? "bg-zinc-100 text-zinc-700"
+                            ? "bg-subtle text-ink-soft"
                             : log.status === "new_articles"
                             ? "bg-emerald-50 text-emerald-800"
                             : log.status === "error"
                             ? "bg-rose-50 text-rose-800"
-                            : "bg-zinc-100 text-zinc-600"
+                            : "bg-subtle text-ink-soft"
                         }`}
                       >
                         {log.status}
                       </span>
                     </td>
-                    <td className="py-1.5 px-3 text-zinc-700">{log.http_status}</td>
-                    <td className="py-1.5 px-3 text-zinc-700">{log.items_found}</td>
+                    <td className="py-1.5 px-3 text-ink-soft">{log.http_status}</td>
+                    <td className="py-1.5 px-3 text-ink-soft">{log.items_found}</td>
                     <td className="py-1.5 px-3 text-emerald-800 font-bold">{log.new_items_added}</td>
-                    <td className="py-1.5 px-3 text-zinc-500">{log.skipped_duplicates}</td>
-                    <td className="py-1.5 px-3 text-zinc-500">{log.duration_ms}ms</td>
+                    <td className="py-1.5 px-3 text-ink-muted">{log.skipped_duplicates}</td>
+                    <td className="py-1.5 px-3 text-ink-muted">{log.duration_ms}ms</td>
                   </tr>
                 ))
               )}

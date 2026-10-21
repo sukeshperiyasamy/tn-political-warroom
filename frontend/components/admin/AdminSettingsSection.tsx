@@ -96,7 +96,7 @@ export function AdminSettingsSection({
 
   if (loading && !settings) {
     return (
-      <div className="p-16 text-center text-zinc-500 bg-white border border-[#E8E8E2] rounded-xl">
+      <div className="p-16 text-center text-ink-muted bg-surface border border-line rounded-xl">
         <RefreshCw className="w-6 h-6 border-2 border-zinc-800 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
         <p className="text-xs">Loading application configuration...</p>
       </div>
@@ -106,28 +106,28 @@ export function AdminSettingsSection({
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="p-5 sm:p-6 bg-white border border-[#E2E2DC] rounded-xl shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-5 sm:p-6 bg-surface border border-line rounded-xl shadow-card flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <Sliders className="w-5 h-5 text-zinc-900" />
-            <h2 className="text-sm sm:text-base font-bold text-zinc-900 font-serif">
+            <Sliders className="w-5 h-5 text-ink" />
+            <h2 className="text-sm sm:text-base font-bold text-ink font-serif">
               Application & Workspace Settings
             </h2>
           </div>
-          <p className="text-xs text-zinc-500 mt-1 font-tamil">
+          <p className="text-xs text-ink-muted mt-1 font-tamil">
             நிறுவன அடையாளம், பிராண்டிங் நிறங்கள் மற்றும் இடைமுக விருப்பங்கள்
           </p>
         </div>
       </div>
 
       {/* Security Compliance Banner */}
-      <div className="p-4 rounded-xl bg-zinc-900 text-white text-xs shadow-sm flex items-start gap-3">
+      <div className="p-4 rounded-xl bg-ink text-white text-xs shadow-sm flex items-start gap-3">
         <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
         <div className="space-y-1">
           <span className="font-bold text-zinc-100 block">
             Production Security Compliance Boundary
           </span>
-          <p className="text-zinc-400 leading-relaxed text-[11px]">
+          <p className="text-ink-muted leading-relaxed text-[11px]">
             {settings?.security_notice ||
               "Deployment credentials, database passwords, and API keys are stored securely in environment variables and are inaccessible from this interface."}
           </p>
@@ -152,7 +152,7 @@ export function AdminSettingsSection({
           </div>
           <button
             onClick={() => setFeedback(null)}
-            className="text-zinc-500 hover:text-zinc-800 font-bold ml-2 cursor-pointer"
+            className="text-ink-muted hover:text-ink font-bold ml-2 cursor-pointer"
           >
             ×
           </button>
@@ -160,16 +160,16 @@ export function AdminSettingsSection({
       )}
 
       {/* Settings Form */}
-      <form onSubmit={handleSave} className="p-6 bg-white border border-[#E2E2DC] rounded-xl shadow-2xs space-y-6">
+      <form onSubmit={handleSave} className="p-6 bg-surface border border-line rounded-xl shadow-card space-y-6">
         <div>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-800 pb-2 border-b border-[#F0F0EB] flex items-center gap-2">
-            <Building className="w-4 h-4 text-zinc-700" />
+          <h3 className="text-xs font-bold uppercase tracking-wider text-ink pb-2 border-b border-line flex items-center gap-2">
+            <Building className="w-4 h-4 text-ink-soft" />
             <span>Organization Masthead & Identity</span>
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-xs">
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">
+              <label className="block font-semibold text-ink-soft mb-1">
                 Organization / Bureau Name
               </label>
               <input
@@ -177,13 +177,13 @@ export function AdminSettingsSection({
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
                 placeholder="Tamil Nadu Strategic Intelligence Bureau"
-                className="w-full px-3 py-2 rounded-lg border border-[#D5D5CE] focus:outline-none focus:ring-2 focus:ring-zinc-800 bg-[#FAF9F6]"
+                className="w-full px-3 py-2 rounded-lg border border-line-strong focus:outline-none focus:ring-2 focus:ring-zinc-800 bg-canvas"
                 required
               />
             </div>
 
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1 font-tamil">
+              <label className="block font-semibold text-ink-soft mb-1 font-tamil">
                 Tamil Tagline / வாசகம்
               </label>
               <input
@@ -191,12 +191,12 @@ export function AdminSettingsSection({
                 value={clientTagline}
                 onChange={(e) => setClientTagline(e.target.value)}
                 placeholder="அரசியல் பொது ஊடக நுண்ணறிவு & பகுப்பாய்வு மையம்"
-                className="w-full px-3 py-2 rounded-lg border border-[#D5D5CE] focus:outline-none focus:ring-2 focus:ring-zinc-800 bg-[#FAF9F6] font-tamil"
+                className="w-full px-3 py-2 rounded-lg border border-line-strong focus:outline-none focus:ring-2 focus:ring-zinc-800 bg-canvas font-tamil"
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="block font-semibold text-zinc-700 mb-1">
+              <label className="block font-semibold text-ink-soft mb-1">
                 Bureau Logo URL (PNG/SVG, optional)
               </label>
               <input
@@ -204,21 +204,21 @@ export function AdminSettingsSection({
                 value={logoUrl}
                 onChange={(e) => setLogoUrl(e.target.value)}
                 placeholder="https://example.com/logo.png"
-                className="w-full px-3 py-2 rounded-lg border border-[#D5D5CE] focus:outline-none focus:ring-2 focus:ring-zinc-800 bg-[#FAF9F6]"
+                className="w-full px-3 py-2 rounded-lg border border-line-strong focus:outline-none focus:ring-2 focus:ring-zinc-800 bg-canvas"
               />
             </div>
           </div>
         </div>
 
         <div>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-800 pb-2 border-b border-[#F0F0EB] flex items-center gap-2">
-            <Palette className="w-4 h-4 text-zinc-700" />
+          <h3 className="text-xs font-bold uppercase tracking-wider text-ink pb-2 border-b border-line flex items-center gap-2">
+            <Palette className="w-4 h-4 text-ink-soft" />
             <span>Theme Colors</span>
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 text-xs">
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">
+              <label className="block font-semibold text-ink-soft mb-1">
                 Primary Brand Color
               </label>
               <div className="flex items-center gap-2">
@@ -226,19 +226,19 @@ export function AdminSettingsSection({
                   type="color"
                   value={brandColor}
                   onChange={(e) => setBrandColor(e.target.value)}
-                  className="w-9 h-9 rounded border border-[#D5D5CE] cursor-pointer"
+                  className="w-9 h-9 rounded border border-line-strong cursor-pointer"
                 />
                 <input
                   type="text"
                   value={brandColor}
                   onChange={(e) => setBrandColor(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-[#D5D5CE] font-mono text-xs uppercase"
+                  className="w-full px-3 py-2 rounded-lg border border-line-strong font-mono text-xs uppercase"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">
+              <label className="block font-semibold text-ink-soft mb-1">
                 Accent Gold / Highlight Color
               </label>
               <div className="flex items-center gap-2">
@@ -246,13 +246,13 @@ export function AdminSettingsSection({
                   type="color"
                   value={accentColor}
                   onChange={(e) => setAccentColor(e.target.value)}
-                  className="w-9 h-9 rounded border border-[#D5D5CE] cursor-pointer"
+                  className="w-9 h-9 rounded border border-line-strong cursor-pointer"
                 />
                 <input
                   type="text"
                   value={accentColor}
                   onChange={(e) => setAccentColor(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-[#D5D5CE] font-mono text-xs uppercase"
+                  className="w-full px-3 py-2 rounded-lg border border-line-strong font-mono text-xs uppercase"
                 />
               </div>
             </div>
@@ -260,38 +260,38 @@ export function AdminSettingsSection({
         </div>
 
         <div>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-800 pb-2 border-b border-[#F0F0EB] flex items-center gap-2">
-            <Clock className="w-4 h-4 text-zinc-700" />
+          <h3 className="text-xs font-bold uppercase tracking-wider text-ink pb-2 border-b border-line flex items-center gap-2">
+            <Clock className="w-4 h-4 text-ink-soft" />
             <span>Feed Scheduling & Language</span>
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 text-xs">
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">
+              <label className="block font-semibold text-ink-soft mb-1">
                 Automated Ingestion Polling Cycle
               </label>
               <select
                 disabled
                 value={15}
-                className="w-full px-3 py-2 rounded-lg border border-[#D5D5CE] bg-zinc-50 text-zinc-600 focus:outline-none"
+                className="w-full px-3 py-2 rounded-lg border border-line-strong bg-subtle text-ink-soft focus:outline-none"
               >
                 <option value={15}>Every 15 minutes (Active Schedule)</option>
                 <option value={30}>Every 30 minutes</option>
                 <option value={60}>Hourly</option>
               </select>
-              <span className="text-[10px] text-zinc-400 mt-1 block">
+              <span className="text-[10px] text-ink-muted mt-1 block">
                 Managed by background scheduler service
               </span>
             </div>
 
             <div>
-              <label className="block font-semibold text-zinc-700 mb-1">
+              <label className="block font-semibold text-ink-soft mb-1">
                 Default Editorial Language
               </label>
               <select
                 value={defaultLanguage}
                 onChange={(e) => setDefaultLanguage(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-[#D5D5CE] bg-white text-zinc-800 focus:outline-none"
+                className="w-full px-3 py-2 rounded-lg border border-line-strong bg-surface text-ink focus:outline-none"
               >
                 <option value="ta">Tamil (தமிழ்) - Primary</option>
                 <option value="en">English (ஆங்கிலம்)</option>
@@ -300,11 +300,11 @@ export function AdminSettingsSection({
           </div>
         </div>
 
-        <div className="flex items-center justify-end pt-4 border-t border-[#F0F0EB]">
+        <div className="flex items-center justify-end pt-4 border-t border-line">
           <button
             type="submit"
             disabled={saving}
-            className="px-5 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold flex items-center gap-2 shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+            className="px-5 py-2 rounded-lg bg-ink hover:bg-ink-soft text-white text-xs font-bold flex items-center gap-2 shadow-card transition-colors cursor-pointer disabled:opacity-50"
           >
             <Save className="w-3.5 h-3.5 text-amber-400" />
             <span>{saving ? "Saving Preferences..." : "Save Workspace Settings"}</span>

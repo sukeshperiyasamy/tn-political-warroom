@@ -1,58 +1,98 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   Design tokens — War Room "command centre" theme.
+   Light canvas for reading, dark ink rail for navigation, saffron accent.
+   All text/background pairs below meet WCAG 2.2 AA (4.5:1).
+--------------------------------------------------------------------------- */
+@theme {
+  --color-canvas: #f4f5f7;
+  --color-surface: #ffffff;
+  --color-subtle: #f0f1f4;
+  --color-line: #e3e5ea;
+  --color-line-strong: #c9ccd4;
+
+  --color-ink: #11151c;
+  --color-ink-soft: #3a414d;
+  --color-ink-muted: #5b6472;
+
+  --color-rail: #0e1320;
+  --color-rail-raised: #171e2f;
+  --color-rail-line: #232b3f;
+  --color-rail-text: #aab2c3;
+
+  --color-accent: #d97706;
+  --color-accent-strong: #b45309;
+  --color-accent-soft: #fef3e2;
+
+  --color-positive: #047857;
+  --color-positive-soft: #e7f6ef;
+  --color-negative: #b42318;
+  --color-negative-soft: #fdeceb;
+  --color-neutral-soft: #eef0f3;
+
+  --font-sans: var(--font-ui), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: var(--font-display), Georgia, Cambria, "Times New Roman", serif;
+  --font-tamil: var(--font-noto-tamil), "Noto Sans Tamil", -apple-system, sans-serif;
+
+  --shadow-card: 0 1px 2px rgb(17 21 28 / 0.04), 0 1px 1px rgb(17 21 28 / 0.03);
+  --shadow-pop: 0 12px 32px -8px rgb(17 21 28 / 0.18);
+}
+
 @layer base {
-  :root {
-    --bg-canvas: #FBFBFA;
-    --surface-card: #FFFFFF;
-    --surface-subtle: #F6F6F3;
-    --surface-muted: #EFEFEA;
-    --border-hairline: #E8E8E2;
-    --border-subtle: #DDDDD6;
-    --border-strong: #C4C4BC;
-
-    --ink-primary: #18181B;
-    --ink-secondary: #3F3F46;
-    --ink-muted: #71717A;
-    --ink-faint: #A1A1AA;
-
-    --editorial-navy: #0F172A;
-    --editorial-crimson: #991B1B;
-    --editorial-emerald: #047857;
-    --editorial-amber: #B45309;
-    --editorial-slate: #475569;
+  html {
+    scroll-behavior: smooth;
   }
 
   body {
-    background-color: #FBFBFA;
-    color: #18181B;
-    font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-}
 
-.font-serif {
-  font-family: var(--font-serif), Georgia, Cambria, "Times New Roman", Times, serif;
+  :focus-visible {
+    outline: 2px solid var(--color-accent-strong);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 .font-tamil {
-  font-family: var(--font-tamil), "Noto Sans Tamil", -apple-system, BlinkMacSystemFont, sans-serif;
   line-height: 1.6;
 }
 
-/* Restrained Editorial Scrollbar */
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #F4F4F0;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #D5D5CE;
-  border-radius: 2px;
+  background: var(--color-line-strong);
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #A8A89F;
+  background: #9aa0ad;
 }

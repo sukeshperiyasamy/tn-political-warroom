@@ -14,8 +14,8 @@ import {
   PoliticalLeader,
   CompareResponse,
   NewsArticle,
-} from "../types/political";
-import { compareEntities } from "../lib/api";
+} from "../../types/political";
+import { compareEntities } from "../../lib/api";
 
 interface PartyComparisonViewProps {
   parties: PoliticalParty[];
@@ -81,28 +81,28 @@ export function PartyComparisonView({
   return (
     <div className="space-y-6">
       {/* Header & Controls */}
-      <div className="bg-white border border-[#E8E8E2] rounded-lg p-4 sm:p-5 shadow-2xs">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-[#F0F0EB]">
+      <div className="bg-surface border border-line rounded-xl p-4 sm:p-5 shadow-card">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-line">
           <div>
             <div className="flex items-center gap-2">
-              <GitCompare className="w-4 h-4 text-zinc-700" />
-              <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-900">
+              <GitCompare className="w-4 h-4 text-ink-soft" />
+              <h2 className="text-sm font-bold uppercase tracking-wider text-ink">
                 Comparative Political Intelligence
               </h2>
             </div>
-            <p className="text-xs text-zinc-500 mt-0.5">
+            <p className="text-xs text-ink-muted mt-0.5">
               Side-by-side media volume, sentiment polarity, and issue focus across Tamil publishers
             </p>
           </div>
 
           {/* Type Toggle: Party vs Leader */}
-          <div className="flex items-center p-0.5 bg-[#F4F4F0] border border-[#E2E2DC] rounded-md">
+          <div className="flex items-center p-0.5 bg-subtle border border-line rounded-md">
             <button
               onClick={() => handleTypeChange("party")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
                 compareType === "party"
-                  ? "bg-zinc-900 text-white font-bold shadow-2xs"
-                  : "text-zinc-600 hover:text-zinc-900"
+                  ? "bg-ink text-white font-bold shadow-card"
+                  : "text-ink-soft hover:text-ink"
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -112,8 +112,8 @@ export function PartyComparisonView({
               onClick={() => handleTypeChange("leader")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
                 compareType === "leader"
-                  ? "bg-zinc-900 text-white font-bold shadow-2xs"
-                  : "text-zinc-600 hover:text-zinc-900"
+                  ? "bg-ink text-white font-bold shadow-card"
+                  : "text-ink-soft hover:text-ink"
               }`}
             >
               <Users className="w-3.5 h-3.5" />
@@ -124,7 +124,7 @@ export function PartyComparisonView({
 
         {/* Multi-Select Entity Chips */}
         <div>
-          <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 block mb-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-ink-muted block mb-2">
             Select entities to compare (Pick 2 to 4):
           </span>
           <div className="flex flex-wrap gap-2">
@@ -137,8 +137,8 @@ export function PartyComparisonView({
                       onClick={() => toggleEntity(p.code)}
                       className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold border transition-all cursor-pointer ${
                         isSelected
-                          ? "bg-zinc-900 text-white border-zinc-900 shadow-2xs"
-                          : "bg-[#F9F9F7] text-zinc-700 border-[#E2E2DC] hover:border-zinc-400 hover:text-zinc-900"
+                          ? "bg-ink text-white border-zinc-900 shadow-card"
+                          : "bg-canvas text-ink-soft border-line hover:border-line-strong hover:text-ink"
                       }`}
                     >
                       <span
@@ -158,8 +158,8 @@ export function PartyComparisonView({
                       onClick={() => toggleEntity(l.id)}
                       className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-semibold border transition-all cursor-pointer ${
                         isSelected
-                          ? "bg-zinc-900 text-white border-zinc-900 shadow-2xs"
-                          : "bg-[#F9F9F7] text-zinc-700 border-[#E2E2DC] hover:border-zinc-400 hover:text-zinc-900"
+                          ? "bg-ink text-white border-zinc-900 shadow-card"
+                          : "bg-canvas text-ink-soft border-line hover:border-line-strong hover:text-ink"
                       }`}
                     >
                       <span>{l.name}</span>
@@ -174,7 +174,7 @@ export function PartyComparisonView({
 
       {/* Comparison Grid */}
       {loading ? (
-        <div className="p-16 text-center text-zinc-500 bg-white border border-[#E8E8E2] rounded-lg">
+        <div className="p-16 text-center text-ink-muted bg-surface border border-line rounded-xl">
           <div className="w-6 h-6 border-2 border-zinc-800 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
           <p className="text-xs font-medium">Computing comparative analytics...</p>
         </div>
@@ -183,26 +183,26 @@ export function PartyComparisonView({
           {data.comparison.map((item) => (
             <div
               key={item.id}
-              className="bg-white border border-[#E8E8E2] rounded-lg p-4 sm:p-5 shadow-2xs space-y-4 flex flex-col justify-between transition-colors"
+              className="bg-surface border border-line rounded-xl p-4 sm:p-5 shadow-card space-y-4 flex flex-col justify-between transition-colors"
             >
               <div>
                 {/* Entity Header */}
-                <div className="flex items-start justify-between gap-2 pb-3 border-b border-[#F0F0EB]">
+                <div className="flex items-start justify-between gap-2 pb-3 border-b border-line">
                   <div>
                     <div className="flex items-center gap-2">
                       <span
                         className="w-2.5 h-2.5 rounded-full shrink-0"
                         style={{ backgroundColor: item.color }}
                       />
-                      <h3 className="text-sm font-bold text-zinc-900 tracking-tight">
+                      <h3 className="text-sm font-bold text-ink tracking-tight">
                         {item.name}
                       </h3>
                     </div>
-                    <p className="text-xs text-zinc-500 font-tamil mt-0.5">
+                    <p className="text-xs text-ink-muted font-tamil mt-0.5">
                       {item.tamil_name}
                     </p>
                   </div>
-                  <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-[#F4F4F0] border border-[#E2E2DC] text-zinc-800">
+                  <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-subtle border border-line text-ink">
                     {item.article_count} reports
                   </span>
                 </div>
@@ -210,14 +210,14 @@ export function PartyComparisonView({
                 {/* Sentiment Breakdown */}
                 <div className="mt-3.5 space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-zinc-600 font-medium">Average Polarity</span>
+                    <span className="text-ink-soft font-medium">Average Polarity</span>
                     <span
                       className={`font-mono font-bold ${
                         item.average_sentiment_score >= 0.15
                           ? "text-emerald-800"
                           : item.average_sentiment_score <= -0.15
                           ? "text-rose-800"
-                          : "text-zinc-700"
+                          : "text-ink-soft"
                       }`}
                     >
                       {item.average_sentiment_score > 0
@@ -227,7 +227,7 @@ export function PartyComparisonView({
                   </div>
 
                   {/* Stacked Sentiment Bar */}
-                  <div className="w-full h-2 rounded-xs bg-zinc-100 overflow-hidden flex border border-[#E2E2DC]">
+                  <div className="w-full h-2 rounded-xs bg-subtle overflow-hidden flex border border-line">
                     <div
                       style={{ width: `${item.sentiment.positive_pct}%` }}
                       className="bg-emerald-700"
@@ -245,7 +245,7 @@ export function PartyComparisonView({
                     />
                   </div>
 
-                  <div className="flex justify-between text-[11px] font-mono text-zinc-500 font-medium">
+                  <div className="flex justify-between text-[11px] font-mono text-ink-muted font-medium">
                     <span className="text-emerald-800">Pos: {item.sentiment.positive_pct}%</span>
                     <span>Neu: {item.sentiment.neutral_pct}%</span>
                     <span className="text-rose-800">Neg: {item.sentiment.negative_pct}%</span>
@@ -253,29 +253,29 @@ export function PartyComparisonView({
                 </div>
 
                 {/* Estimated Total Reach */}
-                <div className="mt-3.5 p-2.5 rounded bg-[#F9F9F7] border border-[#E8E8E2] flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs text-zinc-700 font-medium">
-                    <Eye className="w-3.5 h-3.5 text-zinc-500" />
+                <div className="mt-3.5 p-2.5 rounded bg-canvas border border-line flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs text-ink-soft font-medium">
+                    <Eye className="w-3.5 h-3.5 text-ink-muted" />
                     <span>Est. Total Impressions</span>
                   </div>
-                  <span className="text-xs font-bold font-mono text-zinc-900">
+                  <span className="text-xs font-bold font-mono text-ink">
                     {(item.estimated_total_reach / 1000).toFixed(1)}k
                   </span>
                 </div>
 
                 {/* Top Strategic Issues */}
                 <div className="mt-3.5">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block mb-1.5">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-ink-muted font-bold block mb-1.5">
                     Top Discussion Topics
                   </span>
                   <div className="space-y-1.5">
                     {item.top_topics.map((t) => (
                       <div
                         key={t.topic}
-                        className="flex items-center justify-between text-xs py-1 px-2.5 rounded bg-[#F9F9F7] border border-[#E8E8E2]"
+                        className="flex items-center justify-between text-xs py-1 px-2.5 rounded bg-canvas border border-line"
                       >
-                        <span className="text-zinc-800 truncate max-w-[210px]">{t.topic}</span>
-                        <span className="text-zinc-900 font-mono font-bold text-xs">
+                        <span className="text-ink truncate max-w-[210px]">{t.topic}</span>
+                        <span className="text-ink font-mono font-bold text-xs">
                           {t.count}
                         </span>
                       </div>
@@ -284,21 +284,21 @@ export function PartyComparisonView({
                 </div>
 
                 {/* Key Recent Articles */}
-                <div className="mt-3.5 pt-3 border-t border-[#F0F0EB]">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold block mb-1.5">
+                <div className="mt-3.5 pt-3 border-t border-line">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-ink-muted font-bold block mb-1.5">
                     Recent Significant Reports
                   </span>
                   <div className="space-y-2">
                     {item.recent_articles.map((art) => (
                       <div
                         key={art.id}
-                        className="p-2.5 rounded bg-[#F9F9F7] hover:bg-zinc-100 border border-[#E8E8E2] cursor-pointer transition-colors"
+                        className="p-2.5 rounded bg-canvas hover:bg-subtle border border-line cursor-pointer transition-colors"
                         onClick={() => onOpenArticle(art)}
                       >
-                        <p className="text-xs font-tamil font-bold text-zinc-900 leading-snug line-clamp-2 hover:text-zinc-600">
+                        <p className="text-xs font-tamil font-bold text-ink leading-snug line-clamp-2 hover:text-ink-soft">
                           {art.tamil_title}
                         </p>
-                        <div className="flex items-center justify-between mt-1 text-[10px] text-zinc-500 font-mono">
+                        <div className="flex items-center justify-between mt-1 text-[10px] text-ink-muted font-mono">
                           <span className="font-semibold uppercase">{art.source}</span>
                           <span className="capitalize">{art.sentiment}</span>
                         </div>
@@ -314,10 +314,10 @@ export function PartyComparisonView({
 
       {/* Methodology Note */}
       {data && (
-        <div className="p-3.5 rounded-lg bg-[#F9F9F7] border border-[#E8E8E2] text-xs text-zinc-600 flex items-start gap-2.5">
-          <Info className="w-3.5 h-3.5 text-zinc-600 shrink-0 mt-0.5" />
+        <div className="p-3.5 rounded-lg bg-canvas border border-line text-xs text-ink-soft flex items-start gap-2.5">
+          <Info className="w-3.5 h-3.5 text-ink-soft shrink-0 mt-0.5" />
           <div>
-            <span className="font-bold text-zinc-900">Measurement Methodology: </span>
+            <span className="font-bold text-ink">Measurement Methodology: </span>
             <span>{data.methodology}</span>
           </div>
         </div>

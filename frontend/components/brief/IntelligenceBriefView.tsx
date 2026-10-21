@@ -26,13 +26,13 @@ import {
   TopicTrendsResponse,
   PartyLeaderCoverageResponse,
   SupportingArticleRef,
-} from "../types/political";
+} from "../../types/political";
 import {
   fetchIntelligenceBrief,
   fetchTopicTrends,
   fetchPartyLeaderCoverage,
   fetchEvidenceSearch,
-} from "../lib/api";
+} from "../../lib/api";
 
 interface IntelligenceBriefViewProps {
   mode: "live" | "demo";
@@ -161,14 +161,14 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
   return (
     <div className="space-y-6">
       {/* Header Banner & Controls */}
-      <div className="bg-white rounded-lg border border-[#E8E8E2] shadow-2xs p-4 sm:p-5 print:border-none print:shadow-none">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-[#F0F0EB]">
+      <div className="bg-surface rounded-lg border border-line shadow-card p-4 sm:p-5 print:border-none print:shadow-none">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-line">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 font-serif">
+              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-ink font-serif">
                 Political Intelligence Brief
               </h1>
-              <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-[#F4F4F0] text-zinc-700 border border-[#E2E2DC]">
+              <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-subtle text-ink-soft border border-line">
                 v1.0 Synthesis
               </span>
               <span
@@ -181,7 +181,7 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                 {brief?.data_status === "live_rss" ? "LIVE RSS INTELLIGENCE" : "DEMO SEEDED SCENARIO INTELLIGENCE"}
               </span>
               {brief?.is_cached ? (
-                <span className="text-[10px] px-2 py-0.5 rounded font-mono font-semibold bg-zinc-100 text-zinc-600 border border-zinc-200 flex items-center gap-1">
+                <span className="text-[10px] px-2 py-0.5 rounded font-mono font-semibold bg-subtle text-ink-soft border border-line flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3 text-emerald-700" /> Cached Evidence
                 </span>
               ) : (
@@ -190,7 +190,7 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                 </span>
               )}
             </div>
-            <p className="text-xs text-zinc-500 font-tamil mt-1">
+            <p className="text-xs text-ink-muted font-tamil mt-1">
               தமிழ்நாடு அரசியல் ஊடக நுண்ணறிவுச் சுருக்கம் & உண்மைச் சான்றுகள்
             </p>
           </div>
@@ -198,12 +198,12 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
           {/* Action Toolbar */}
           <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap print:hidden">
             {/* Period Selector */}
-            <div className="flex items-center bg-[#F4F4F0] p-0.5 rounded border border-[#E2E2DC] text-xs">
+            <div className="flex items-center bg-subtle p-0.5 rounded border border-line text-xs">
               <button
                 type="button"
                 onClick={() => setPeriod("24h")}
                 className={`px-2.5 py-1 rounded text-xs transition-all cursor-pointer font-semibold ${
-                  period === "24h" ? "bg-zinc-900 text-white shadow-2xs" : "text-zinc-600 hover:text-zinc-900"
+                  period === "24h" ? "bg-ink text-white shadow-card" : "text-ink-soft hover:text-ink"
                 }`}
               >
                 24 Hours
@@ -212,7 +212,7 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                 type="button"
                 onClick={() => setPeriod("7d")}
                 className={`px-2.5 py-1 rounded text-xs transition-all cursor-pointer font-semibold ${
-                  period === "7d" ? "bg-zinc-900 text-white shadow-2xs" : "text-zinc-600 hover:text-zinc-900"
+                  period === "7d" ? "bg-ink text-white shadow-card" : "text-ink-soft hover:text-ink"
                 }`}
               >
                 7 Days
@@ -220,12 +220,12 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
             </div>
 
             {/* Language Switcher */}
-            <div className="flex items-center bg-[#F4F4F0] p-0.5 rounded border border-[#E2E2DC] text-xs">
+            <div className="flex items-center bg-subtle p-0.5 rounded border border-line text-xs">
               <button
                 type="button"
                 onClick={() => setLanguage("en")}
                 className={`px-2.5 py-1 rounded text-xs transition-all cursor-pointer font-semibold ${
-                  language === "en" ? "bg-zinc-900 text-white shadow-2xs" : "text-zinc-600 hover:text-zinc-900"
+                  language === "en" ? "bg-ink text-white shadow-card" : "text-ink-soft hover:text-ink"
                 }`}
               >
                 English
@@ -234,7 +234,7 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                 type="button"
                 onClick={() => setLanguage("ta")}
                 className={`px-2.5 py-1 rounded text-xs font-tamil transition-all cursor-pointer font-semibold ${
-                  language === "ta" ? "bg-zinc-900 text-white shadow-2xs" : "text-zinc-600 hover:text-zinc-900"
+                  language === "ta" ? "bg-ink text-white shadow-card" : "text-ink-soft hover:text-ink"
                 }`}
               >
                 தமிழ்
@@ -246,10 +246,10 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
               type="button"
               onClick={handleExportMarkdown}
               disabled={!brief}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-800 border border-[#E2E2DC] text-xs font-semibold rounded shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-subtle hover:bg-line text-ink border border-line text-xs font-semibold rounded shadow-card transition-colors cursor-pointer disabled:opacity-50"
               title="Download structured Markdown brief"
             >
-              <Download className="w-3.5 h-3.5 text-zinc-600" />
+              <Download className="w-3.5 h-3.5 text-ink-soft" />
               <span>Export MD</span>
             </button>
 
@@ -258,10 +258,10 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
               type="button"
               onClick={() => window.print()}
               disabled={!brief}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F4F4F0] hover:bg-zinc-200 text-zinc-800 border border-[#E2E2DC] text-xs font-semibold rounded shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-subtle hover:bg-line text-ink border border-line text-xs font-semibold rounded shadow-card transition-colors cursor-pointer disabled:opacity-50"
               title="Print executive brief or save as PDF"
             >
-              <Printer className="w-3.5 h-3.5 text-zinc-600" />
+              <Printer className="w-3.5 h-3.5 text-ink-soft" />
               <span>Print / PDF</span>
             </button>
 
@@ -270,7 +270,7 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
               type="button"
               onClick={() => loadData(true)}
               disabled={loading || regenerating}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white text-xs font-semibold rounded shadow-2xs transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-ink hover:bg-ink-soft disabled:opacity-50 text-white text-xs font-semibold rounded shadow-card transition-colors cursor-pointer"
             >
               <RefreshCw className={`w-3 h-3 ${regenerating ? "animate-spin" : ""}`} />
               <span>{regenerating ? "Synthesizing..." : "Regenerate Brief"}</span>
@@ -280,19 +280,19 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
 
         {/* Telemetry & Reporting Window Badge */}
         {brief && (
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs text-zinc-600">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs text-ink-soft">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold text-zinc-700">Reporting Window (IST):</span>
-              <span className="font-mono bg-[#F9F9F7] px-2 py-0.5 rounded border border-[#E2E2DC]">
+              <span className="font-semibold text-ink-soft">Reporting Window (IST):</span>
+              <span className="font-mono bg-canvas px-2 py-0.5 rounded border border-line">
                 {formatDate(brief.window_start)} → {formatDate(brief.window_end)}
               </span>
               <span className="text-zinc-300">•</span>
               <span>
-                Evidence Base: <strong className="text-zinc-900 font-mono">{brief.sample_size}</strong> reports across{" "}
-                <strong className="text-zinc-900 font-mono">{brief.publisher_count}</strong> media outlets
+                Evidence Base: <strong className="text-ink font-mono">{brief.sample_size}</strong> reports across{" "}
+                <strong className="text-ink font-mono">{brief.publisher_count}</strong> media outlets
               </span>
             </div>
-            <div className="text-[11px] text-zinc-600 font-mono">
+            <div className="text-[11px] text-ink-soft font-mono">
               Generated: {formatDate(brief.generated_at)}
             </div>
           </div>
@@ -312,15 +312,15 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
 
       {/* Insufficient Data Banner */}
       {brief?.status === "insufficient_data" && (
-        <div className="p-5 rounded-lg bg-[#FDFBF7] border border-[#E8E0D5] text-zinc-800 text-sm">
+        <div className="p-5 rounded-lg bg-canvas border border-line text-ink text-sm">
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <div>
               <h3 className="font-bold text-sm">Insufficient Article Evidence</h3>
-              <p className="mt-1 text-xs leading-relaxed text-zinc-600">
+              <p className="mt-1 text-xs leading-relaxed text-ink-soft">
                 {language === "ta" ? brief.brief_tamil : brief.brief_english}
               </p>
-              <p className="mt-2 text-xs text-zinc-500">
+              <p className="mt-2 text-xs text-ink-muted">
                 Switch reporting period to <strong>7 Days</strong> or trigger a live RSS poll to gather more articles.
               </p>
             </div>
@@ -330,32 +330,32 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
 
       {/* Loading State */}
       {loading && (
-        <div className="p-12 text-center bg-white rounded-lg border border-[#E8E8E2] shadow-2xs">
-          <RefreshCw className="w-6 h-6 animate-spin text-zinc-800 mx-auto mb-2" />
-          <p className="text-xs font-bold text-zinc-800">Synthesizing Political Intelligence Brief...</p>
-          <p className="text-[11px] text-zinc-500 mt-0.5">Aggregating topic trends, party sentiment, and article evidence</p>
+        <div className="p-12 text-center bg-surface rounded-lg border border-line shadow-card">
+          <RefreshCw className="w-6 h-6 animate-spin text-ink mx-auto mb-2" />
+          <p className="text-xs font-bold text-ink">Synthesizing Political Intelligence Brief...</p>
+          <p className="text-[11px] text-ink-muted mt-0.5">Aggregating topic trends, party sentiment, and article evidence</p>
         </div>
       )}
 
       {!loading && brief && brief.status === "sufficient_data" && (
         <>
           {/* SECTION A: EXECUTIVE BRIEF & KEY DEVELOPMENTS */}
-          <div className="bg-white rounded-lg border border-[#E8E8E2] shadow-2xs p-4 sm:p-6 space-y-5">
-            <div className="flex items-center justify-between border-b border-[#F0F0EB] pb-3">
+          <div className="bg-surface rounded-lg border border-line shadow-card p-4 sm:p-6 space-y-5">
+            <div className="flex items-center justify-between border-b border-line pb-3">
               <div className="flex items-center gap-2">
-                <Compass className="w-4 h-4 text-zinc-700" />
-                <h2 className="text-sm sm:text-base font-bold text-zinc-900 uppercase tracking-tight">
+                <Compass className="w-4 h-4 text-ink-soft" />
+                <h2 className="text-sm sm:text-base font-bold text-ink uppercase tracking-tight">
                   {language === "ta" ? "முதன்மை அரசியல் சுருக்கம்" : "Executive Intelligence Brief"}
                 </h2>
               </div>
-              <span className="text-xs text-zinc-600 font-mono">
+              <span className="text-xs text-ink-soft font-mono">
                 Source: Verified Regional Feeds
               </span>
             </div>
 
             {/* Narrative Summary */}
-            <div className="p-4 rounded bg-[#F9F9F7] border border-[#E8E8E2]">
-              <div className="prose prose-zinc max-w-none text-xs sm:text-sm leading-relaxed whitespace-pre-line text-zinc-800 font-normal">
+            <div className="p-4 rounded bg-canvas border border-line">
+              <div className="prose prose-zinc max-w-none text-xs sm:text-sm leading-relaxed whitespace-pre-line text-ink font-normal">
                 {language === "ta" ? brief.brief_tamil : brief.brief_english}
               </div>
             </div>
@@ -373,8 +373,8 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
 
             {/* Key Developments */}
             <div className="space-y-3">
-              <h3 className="text-xs font-bold text-zinc-800 uppercase tracking-wider flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-zinc-600" />
+              <h3 className="text-xs font-bold text-ink uppercase tracking-wider flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-ink-soft" />
                 <span>
                   {language === "ta" ? "முக்கிய அரசியல் நகர்வுகள் & உண்மைச் சான்றுகள்" : "Key Developments & Verified Claims"}
                 </span>
@@ -384,27 +384,27 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                 {brief.key_developments.map((kd, idx) => (
                   <div
                     key={idx}
-                    className="p-3.5 rounded-lg border border-[#E8E8E2] bg-white hover:border-zinc-400 transition-colors flex flex-col justify-between space-y-2.5"
+                    className="p-3.5 rounded-lg border border-line bg-surface hover:border-line-strong transition-colors flex flex-col justify-between space-y-2.5"
                   >
                     <div>
                       <div className="flex items-start justify-between gap-2">
-                        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#F4F4F0] text-zinc-800 border border-[#E2E2DC] font-bold">
+                        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-subtle text-ink border border-line font-bold">
                           Item #{idx + 1}
                         </span>
-                        <span className="text-[10px] text-zinc-600 font-mono">
+                        <span className="text-[10px] text-ink-soft font-mono">
                           {kd.supporting_article_ids.length} citations
                         </span>
                       </div>
-                      <h4 className="text-xs sm:text-sm font-bold text-zinc-900 mt-1.5 leading-snug">
+                      <h4 className="text-xs sm:text-sm font-bold text-ink mt-1.5 leading-snug">
                         {language === "ta" ? kd.headline_ta : kd.headline_en}
                       </h4>
-                      <p className="text-xs text-zinc-600 mt-1 leading-relaxed">
+                      <p className="text-xs text-ink-soft mt-1 leading-relaxed">
                         {language === "ta" ? kd.summary_ta : kd.summary_en}
                       </p>
                     </div>
 
-                    <div className="pt-2 border-t border-[#F0F0EB] flex items-center justify-between text-xs">
-                      <span className="text-[11px] text-zinc-600 italic">
+                    <div className="pt-2 border-t border-line flex items-center justify-between text-xs">
+                      <span className="text-[11px] text-ink-soft italic">
                         {kd.impact_assessment}
                       </span>
                       {kd.supporting_article_urls[0] && (
@@ -412,7 +412,7 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                           href={kd.supporting_article_urls[0]}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-zinc-800 hover:text-black font-semibold hover:underline shrink-0"
+                          className="inline-flex items-center gap-1 text-xs text-ink hover:text-black font-semibold hover:underline shrink-0"
                         >
                           <span>Original</span>
                           <ExternalLink className="w-3 h-3" />
@@ -427,15 +427,15 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
 
           {/* SECTION B: TOPIC TRENDS & COVERAGE ACCELERATION */}
           {trends && (
-            <div className="bg-white rounded-lg border border-[#E8E8E2] shadow-2xs p-4 sm:p-6 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#F0F0EB] pb-3">
+            <div className="bg-surface rounded-lg border border-line shadow-card p-4 sm:p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-line pb-3">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-zinc-700" />
-                  <h2 className="text-sm sm:text-base font-bold text-zinc-900 uppercase tracking-tight">
+                  <TrendingUp className="w-4 h-4 text-ink-soft" />
+                  <h2 className="text-sm sm:text-base font-bold text-ink uppercase tracking-tight">
                     Topic Trends & Coverage Acceleration
                   </h2>
                 </div>
-                <div className="text-xs text-zinc-600 font-mono">
+                <div className="text-xs text-ink-soft font-mono">
                   Benchmark: Prior {period === "24h" ? "24 hours" : "7 days"}
                 </div>
               </div>
@@ -450,11 +450,11 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                   return (
                     <div
                       key={item.topic}
-                      className="p-3.5 rounded-lg border border-[#E8E8E2] bg-[#FBFBFA] hover:bg-white hover:border-zinc-400 transition-colors flex flex-col justify-between"
+                      className="p-3.5 rounded-lg border border-line bg-canvas hover:bg-surface hover:border-line-strong transition-colors flex flex-col justify-between"
                     >
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-1.5">
-                          <span className="text-xs font-bold text-zinc-900 uppercase tracking-tight truncate">
+                          <span className="text-xs font-bold text-ink uppercase tracking-tight truncate">
                             {item.topic}
                           </span>
                           {isGaining && (
@@ -473,15 +473,15 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                             </span>
                           )}
                           {isSingle && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-700 border border-zinc-200">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-subtle text-ink-soft border border-line">
                               Single Report
                             </span>
                           )}
                         </div>
 
                         <div className="flex items-baseline gap-2 mt-1">
-                          <span className="text-xl font-bold font-mono text-zinc-900">{item.current_count}</span>
-                          <span className="text-xs text-zinc-500 font-mono">(prior: {item.prior_count})</span>
+                          <span className="text-xl font-bold font-mono text-ink">{item.current_count}</span>
+                          <span className="text-xs text-ink-muted font-mono">(prior: {item.prior_count})</span>
                         </div>
 
                         <div className="text-xs font-semibold mt-1">
@@ -490,10 +490,10 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                           ) : item.net_change < 0 ? (
                             <span className="text-rose-800 font-mono">{item.net_change} reports</span>
                           ) : (
-                            <span className="text-zinc-500 font-mono">0 net change</span>
+                            <span className="text-ink-muted font-mono">0 net change</span>
                           )}
                           {item.pct_change !== null && (
-                            <span className="text-zinc-500 ml-1.5 font-normal font-mono">
+                            <span className="text-ink-muted ml-1.5 font-normal font-mono">
                               ({item.pct_change > 0 ? "+" : ""}{item.pct_change}%)
                               {item.is_low_sample && " *"}
                             </span>
@@ -501,21 +501,21 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                         </div>
 
                         {/* Distinct Publishers */}
-                        <div className="mt-2.5 text-[11px] text-zinc-600">
-                          <span className="font-semibold text-zinc-700">Outlets: </span>
+                        <div className="mt-2.5 text-[11px] text-ink-soft">
+                          <span className="font-semibold text-ink-soft">Outlets: </span>
                           <span>{item.distinct_publishers.join(", ") || "None"}</span>
                         </div>
                       </div>
 
                       {/* Supporting Articles Links */}
                       {item.supporting_articles.length > 0 && (
-                        <div className="mt-3 pt-2.5 border-t border-[#E8E8E2] flex items-center justify-between text-xs">
-                          <span className="text-[10px] text-zinc-600 font-mono">
+                        <div className="mt-3 pt-2.5 border-t border-line flex items-center justify-between text-xs">
+                          <span className="text-[10px] text-ink-soft font-mono">
                             {item.supporting_articles.length} evidence items
                           </span>
                           <button
                             onClick={() => setActiveArticleModal(item.supporting_articles[0])}
-                            className="text-zinc-900 hover:text-black font-semibold flex items-center gap-1 cursor-pointer"
+                            className="text-ink hover:text-black font-semibold flex items-center gap-1 cursor-pointer"
                           >
                             <span>Inspect</span>
                             <ArrowRight className="w-3 h-3" />
@@ -527,8 +527,8 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                 })}
               </div>
 
-              <div className="text-[11px] text-zinc-600 flex items-center gap-1.5 mt-2">
-                <Info className="w-3.5 h-3.5 text-zinc-600" />
+              <div className="text-[11px] text-ink-soft flex items-center gap-1.5 mt-2">
+                <Info className="w-3.5 h-3.5 text-ink-soft" />
                 <span>
                   * Asterisk denotes low prior sample baseline (&lt; 3 articles). Single report tags indicate isolated reports not yet establishing a broad trend.
                 </span>
@@ -538,17 +538,17 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
 
           {/* SECTION C: PARTY MEDIA PRESENCE & EDITORIAL POLARITY */}
           {coverage && (
-            <div className="bg-white rounded-lg border border-[#E8E8E2] shadow-2xs p-4 sm:p-6 space-y-5">
-              <div className="border-b border-[#F0F0EB] pb-3">
+            <div className="bg-surface rounded-lg border border-line shadow-card p-4 sm:p-6 space-y-5">
+              <div className="border-b border-line pb-3">
                 <div className="flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-zinc-700" />
-                  <h2 className="text-sm sm:text-base font-bold text-zinc-900 uppercase tracking-tight">
+                  <Building2 className="w-4 h-4 text-ink-soft" />
+                  <h2 className="text-sm sm:text-base font-bold text-ink uppercase tracking-tight">
                     Party & Leader Media Presence vs Editorial Sentiment
                   </h2>
                 </div>
                 {/* Mandatory Disclaimer */}
-                <div className="mt-2 p-2.5 bg-[#F9F9F7] rounded border border-[#E8E8E2] text-zinc-700 text-xs flex items-start gap-2">
-                  <Info className="w-3.5 h-3.5 text-zinc-500 shrink-0 mt-0.5" />
+                <div className="mt-2 p-2.5 bg-canvas rounded border border-line text-ink-soft text-xs flex items-start gap-2">
+                  <Info className="w-3.5 h-3.5 text-ink-muted shrink-0 mt-0.5" />
                   <div>
                     <strong>Data Integrity Notice:</strong> {coverage.attribution_caveat}
                   </div>
@@ -560,29 +560,29 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                 {coverage.parties.map((p) => (
                   <div
                     key={p.code}
-                    className="p-3.5 rounded-lg border border-[#E8E8E2] bg-white hover:border-zinc-400 transition-colors flex flex-col justify-between"
+                    className="p-3.5 rounded-lg border border-line bg-surface hover:border-line-strong transition-colors flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className="font-bold text-sm text-zinc-900">{p.code}</span>
-                        <span className="text-[11px] text-zinc-500 font-tamil truncate max-w-[120px]">
+                        <span className="font-bold text-sm text-ink">{p.code}</span>
+                        <span className="text-[11px] text-ink-muted font-tamil truncate max-w-[120px]">
                           {p.tamil_name}
                         </span>
                       </div>
                       <div className="flex items-baseline gap-2">
-                        <span className="text-xl font-bold font-mono text-zinc-900">{p.current_count}</span>
-                        <span className="text-xs text-zinc-500 font-mono">
+                        <span className="text-xl font-bold font-mono text-ink">{p.current_count}</span>
+                        <span className="text-xs text-ink-muted font-mono">
                           reports ({p.net_change > 0 ? `+${p.net_change}` : p.net_change})
                         </span>
                       </div>
 
                       {/* Polarity Breakdown */}
                       <div className="mt-2.5">
-                        <div className="flex items-center justify-between text-[11px] text-zinc-600 mb-1 font-mono">
+                        <div className="flex items-center justify-between text-[11px] text-ink-soft mb-1 font-mono">
                           <span>Polarity:</span>
                           <span>Avg: {p.average_sentiment_score > 0 ? `+${p.average_sentiment_score}` : p.average_sentiment_score}</span>
                         </div>
-                        <div className="flex h-1.5 rounded-xs overflow-hidden bg-zinc-100">
+                        <div className="flex h-1.5 rounded-xs overflow-hidden bg-subtle">
                           <div
                             style={{ width: `${(p.sentiment_distribution.positive / Math.max(1, p.current_count)) * 100}%` }}
                             className="bg-emerald-700"
@@ -599,7 +599,7 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                             title={`Critical: ${p.sentiment_distribution.negative}`}
                           />
                         </div>
-                        <div className="flex justify-between text-[10px] text-zinc-500 mt-1 font-mono">
+                        <div className="flex justify-between text-[10px] text-ink-muted mt-1 font-mono">
                           <span className="text-emerald-800 font-bold">+{p.sentiment_distribution.positive}</span>
                           <span>{p.sentiment_distribution.neutral} neu</span>
                           <span className="text-rose-800 font-bold">-{p.sentiment_distribution.negative}</span>
@@ -608,22 +608,22 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
 
                       {/* Top Topic */}
                       {p.top_topics.length > 0 && (
-                        <div className="mt-2.5 text-[11px] text-zinc-600">
-                          <span className="font-semibold text-zinc-700">Top topic: </span>
+                        <div className="mt-2.5 text-[11px] text-ink-soft">
+                          <span className="font-semibold text-ink-soft">Top topic: </span>
                           <span className="truncate">{p.top_topics[0].topic}</span>
                         </div>
                       )}
                     </div>
 
                     {p.supporting_articles.length > 0 && (
-                      <div className="mt-3 pt-2 border-t border-[#F0F0EB] flex items-center justify-between text-[10px] text-zinc-500 font-mono">
+                      <div className="mt-3 pt-2 border-t border-line flex items-center justify-between text-[10px] text-ink-muted font-mono">
                         <span>{p.distinct_publishers.length} outlets</span>
                         {p.supporting_articles[0].source_url && (
                           <a
                             href={p.supporting_articles[0].source_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-zinc-800 hover:text-black font-semibold hover:underline flex items-center gap-1"
+                            className="text-ink hover:text-black font-semibold hover:underline flex items-center gap-1"
                           >
                             <span>Sample</span>
                             <ExternalLink className="w-2.5 h-2.5" />
@@ -638,15 +638,15 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
           )}
 
           {/* SECTION D: EVIDENCE & SEARCH EXPLORER */}
-          <div className="bg-white rounded-lg border border-[#E8E8E2] shadow-2xs p-4 sm:p-6 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#F0F0EB] pb-3">
+          <div className="bg-surface rounded-lg border border-line shadow-card p-4 sm:p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-line pb-3">
               <div className="flex items-center gap-2">
-                <Search className="w-4 h-4 text-zinc-700" />
-                <h2 className="text-sm sm:text-base font-bold text-zinc-900 uppercase tracking-tight">
+                <Search className="w-4 h-4 text-ink-soft" />
+                <h2 className="text-sm sm:text-base font-bold text-ink uppercase tracking-tight">
                   Evidence Search Explorer
                 </h2>
               </div>
-              <div className="text-xs text-zinc-500 font-mono">
+              <div className="text-xs text-ink-muted font-mono">
                 {searchTotal} verified articles matching filter
               </div>
             </div>
@@ -654,20 +654,20 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
             {/* Search and Filters Bar */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-muted" />
                 <input
                   type="text"
                   placeholder="Search Tamil or English query..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-[#F9F9F7] border border-[#E2E2DC] rounded focus:outline-hidden focus:border-zinc-500 focus:bg-white transition-all font-medium"
+                  className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-canvas border border-line rounded focus:outline-hidden focus:border-zinc-500 focus:bg-surface transition-all font-medium"
                 />
               </div>
 
               <select
                 value={selectedPartyFilter}
                 onChange={(e) => setSelectedPartyFilter(e.target.value)}
-                className="py-1.5 px-2.5 text-xs bg-[#F9F9F7] border border-[#E2E2DC] rounded focus:outline-hidden focus:border-zinc-500 text-zinc-800 font-medium cursor-pointer"
+                className="py-1.5 px-2.5 text-xs bg-canvas border border-line rounded focus:outline-hidden focus:border-zinc-500 text-ink font-medium cursor-pointer"
               >
                 <option value="">All Parties</option>
                 <option value="DMK">DMK (திமுக)</option>
@@ -682,7 +682,7 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
               <select
                 value={selectedTopicFilter}
                 onChange={(e) => setSelectedTopicFilter(e.target.value)}
-                className="py-1.5 px-2.5 text-xs bg-[#F9F9F7] border border-[#E2E2DC] rounded focus:outline-hidden focus:border-zinc-500 text-zinc-800 font-medium cursor-pointer"
+                className="py-1.5 px-2.5 text-xs bg-canvas border border-line rounded focus:outline-hidden focus:border-zinc-500 text-ink font-medium cursor-pointer"
               >
                 <option value="">All Topics</option>
                 <option value="2026 Assembly Election">2026 Assembly Election</option>
@@ -697,17 +697,17 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
 
             {/* Results Table */}
             {searching ? (
-              <div className="p-8 text-center text-xs text-zinc-500">
+              <div className="p-8 text-center text-xs text-ink-muted">
                 Searching evidence articles...
               </div>
             ) : searchResults.length === 0 ? (
-              <div className="p-8 text-center text-xs text-zinc-500 bg-[#F9F9F7] rounded border border-[#E8E8E2]">
+              <div className="p-8 text-center text-xs text-ink-muted bg-canvas rounded border border-line">
                 No verified articles matched your query.
               </div>
             ) : (
-              <div className="overflow-x-auto border border-[#E8E8E2] rounded">
+              <div className="overflow-x-auto border border-line rounded">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-[#F4F4F0] border-b border-[#E8E8E2] text-zinc-600 font-mono uppercase text-[10px]">
+                  <thead className="bg-subtle border-b border-line text-ink-soft font-mono uppercase text-[10px]">
                     <tr>
                       <th className="py-2 px-3">Date</th>
                       <th className="py-2 px-3">Outlet</th>
@@ -717,19 +717,19 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                       <th className="py-2 px-3 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#F0F0EB]">
+                  <tbody className="divide-y divide-line">
                     {searchResults.map((art) => (
-                      <tr key={art.id} className="hover:bg-[#F9F9F7] transition-colors">
-                        <td className="py-2.5 px-3 font-mono text-[11px] text-zinc-500 whitespace-nowrap">
+                      <tr key={art.id} className="hover:bg-canvas transition-colors">
+                        <td className="py-2.5 px-3 font-mono text-[11px] text-ink-muted whitespace-nowrap">
                           {formatDate(art.published_at)}
                         </td>
-                        <td className="py-2.5 px-3 font-bold text-zinc-800 whitespace-nowrap">
+                        <td className="py-2.5 px-3 font-bold text-ink whitespace-nowrap">
                           {art.source_name || art.source}
                         </td>
-                        <td className="py-2.5 px-3 font-tamil font-medium text-zinc-900 max-w-md">
+                        <td className="py-2.5 px-3 font-tamil font-medium text-ink max-w-md">
                           {art.tamil_title || art.title}
                         </td>
-                        <td className="py-2.5 px-3 font-mono text-[11px] text-zinc-600 whitespace-nowrap">
+                        <td className="py-2.5 px-3 font-mono text-[11px] text-ink-soft whitespace-nowrap">
                           {Array.isArray(art.party_codes) ? art.party_codes.join(", ") : art.party_codes}
                         </td>
                         <td className="py-2.5 px-3 whitespace-nowrap">
@@ -739,7 +739,7 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                                 ? "text-emerald-700 bg-emerald-50"
                                 : art.sentiment === "negative"
                                 ? "text-rose-700 bg-rose-50"
-                                : "text-zinc-600 bg-zinc-100"
+                                : "text-ink-soft bg-subtle"
                             }`}
                           >
                             {art.sentiment}
@@ -750,7 +750,7 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                             href={art.source_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-zinc-700 hover:text-black font-semibold"
+                            className="inline-flex items-center gap-1 text-ink-soft hover:text-black font-semibold"
                           >
                             <span>Open</span>
                             <ExternalLink className="w-3 h-3" />
@@ -773,37 +773,37 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
           role="dialog"
           aria-modal="true"
         >
-          <div className="bg-white rounded-lg border border-[#E8E8E2] max-w-xl w-full p-5 space-y-4 shadow-xl">
-            <div className="flex items-start justify-between gap-3 border-b border-[#F0F0EB] pb-3">
+          <div className="bg-surface rounded-lg border border-line max-w-xl w-full p-5 space-y-4 shadow-xl">
+            <div className="flex items-start justify-between gap-3 border-b border-line pb-3">
               <div>
-                <span className="text-[10px] font-mono font-bold text-zinc-500 uppercase">
+                <span className="text-[10px] font-mono font-bold text-ink-muted uppercase">
                   Verified Evidence Citation #{activeArticleModal.id}
                 </span>
-                <h3 className="text-sm font-bold font-tamil text-zinc-900 mt-1 leading-snug">
+                <h3 className="text-sm font-bold font-tamil text-ink mt-1 leading-snug">
                   {activeArticleModal.tamil_title || activeArticleModal.title}
                 </h3>
               </div>
               <button
                 onClick={() => setActiveArticleModal(null)}
-                className="text-zinc-400 hover:text-zinc-700 p-1 cursor-pointer"
+                className="text-ink-muted hover:text-ink-soft p-1 cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
-            <div className="space-y-2 text-xs text-zinc-600 font-mono">
+            <div className="space-y-2 text-xs text-ink-soft font-mono">
               <div>
-                <strong className="text-zinc-800">Publisher:</strong> {activeArticleModal.source}
+                <strong className="text-ink">Publisher:</strong> {activeArticleModal.source}
               </div>
               <div>
-                <strong className="text-zinc-800">Published:</strong> {formatDate(activeArticleModal.published_at)}
+                <strong className="text-ink">Published:</strong> {formatDate(activeArticleModal.published_at)}
               </div>
             </div>
 
-            <div className="pt-3 border-t border-[#F0F0EB] flex items-center justify-end gap-2">
+            <div className="pt-3 border-t border-line flex items-center justify-end gap-2">
               <button
                 onClick={() => setActiveArticleModal(null)}
-                className="px-3 py-1.5 rounded text-xs text-zinc-600 hover:bg-zinc-100 cursor-pointer"
+                className="px-3 py-1.5 rounded text-xs text-ink-soft hover:bg-subtle cursor-pointer"
               >
                 Close
               </button>
@@ -812,7 +812,7 @@ export function IntelligenceBriefView({ mode }: IntelligenceBriefViewProps) {
                   href={activeArticleModal.source_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1.5 rounded text-xs font-semibold bg-zinc-900 text-white hover:bg-zinc-800 inline-flex items-center gap-1.5"
+                  className="px-3 py-1.5 rounded text-xs font-semibold bg-ink text-white hover:bg-ink-soft inline-flex items-center gap-1.5"
                 >
                   <span>Open Original Story</span>
                   <ExternalLink className="w-3.5 h-3.5" />
