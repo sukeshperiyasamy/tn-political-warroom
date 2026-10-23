@@ -240,13 +240,15 @@ def create_keyword(req: KeywordCreateRequest):
 
         cur.execute("""
             INSERT INTO topic_registry (
-                id, name_en, name_ta, category,
+                id, name, tamil_name, name_en, name_ta, category,
                 keywords_en, keywords_ta, hashtags,
                 negative_keywords, related_party_codes, related_leader_names,
                 last_reviewed_at, is_active
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             target_id,
+            name_en,
+            name_ta,
             name_en,
             name_ta,
             category,
@@ -306,6 +308,8 @@ def update_keyword(keyword_id: str, req: KeywordUpdateRequest):
 
         cur.execute("""
             UPDATE topic_registry SET
+                name = ?,
+                tamil_name = ?,
                 name_en = ?,
                 name_ta = ?,
                 category = ?,
@@ -319,6 +323,8 @@ def update_keyword(keyword_id: str, req: KeywordUpdateRequest):
                 is_active = ?
             WHERE id = ?
         """, (
+            name_en,
+            name_ta,
             name_en,
             name_ta,
             category,

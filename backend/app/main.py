@@ -52,7 +52,21 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"Startup: Warning initializing SourceRegistry: {e}")
 
+    # 4. Start background RSS scheduler for continuous feed updates
+    try:
+        from .services.rss_scheduler import rss_scheduler
+        await rss_scheduler.start()
+    except Exception as e:
+        print(f"Startup: Warning initializing RSS scheduler: {e}")
+
     yield
+
+    # Shutdown: Stop background tasks
+    try:
+        from .services.rss_scheduler import rss_scheduler
+        await rss_scheduler.stop()
+    except Exception as e:
+        print(f"Shutdown: Warning stopping RSS scheduler: {e}")
 
 app = FastAPI(
     title="TN Political Warroom API",

@@ -13,7 +13,7 @@ interface TopbarProps {
 export function Topbar({ onOpenMenu }: TopbarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { filters, setFilters, polling, pollFeeds } = useWarRoom();
+  const { filters, setFilters, polling, pollStatus, pollFeeds } = useWarRoom();
   const current = findNavItem(pathname);
   const [draft, setDraft] = useState(filters.search);
 
@@ -65,15 +65,33 @@ export function Topbar({ onOpenMenu }: TopbarProps) {
           type="button"
           onClick={pollFeeds}
           disabled={polling}
-          className="inline-flex items-center gap-2 h-10 px-3.5 rounded-lg border border-line bg-surface text-sm font-semibold text-ink hover:bg-subtle disabled:opacity-60 transition-colors"
-          title="Poll registered RSS feeds for new stories"
+          className={`inline-flex items-center gap-2 h-10 px-3.5 rounded-lg border text-sm font-semibold transition-colors disabled:opacity-85 ${
+            pollStatus.state === "success"
+              ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+              : pollStatus.state === "error"
+              ? "border-rose-300 bg-rose-50 text-rose-800"
+              : "border-line bg-surface text-ink hover:bg-subtle"
+          }`}
+          title={pollStatus.message || "Poll registered RSS feeds for new stories"}
         >
           <RefreshCw
-            className={`w-4 h-4 ${polling ? "animate-spin" : ""}`}
+            className={`w-4 h-4 shrink-0 ${
+              polling
+                ? "animate-spin text-accent"
+                : pollStatus.state === "success"
+                ? "text-emerald-600"
+                : pollStatus.state === "error"
+                ? "text-rose-600"
+                : ""
+            }`}
             aria-hidden="true"
           />
-          <span className="hidden sm:inline">{polling ? "Polling…" : "Poll feeds"}</span>
-          <span className="sr-only sm:hidden">Poll feeds</span>
+          <span className="hidden sm:inline">
+            {pollStatus.message ? pollStatus.message : "Poll feeds"}
+          </span>
+          <span className="sr-only sm:hidden">
+            {pollStatus.message ? pollStatus.message : "Poll feeds"}
+          </span>
         </button>
       </div>
     </header>

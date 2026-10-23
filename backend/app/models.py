@@ -96,6 +96,13 @@ class IngestResponse(BaseModel):
     total_duplicates_skipped: Optional[int] = 0
     results: List[Dict[str, Any]]
 
+class IngestTriggerResponse(BaseModel):
+    status: str
+    job_id: str
+    message: str
+    source_id: Optional[str] = None
+    poll_status_url: str
+
 class PoliticalParty(BaseModel):
     code: str
     name: str

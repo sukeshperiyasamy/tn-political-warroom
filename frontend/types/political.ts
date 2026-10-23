@@ -218,7 +218,34 @@ export interface IngestResponse {
   sources_processed: number;
   total_items_found: number;
   total_new_items_added: number;
+  total_duplicates_skipped?: number;
+  duration_ms?: number | null;
   results: Array<Record<string, any>>;
+}
+
+export interface IngestJobStatus {
+  job_id: string;
+  status: "queued" | "running" | "completed" | "failed";
+  source_id?: string | null;
+  sources_total: number;
+  sources_processed: number;
+  current_source?: string | null;
+  total_items_found: number;
+  total_new_items_added: number;
+  total_duplicates_skipped: number;
+  results: Array<Record<string, any>>;
+  started_at: string;
+  completed_at?: string | null;
+  duration_ms?: number | null;
+  error?: string | null;
+}
+
+export interface IngestTriggerResponse {
+  status: string;
+  job_id: string;
+  message: string;
+  source_id?: string | null;
+  poll_status_url: string;
 }
 
 export interface FilterState {

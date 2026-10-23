@@ -2,6 +2,7 @@ import pytest
 import hashlib
 from unittest.mock import patch, MagicMock
 import urllib.error
+import httpx
 from datetime import datetime, timezone
 from fastapi.testclient import TestClient
 
@@ -48,16 +49,8 @@ async def test_http_304_handling(ingestion_engine):
         "last_modified": "Sun, 18 Oct 2026 04:00:00 GMT"
     }
 
-    # Mock urllib.request.urlopen to raise HTTPError with code 304
-    mock_err = urllib.error.HTTPError(
-        url=source["rss_url"],
-        code=304,
-        msg="Not Modified",
-        hdrs={},
-        fp=None
-    )
-
-    with patch("urllib.request.urlopen", side_effect=mock_err):
+    mock_resp = httpx.Response(304, request=httpx.Request("GET", source["rss_url"]))
+    with patch("httpx.AsyncClient.get", return_value=mock_resp):
         with patch.object(ingestion_engine.ai_service, "analyze_article") as mock_ai:
             result = await ingestion_engine.ingest_source(source)
             assert result["status"] == "not_modified_304"

@@ -264,7 +264,7 @@ LEADERS_CONFIG = [
     }
 ]
 
-from backend.app.data.db import get_connection
+from backend.app.data.db import get_connection, is_postgres
 
 class EntityMatcher:
     def __init__(self, db_path: str = DB_PATH):
@@ -285,21 +285,44 @@ class EntityMatcher:
                 count = cursor.fetchone()[0]
                 if count == 0:
                     now_str = datetime.now(timezone.utc).isoformat()
+                    use_pg = is_postgres()
                     for t in SEED_TOPICS:
-                        cursor.execute("""
-                            INSERT OR IGNORE INTO topic_registry (
-                                id, name_en, name_ta, category,
-                                keywords_en, keywords_ta, hashtags,
-                                negative_keywords, related_party_codes, related_leader_names,
-                                last_reviewed_at, is_active
-                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
-                        """, (
-                            t["id"], t["name_en"], t["name_ta"], t["category"],
-                            json.dumps(t["keywords_en"]), json.dumps(t["keywords_ta"]),
-                            json.dumps(t["hashtags"]), json.dumps(t["negative_keywords"]),
-                            json.dumps(t["related_party_codes"]), json.dumps(t["related_leader_names"]),
-                            now_str
-                        ))
+                        if use_pg:
+                            cursor.execute("""
+                                INSERT INTO topic_registry (
+                                    id, name, tamil_name, name_en, name_ta, category,
+                                    keywords_en, keywords_ta, hashtags,
+                                    negative_keywords, related_party_codes, related_leader_names,
+                                    last_reviewed_at, is_active
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+                                ON CONFLICT (id) DO UPDATE SET
+                                    name = EXCLUDED.name,
+                                    tamil_name = EXCLUDED.tamil_name,
+                                    name_en = EXCLUDED.name_en,
+                                    name_ta = EXCLUDED.name_ta,
+                                    category = EXCLUDED.category
+                            """, (
+                                t["id"], t["name_en"], t["name_ta"], t["name_en"], t["name_ta"], t["category"],
+                                json.dumps(t["keywords_en"]), json.dumps(t["keywords_ta"]),
+                                json.dumps(t["hashtags"]), json.dumps(t["negative_keywords"]),
+                                json.dumps(t["related_party_codes"]), json.dumps(t["related_leader_names"]),
+                                now_str
+                            ))
+                        else:
+                            cursor.execute("""
+                                INSERT OR IGNORE INTO topic_registry (
+                                    id, name, tamil_name, name_en, name_ta, category,
+                                    keywords_en, keywords_ta, hashtags,
+                                    negative_keywords, related_party_codes, related_leader_names,
+                                    last_reviewed_at, is_active
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+                            """, (
+                                t["id"], t["name_en"], t["name_ta"], t["name_en"], t["name_ta"], t["category"],
+                                json.dumps(t["keywords_en"]), json.dumps(t["keywords_ta"]),
+                                json.dumps(t["hashtags"]), json.dumps(t["negative_keywords"]),
+                                json.dumps(t["related_party_codes"]), json.dumps(t["related_leader_names"]),
+                                now_str
+                            ))
                     conn.commit()
         except Exception as e:
             # Table might not exist yet if called before migrations

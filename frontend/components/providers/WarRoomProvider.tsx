@@ -41,6 +41,14 @@ const EMPTY_FILTERS: FilterState = {
   mode: "live",
 };
 
+export interface PollStatusInfo {
+  state: "idle" | "polling" | "success" | "error";
+  message?: string;
+  newItems?: number;
+  processedSources?: number;
+  totalSources?: number;
+}
+
 interface WarRoomContextValue {
   filters: FilterState;
   setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
@@ -57,6 +65,7 @@ interface WarRoomContextValue {
   loading: boolean;
 
   polling: boolean;
+  pollStatus: PollStatusInfo;
   pollFeeds: () => Promise<void>;
 
   openInsights: (article: NewsArticle) => void;
@@ -87,6 +96,8 @@ export function WarRoomProvider({ children }: { children: React.ReactNode }) {
   const [clientConfig, setClientConfig] = useState<ClientConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [polling, setPolling] = useState(false);
+  const [pollStatus, setPollStatus] = useState<PollStatusInfo>({ state: "idle" });
+  const pollStatusTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [drawerArticle, setDrawerArticle] = useState<NewsArticle | null>(null);
   const [studioArticle, setStudioArticle] = useState<NewsArticle | null>(null);
@@ -134,14 +145,37 @@ export function WarRoomProvider({ children }: { children: React.ReactNode }) {
   );
 
   const pollFeeds = useCallback(async () => {
+    if (pollStatusTimerRef.current) clearTimeout(pollStatusTimerRef.current);
     setPolling(true);
+    setPollStatus({ state: "polling", message: "Connecting to feed sources..." });
     try {
-      await triggerIngest();
+      const res = await triggerIngest(undefined, (jobStatus) => {
+        const currentSrc = jobStatus.current_source ? ` (${jobStatus.current_source})` : "";
+        setPollStatus({
+          state: "polling",
+          message: `Syncing ${jobStatus.sources_processed}/${jobStatus.sources_total} feeds${currentSrc}...`,
+          processedSources: jobStatus.sources_processed,
+          totalSources: jobStatus.sources_total,
+          newItems: jobStatus.total_new_items_added,
+        });
+      });
       const [arts, mets] = await Promise.all([fetchArticles(filters), fetchMetrics(filters)]);
       setArticles(arts);
       setMetrics(mets);
-    } catch (err) {
+
+      const added = res.total_new_items_added || 0;
+      const msg = added > 0 ? `Synced! ${added} new stories` : "Feeds up to date (no new stories)";
+      setPollStatus({ state: "success", message: msg, newItems: added });
+
+      pollStatusTimerRef.current = setTimeout(() => {
+        setPollStatus({ state: "idle" });
+      }, 4000);
+    } catch (err: any) {
       console.error("Feed poll failed:", err);
+      setPollStatus({ state: "error", message: err.message || "Feed synchronization failed" });
+      pollStatusTimerRef.current = setTimeout(() => {
+        setPollStatus({ state: "idle" });
+      }, 5000);
     } finally {
       setPolling(false);
     }
@@ -179,6 +213,7 @@ export function WarRoomProvider({ children }: { children: React.ReactNode }) {
       setClientConfig,
       loading,
       polling,
+      pollStatus,
       pollFeeds,
       openInsights: setDrawerArticle,
       openInStudio,
@@ -197,6 +232,7 @@ export function WarRoomProvider({ children }: { children: React.ReactNode }) {
       clientConfig,
       loading,
       polling,
+      pollStatus,
       pollFeeds,
       openInStudio,
       studioArticle,

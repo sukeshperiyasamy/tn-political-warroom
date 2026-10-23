@@ -10,6 +10,14 @@ from contextlib import contextmanager
 import re
 from typing import Any, List, Optional, Tuple, Dict, Union
 
+try:
+    from dotenv import load_dotenv
+    _root_env = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), ".env")
+    load_dotenv(_root_env)
+    load_dotenv(".env")
+except Exception:
+    pass
+
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "warroom.db")
 
 

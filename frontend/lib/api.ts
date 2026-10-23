@@ -15,6 +15,8 @@ import {
   SourceTestResult,
   IngestionLog,
   IngestResponse,
+  IngestJobStatus,
+  IngestTriggerResponse,
   TopicTrendsResponse,
   PartyLeaderCoverageResponse,
   IntelligenceBriefResponse,
@@ -241,13 +243,91 @@ export async function deleteSource(sourceId: string): Promise<{ status: string; 
   return await res.json();
 }
 
-export async function triggerIngest(sourceId?: string): Promise<IngestResponse> {
+export async function startIngestJob(sourceId?: string): Promise<IngestTriggerResponse> {
   const url = sourceId ? `${API_BASE}/api/sources/ingest?source_id=${sourceId}` : `${API_BASE}/api/sources/ingest`;
   const res = await fetchWithTimeout(url, {
     method: "POST",
-  }, 45000);
-  if (!res.ok) throw new Error("Failed to trigger ingestion");
+  }, 15000);
+  if (!res.ok) throw new Error("Failed to trigger ingestion background job");
   return await res.json();
+}
+
+export async function fetchIngestStatus(jobId: string): Promise<IngestJobStatus> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/sources/ingest/status/${jobId}`, {}, 10000);
+  if (res.status === 404) {
+    throw new Error(`Ingestion job '${jobId}' not found (backend process may have restarted)`);
+  }
+  if (!res.ok) throw new Error(`Failed to fetch ingestion job status: ${res.status}`);
+  return await res.json();
+}
+
+export async function fetchLatestIngestStatus(): Promise<IngestJobStatus | null> {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE}/api/sources/ingest/status/latest`, {}, 10000);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function triggerIngest(
+  sourceId?: string,
+  onProgress?: (status: IngestJobStatus) => void
+): Promise<IngestResponse> {
+  const url = sourceId ? `${API_BASE}/api/sources/ingest?source_id=${sourceId}` : `${API_BASE}/api/sources/ingest`;
+  const res = await fetchWithTimeout(url, {
+    method: "POST",
+  }, 15000);
+  if (!res.ok) throw new Error("Failed to trigger ingestion");
+
+  const data = await res.json();
+
+  // If backend responded with 200 OK (sync mode) or direct IngestResponse
+  if (data.status && data.sources_processed !== undefined && Array.isArray(data.results)) {
+    return data as IngestResponse;
+  }
+
+  // If backend responded with 202 Accepted and job_id
+  const jobId = data.job_id;
+  if (!jobId) {
+    return data as IngestResponse;
+  }
+
+  // Poll until completion with 1s interval (up to 45 seconds total)
+  const startTime = Date.now();
+  const maxWaitMs = 45000;
+
+  while (Date.now() - startTime < maxWaitMs) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const jobStatus = await fetchIngestStatus(jobId);
+      if (onProgress) {
+        onProgress(jobStatus);
+      }
+
+      if (jobStatus.status === "completed") {
+        return {
+          status: "success",
+          sources_processed: jobStatus.sources_processed,
+          total_items_found: jobStatus.total_items_found,
+          total_new_items_added: jobStatus.total_new_items_added,
+          total_duplicates_skipped: jobStatus.total_duplicates_skipped,
+          duration_ms: jobStatus.duration_ms,
+          results: jobStatus.results,
+        };
+      } else if (jobStatus.status === "failed") {
+        throw new Error(jobStatus.error || "Ingestion job failed");
+      }
+    } catch (err: any) {
+      if (err.message && (err.message.includes("Ingestion job failed") || err.message.includes("not found"))) {
+        throw err;
+      }
+      // If temporary network hiccup during poll, continue waiting
+    }
+  }
+
+  throw new Error("Ingestion job timed out after 45 seconds");
 }
 
 export async function fetchLogs(limit = 20): Promise<IngestionLog[]> {

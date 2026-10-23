@@ -148,10 +148,10 @@ DEFAULT_SOURCES = [
         "url": "https://www.youtube.com/@SavukkuMedia",
         "rss_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCeH98eFmOQYy6u8kK8sW-HQ",
         "language": "ta",
-        "is_enabled": 1,
-        "health_status": "healthy",
+        "is_enabled": 0,
+        "health_status": "disabled",
         "last_fetched_at": None,
-        "last_error": None,
+        "last_error": "Disabled: Placeholder YouTube channel ID",
         "total_articles_fetched": 0,
     },
     {
@@ -164,10 +164,10 @@ DEFAULT_SOURCES = [
         "url": "https://www.youtube.com/@Maridhas_Official",
         "rss_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCw51v4a_Fp019sYd20y000w",
         "language": "ta",
-        "is_enabled": 1,
-        "health_status": "healthy",
+        "is_enabled": 0,
+        "health_status": "disabled",
         "last_fetched_at": None,
-        "last_error": None,
+        "last_error": "Disabled: Placeholder YouTube channel ID",
         "total_articles_fetched": 0,
     },
     {
@@ -180,10 +180,10 @@ DEFAULT_SOURCES = [
         "url": "https://www.youtube.com/@redpix24x7",
         "rss_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCg1G9l_wz3e_UaX2P_7u000",
         "language": "ta",
-        "is_enabled": 1,
-        "health_status": "healthy",
+        "is_enabled": 0,
+        "health_status": "disabled",
         "last_fetched_at": None,
-        "last_error": None,
+        "last_error": "Disabled: Placeholder YouTube channel ID",
         "total_articles_fetched": 0,
     },
     {
@@ -196,10 +196,10 @@ DEFAULT_SOURCES = [
         "url": "https://www.youtube.com/@AadhanTamil",
         "rss_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCaadhan_tamil_feed_01",
         "language": "ta",
-        "is_enabled": 1,
-        "health_status": "healthy",
+        "is_enabled": 0,
+        "health_status": "disabled",
         "last_fetched_at": None,
-        "last_error": None,
+        "last_error": "Disabled: Placeholder YouTube channel ID",
         "total_articles_fetched": 0,
     },
     {
@@ -212,10 +212,10 @@ DEFAULT_SOURCES = [
         "url": "https://x.com/gunasekaran_m",
         "rss_url": "https://x.com/gunasekaran_m/feed",
         "language": "ta",
-        "is_enabled": 1,
-        "health_status": "healthy",
+        "is_enabled": 0,
+        "health_status": "disabled",
         "last_fetched_at": None,
-        "last_error": None,
+        "last_error": "Disabled: X/Twitter profile lacks public RSS syndication",
         "total_articles_fetched": 0,
     },
     {
@@ -228,10 +228,10 @@ DEFAULT_SOURCES = [
         "url": "https://www.youtube.com/@nakkheeranwebtv",
         "rss_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCnakkheeran_feed_01",
         "language": "ta",
-        "is_enabled": 1,
-        "health_status": "healthy",
+        "is_enabled": 0,
+        "health_status": "disabled",
         "last_fetched_at": None,
-        "last_error": None,
+        "last_error": "Disabled: Placeholder YouTube channel ID",
         "total_articles_fetched": 0,
     }
 ]
@@ -276,6 +276,21 @@ class SourceRegistry:
                             src.get("last_fetched_at"), src.get("total_articles_fetched", 0),
                             now_str
                         ))
+                # Ensure placeholder/unsupported sources are disabled in Postgres
+                placeholder_sources = [
+                    ("savukku_media", "Disabled: Placeholder YouTube channel ID"),
+                    ("maridhas_official", "Disabled: Placeholder YouTube channel ID"),
+                    ("redpix_24x7", "Disabled: Placeholder YouTube channel ID"),
+                    ("aadhan_tamil", "Disabled: Placeholder YouTube channel ID"),
+                    ("gunasekaran_news", "Disabled: X/Twitter profile lacks public RSS syndication"),
+                    ("nakkheeran_tv", "Disabled: Placeholder YouTube channel ID"),
+                ]
+                for pid, reason in placeholder_sources:
+                    cursor.execute("""
+                        UPDATE sources
+                        SET is_enabled = 0, health_status = 'disabled', last_error = ?
+                        WHERE id = ? AND (is_enabled = 1 OR health_status != 'disabled')
+                    """, (reason, pid))
                 conn.commit()
             return
         with self.get_connection() as conn:
@@ -397,6 +412,23 @@ class SourceRegistry:
             cursor = conn.cursor()
             # Seed any missing default sources
             now_str = datetime.now().isoformat()
+            # Ensure placeholder/unsupported sources are disabled in SQLite
+            placeholder_sources = [
+                ("savukku_media", "Disabled: Placeholder YouTube channel ID"),
+                ("maridhas_official", "Disabled: Placeholder YouTube channel ID"),
+                ("redpix_24x7", "Disabled: Placeholder YouTube channel ID"),
+                ("aadhan_tamil", "Disabled: Placeholder YouTube channel ID"),
+                ("gunasekaran_news", "Disabled: X/Twitter profile lacks public RSS syndication"),
+                ("nakkheeran_tv", "Disabled: Placeholder YouTube channel ID"),
+            ]
+            for pid, reason in placeholder_sources:
+                cursor.execute("""
+                    UPDATE sources
+                    SET is_enabled = 0, health_status = 'disabled', last_error = ?
+                    WHERE id = ? AND (is_enabled = 1 OR health_status != 'disabled')
+                """, (reason, pid))
+            conn.commit()
+
             for src in DEFAULT_SOURCES:
                 cursor.execute("SELECT id FROM sources WHERE id = ?", (src["id"],))
                 if not cursor.fetchone():
@@ -705,10 +737,15 @@ class SourceRegistry:
         etag: Optional[str] = None,
         last_modified: Optional[str] = None,
         next_scheduled_fetch_at: Optional[str] = None,
+        conn: Optional[Any] = None,
     ):
         now_str = datetime.now().isoformat()
         is_success = fetch_status in ("success", "not_modified_304", "no_new_articles", "new_articles", "empty_feed", "stale_feed")
-        with self.get_connection() as conn:
+        should_close = False
+        if conn is None:
+            conn = self.get_connection()
+            should_close = True
+        try:
             cursor = conn.cursor()
             cursor.execute("""
                 UPDATE sources
@@ -743,6 +780,9 @@ class SourceRegistry:
                 source_id
             ))
             conn.commit()
+        finally:
+            if should_close:
+                conn.close()
 
     def record_log(
         self,
@@ -754,10 +794,15 @@ class SourceRegistry:
         duration_ms: int,
         error_message: Optional[str] = None,
         skipped_duplicates: int = 0,
-        http_status: int = 200
+        http_status: int = 200,
+        conn: Optional[Any] = None,
     ):
         now_str = datetime.now().isoformat()
-        with self.get_connection() as conn:
+        should_close = False
+        if conn is None:
+            conn = self.get_connection()
+            should_close = True
+        try:
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO ingestion_logs (
@@ -771,6 +816,9 @@ class SourceRegistry:
                 duration_ms, error_message
             ))
             conn.commit()
+        finally:
+            if should_close:
+                conn.close()
 
     def get_recent_logs(self, limit: int = 30) -> List[Dict[str, Any]]:
         with self.get_connection() as conn:
@@ -781,6 +829,182 @@ class SourceRegistry:
                 LIMIT ?
             """, (limit,))
             return [dict(r) for r in cursor.fetchall()]
+
+    def find_existing_articles_batch(
+        self,
+        canonical_urls: List[str],
+        source_urls: List[str],
+        publisher_guids: List[str],
+        conn: Optional[Any] = None
+    ) -> Dict[str, Dict[str, Any]]:
+        """
+        Batch retrieves existing articles by canonical_url, source_url, or publisher_guid.
+        Returns a dict mapping each identifier to article record.
+        """
+        should_close = False
+        if conn is None:
+            conn = self.get_connection()
+            should_close = True
+
+        result_map: Dict[str, Dict[str, Any]] = {}
+        try:
+            urls = list(set([u for u in (canonical_urls + source_urls) if u]))
+            guids = list(set([g for g in publisher_guids if g]))
+
+            # Chunk into batches of 40 to prevent parameter limit issues
+            chunk_size = 40
+            for i in range(0, max(len(urls), len(guids), 1), chunk_size):
+                u_chunk = urls[i:i + chunk_size]
+                g_chunk = guids[i:i + chunk_size]
+                if not u_chunk and not g_chunk:
+                    break
+
+                clauses = []
+                params: List[Any] = []
+                if u_chunk:
+                    u_placeholders = ", ".join(["?"] * len(u_chunk))
+                    clauses.append(f"canonical_url IN ({u_placeholders}) OR source_url IN ({u_placeholders})")
+                    params.extend(u_chunk)
+                    params.extend(u_chunk)
+                if g_chunk:
+                    g_placeholders = ", ".join(["?"] * len(g_chunk))
+                    clauses.append(f"publisher_guid IN ({g_placeholders})")
+                    params.extend(g_chunk)
+
+                where_sql = " OR ".join(clauses)
+                cursor = conn.cursor()
+                cursor.execute(f"SELECT * FROM articles WHERE {where_sql}", params)
+                rows = cursor.fetchall()
+                for row in rows:
+                    d = dict(row)
+                    d["party_codes"] = json.loads(d["party_codes"]) if isinstance(d["party_codes"], str) else d["party_codes"]
+                    d["leader_names"] = json.loads(d["leader_names"]) if isinstance(d["leader_names"], str) else d["leader_names"]
+                    d["topics"] = json.loads(d["topics"]) if isinstance(d["topics"], str) else d["topics"]
+                    d["tamil_variations"] = json.loads(d["tamil_variations"]) if isinstance(d["tamil_variations"], str) else d["tamil_variations"]
+                    d["engagement_estimated"] = json.loads(d["engagement_estimated"]) if isinstance(d["engagement_estimated"], str) else d["engagement_estimated"]
+
+                    if d.get("canonical_url"):
+                        result_map[d["canonical_url"]] = d
+                    if d.get("source_url"):
+                        result_map[d["source_url"]] = d
+                    if d.get("publisher_guid"):
+                        result_map[d["publisher_guid"]] = d
+        finally:
+            if should_close:
+                conn.close()
+
+        return result_map
+
+    def touch_articles_seen_batch(self, article_ids: List[str], conn: Optional[Any] = None):
+        """
+        Batch updates last_seen_at for unchanged existing articles.
+        """
+        if not article_ids:
+            return
+        should_close = False
+        if conn is None:
+            conn = self.get_connection()
+            should_close = True
+
+        now_str = datetime.now().isoformat()
+        try:
+            unique_ids = list(set(article_ids))
+            chunk_size = 80
+            cursor = conn.cursor()
+            for i in range(0, len(unique_ids), chunk_size):
+                chunk = unique_ids[i:i + chunk_size]
+                placeholders = ", ".join(["?"] * len(chunk))
+                cursor.execute(f"UPDATE articles SET last_seen_at = ? WHERE id IN ({placeholders})", [now_str] + chunk)
+            conn.commit()
+        finally:
+            if should_close:
+                conn.close()
+
+    def save_articles_batch(self, articles: List[Dict[str, Any]], conn: Optional[Any] = None) -> tuple[int, int]:
+        """
+        Saves a batch of articles in a single transaction.
+        Returns (new_inserted_count, skipped_duplicates_count).
+        """
+        if not articles:
+            return 0, 0
+        should_close = False
+        if conn is None:
+            conn = self.get_connection()
+            should_close = True
+
+        now_str = datetime.now().isoformat()
+        inserted_count = 0
+        skipped_count = 0
+        use_pg = getattr(conn, "is_pg", False)
+        insert_sql = """
+            INSERT INTO articles (
+                id, source_id, source_name, title, tamil_title,
+                summary, tamil_summary, source_url, canonical_url, publisher_guid,
+                published_at, party_codes, leader_names, sentiment, sentiment_score,
+                topics, tamil_variations, engagement_estimated,
+                data_status, analysis_provider, content_hash, processing_hash,
+                processing_status, processed_at, processing_attempts, last_seen_at, first_seen_at,
+                source_type, platform
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """
+        if use_pg:
+            insert_sql += " ON CONFLICT (id) DO NOTHING"
+        else:
+            insert_sql = "INSERT OR IGNORE INTO articles " + insert_sql[len("INSERT INTO articles "):]
+
+        try:
+            cursor = conn.cursor()
+            for article_dict in articles:
+                canonical_url = article_dict.get("canonical_url") or article_dict["source_url"]
+                source_type = article_dict.get("source_type") or article_dict.get("source_category") or "NEWS_MEDIA"
+                platform = article_dict.get("platform") or "web"
+                cursor.execute(insert_sql, (
+                    article_dict["id"],
+                    article_dict["source_id"],
+                    article_dict["source_name"],
+                    article_dict["title"],
+                    article_dict["tamil_title"],
+                    article_dict["summary"],
+                    article_dict["tamil_summary"],
+                    article_dict["source_url"],
+                    canonical_url,
+                    article_dict.get("publisher_guid", article_dict["id"]),
+                    article_dict["published_at"],
+                    json.dumps(article_dict["party_codes"]),
+                    json.dumps(article_dict["leader_names"]),
+                    article_dict["sentiment"],
+                    article_dict["sentiment_score"],
+                    json.dumps(article_dict["topics"]),
+                    json.dumps(article_dict["tamil_variations"]),
+                    json.dumps(article_dict["engagement_estimated"]),
+                    article_dict.get("data_status", "live_rss"),
+                    article_dict.get("analysis_provider", "tamil_nlp_engine"),
+                    article_dict.get("content_hash"),
+                    article_dict.get("processing_hash"),
+                    article_dict.get("processing_status", "processed"),
+                    article_dict.get("processed_at", now_str),
+                    article_dict.get("processing_attempts", 1),
+                    article_dict.get("last_seen_at", now_str),
+                    article_dict.get("first_seen_at", now_str),
+                    source_type,
+                    platform
+                ))
+                if cursor.rowcount > 0:
+                    inserted_count += 1
+                else:
+                    skipped_count += 1
+            conn.commit()
+        except Exception:
+            try:
+                conn.rollback()
+            except Exception:
+                pass
+            raise
+        finally:
+            if should_close:
+                conn.close()
+
+        return inserted_count, skipped_count
 
     def find_existing_article(
         self,

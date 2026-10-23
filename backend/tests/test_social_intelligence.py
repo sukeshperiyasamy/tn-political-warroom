@@ -180,7 +180,7 @@ def test_strict_live_demo_isolation():
     assert trend_live.status_code == 200
     live_topic_names = [t["topic"] for t in trend_live.json()["trending_topics"]]
     # TVK Vikravandi conference is exclusively seeded as DEMO
-    assert "TVK Vijay Political Movement" not in live_topic_names
+    assert "Vikravandi State Conference" not in live_topic_names
 
     # 4. Story clusters mode isolation
     clusters_live = client.get("/api/social/story-clusters?mode=live")
