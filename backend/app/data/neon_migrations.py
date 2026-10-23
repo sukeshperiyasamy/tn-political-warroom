@@ -238,6 +238,23 @@ CREATE TABLE IF NOT EXISTS article_editorial_versions (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
+-- 14. Discovered Keywords Queue Table
+CREATE TABLE IF NOT EXISTS discovered_keywords (
+    id TEXT PRIMARY KEY,
+    name_en TEXT NOT NULL,
+    name_ta TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT 'General Political Issue',
+    suggested_party_code TEXT,
+    suggested_leader_name TEXT,
+    frequency INTEGER NOT NULL DEFAULT 1,
+    relevance_score REAL NOT NULL DEFAULT 0.5,
+    sample_article_id TEXT,
+    sample_headline TEXT,
+    status TEXT NOT NULL DEFAULT 'pending',
+    discovered_at TEXT NOT NULL,
+    reviewed_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_discovered_keywords_status ON discovered_keywords(status);
 """
 
 ALTER_COLUMNS_SQL = """
@@ -248,6 +265,8 @@ ALTER TABLE sources ADD COLUMN IF NOT EXISTS current_article_count INTEGER DEFAU
 ALTER TABLE sources ADD COLUMN IF NOT EXISTS total_articles_fetched INTEGER DEFAULT 0;
 ALTER TABLE sources ADD COLUMN IF NOT EXISTS next_scheduled_fetch_at TEXT;
 
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS primary_subject TEXT;
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS is_opinion_or_allegation INTEGER DEFAULT 0;
 ALTER TABLE articles ADD COLUMN IF NOT EXISTS source_id TEXT;
 ALTER TABLE articles ADD COLUMN IF NOT EXISTS source_name TEXT;
 ALTER TABLE articles ADD COLUMN IF NOT EXISTS source_url TEXT;

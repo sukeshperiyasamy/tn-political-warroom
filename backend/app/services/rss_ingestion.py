@@ -483,7 +483,9 @@ class RSSIngestionEngine:
                                 "tamil_variations": [v.model_dump() for v in ai_intel.tamil_variations],
                                 "content_hash": content_hash,
                                 "processing_hash": processing_hash,
-                                "processing_status": "processed"
+                                "processing_status": "processed",
+                                "primary_subject": ai_intel.primary_subject,
+                                "is_opinion_or_allegation": ai_intel.is_opinion_or_allegation
                             }
                             source_registry.update_article_content(existing["id"], updated_dict)
                             updated_articles_count += 1
@@ -497,7 +499,8 @@ class RSSIngestionEngine:
                     ai_intel = await self.ai_service.analyze_article(
                         text=description,
                         headline=title,
-                        source=source_name
+                        source=source_name,
+                        article_id=article_id
                     )
                     processing_status = "processed"
                     has_tamil_chars = any("\u0B80" <= c <= "\u0BFF" for c in title)
@@ -509,6 +512,8 @@ class RSSIngestionEngine:
                     sentiment_score = ai_intel.sentiment_score
                     topics = ai_intel.topics
                     variations = [v.model_dump() for v in ai_intel.tamil_variations]
+                    primary_subject = ai_intel.primary_subject
+                    is_opinion_or_allegation = ai_intel.is_opinion_or_allegation
                 except Exception:
                     processing_status = "failed"
                     has_tamil_chars = any("\u0B80" <= c <= "\u0BFF" for c in title)
@@ -518,8 +523,10 @@ class RSSIngestionEngine:
                     leader_names = []
                     sentiment = "neutral"
                     sentiment_score = 0.0
-                    topics = ["State Politics"]
+                    topics = ["General News"]
                     variations = []
+                    primary_subject = None
+                    is_opinion_or_allegation = False
 
                 hash_int = int(hashlib.md5(canonical_url.encode("utf-8")).hexdigest()[:6], 16)
                 base_reach = 8500 + (hash_int % 14000)
@@ -556,7 +563,9 @@ class RSSIngestionEngine:
                     "processed_at": now_iso if processing_status == "processed" else None,
                     "processing_attempts": 1,
                     "last_seen_at": now_iso,
-                    "first_seen_at": now_iso
+                    "first_seen_at": now_iso,
+                    "primary_subject": primary_subject,
+                    "is_opinion_or_allegation": is_opinion_or_allegation
                 }
                 new_articles_to_insert.append(article_dict)
 

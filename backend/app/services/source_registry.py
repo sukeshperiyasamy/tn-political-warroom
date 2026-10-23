@@ -403,6 +403,26 @@ class SourceRegistry:
                 )
             """)
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_briefs_lookup ON intelligence_briefs(data_status, period, evidence_hash, config_version)")
+
+            # Discovered Keywords Table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS discovered_keywords (
+                    id TEXT PRIMARY KEY,
+                    name_en TEXT NOT NULL,
+                    name_ta TEXT NOT NULL,
+                    category TEXT NOT NULL DEFAULT 'General Political Issue',
+                    suggested_party_code TEXT,
+                    suggested_leader_name TEXT,
+                    frequency INTEGER NOT NULL DEFAULT 1,
+                    relevance_score REAL NOT NULL DEFAULT 0.5,
+                    sample_article_id TEXT,
+                    sample_headline TEXT,
+                    status TEXT NOT NULL DEFAULT 'pending',
+                    discovered_at TEXT NOT NULL,
+                    reviewed_at TEXT
+                )
+            """)
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_discovered_keywords_status ON discovered_keywords(status)")
             conn.commit()
 
         # Run automated schema migrations and backfill first to guarantee all columns exist
@@ -474,7 +494,9 @@ class SourceRegistry:
                 "skipped_duplicates_count": "INTEGER DEFAULT 0",
                 "next_scheduled_fetch_at": "TEXT",
                 "source_type": "TEXT DEFAULT 'NEWS_MEDIA'",
-                "platform": "TEXT DEFAULT 'web'"
+                "platform": "TEXT DEFAULT 'web'",
+                "primary_subject": "TEXT",
+                "is_opinion_or_allegation": "INTEGER DEFAULT 0"
             }
             for col_name, col_type in new_src_cols.items():
                 if col_name not in src_cols:
@@ -494,7 +516,9 @@ class SourceRegistry:
                 "processing_attempts": "INTEGER DEFAULT 1",
                 "last_seen_at": "TEXT",
                 "source_type": "TEXT DEFAULT 'NEWS_MEDIA'",
-                "platform": "TEXT DEFAULT 'web'"
+                "platform": "TEXT DEFAULT 'web'",
+                "primary_subject": "TEXT",
+                "is_opinion_or_allegation": "INTEGER DEFAULT 0"
             }
             for col_name, col_type in new_art_cols.items():
                 if col_name not in art_cols:
@@ -946,8 +970,8 @@ class SourceRegistry:
                 topics, tamil_variations, engagement_estimated,
                 data_status, analysis_provider, content_hash, processing_hash,
                 processing_status, processed_at, processing_attempts, last_seen_at, first_seen_at,
-                source_type, platform
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                source_type, platform, primary_subject, is_opinion_or_allegation
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         if use_pg:
             insert_sql += " ON CONFLICT (id) DO NOTHING"
@@ -989,7 +1013,9 @@ class SourceRegistry:
                     article_dict.get("last_seen_at", now_str),
                     article_dict.get("first_seen_at", now_str),
                     source_type,
-                    platform
+                    platform,
+                    article_dict.get("primary_subject"),
+                    1 if article_dict.get("is_opinion_or_allegation") else 0
                 ))
                 if cursor.rowcount > 0:
                     inserted_count += 1
@@ -1062,6 +1088,8 @@ class SourceRegistry:
                     processing_status = ?,
                     processed_at = ?,
                     last_seen_at = ?,
+                    primary_subject = ?,
+                    is_opinion_or_allegation = ?,
                     processing_attempts = processing_attempts + 1
                 WHERE id = ?
             """, (
@@ -1080,6 +1108,8 @@ class SourceRegistry:
                 article_dict.get("processing_status", "processed"),
                 now_str,
                 now_str,
+                article_dict.get("primary_subject"),
+                1 if article_dict.get("is_opinion_or_allegation") else 0,
                 article_id
             ))
             conn.commit()
@@ -1104,8 +1134,8 @@ class SourceRegistry:
                         topics, tamil_variations, engagement_estimated,
                         data_status, analysis_provider, content_hash, processing_hash,
                         processing_status, processed_at, processing_attempts, last_seen_at, first_seen_at,
-                        source_type, platform
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        source_type, platform, primary_subject, is_opinion_or_allegation
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     article_dict["id"],
                     article_dict["source_id"],
@@ -1135,7 +1165,9 @@ class SourceRegistry:
                     article_dict.get("last_seen_at", now_str),
                     article_dict.get("first_seen_at", now_str),
                     source_type,
-                    platform
+                    platform,
+                    article_dict.get("primary_subject"),
+                    1 if article_dict.get("is_opinion_or_allegation") else 0
                 ))
                 conn.commit()
                 return True
@@ -1156,6 +1188,8 @@ class SourceRegistry:
         d["source_type"] = st
         d["source_category"] = "News Media" if st == "NEWS_MEDIA" else "Influencers & Social Media"
         d["platform"] = d.get("platform") or "web"
+        d["primary_subject"] = d.get("primary_subject")
+        d["is_opinion_or_allegation"] = bool(d.get("is_opinion_or_allegation"))
         return d
 
     def get_live_articles(self) -> List[Dict[str, Any]]:

@@ -55,6 +55,8 @@ export interface NewsArticle {
   };
   data_status: DataStatus;
   analysis_provider: string;
+  primary_subject?: string | null;
+  is_opinion_or_allegation?: boolean;
 }
 
 export interface SentimentDistribution {
@@ -156,6 +158,8 @@ export interface IntelligenceResponse {
   tamil_variations: TamilVariation[];
   analysis_provider: string;
   is_live_ai: boolean;
+  primary_subject?: string | null;
+  is_opinion_or_allegation?: boolean;
 }
 
 export interface NewsSource {
@@ -836,3 +840,73 @@ export interface SafeSettingsResponse {
   security_notice: string;
 }
 
+
+
+export interface DiscoveredKeyword {
+  id: string;
+  name_en: string;
+  name_ta: string;
+  category: string;
+  suggested_party_code?: string | null;
+  suggested_leader_name?: string | null;
+  frequency: number;
+  relevance_score: number;
+  sample_article_id?: string | null;
+  sample_headline?: string | null;
+  status: "pending" | "approved" | "rejected";
+  discovered_at: string;
+  reviewed_at?: string | null;
+}
+
+export interface DiscoveredKeywordsResponse {
+  count: number;
+  candidates: DiscoveredKeyword[];
+}
+
+export interface DistributionItem {
+  party_code?: string;
+  leader_name?: string;
+  topic?: string;
+  source_name?: string;
+  subject?: string;
+  count: number;
+  percentage: number;
+}
+
+export interface KeywordAnalyticsResponse {
+  total_articles: number;
+  party_distribution: DistributionItem[];
+  leader_distribution: DistributionItem[];
+  topic_distribution: DistributionItem[];
+  source_distribution: DistributionItem[];
+  primary_subject_distribution: DistributionItem[];
+  high_frequency_keywords: DistributionItem[];
+  anomaly_flags: string[];
+}
+
+export interface ReclassificationRequest {
+  dry_run: boolean;
+  batch_size: number;
+  offset: number;
+}
+
+export interface ReclassificationSampleDiff {
+  article_id: string;
+  title: string;
+  old_parties: string[];
+  new_parties: string[];
+  old_leaders: string[];
+  new_leaders: string[];
+  old_topics: string[];
+  new_topics: string[];
+  primary_subject?: string | null;
+}
+
+export interface ReclassificationResponse {
+  dry_run: boolean;
+  total_articles: number;
+  examined: number;
+  changed_count: number;
+  sample_diffs: ReclassificationSampleDiff[];
+  summary_message: string;
+}

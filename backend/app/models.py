@@ -152,6 +152,8 @@ class NewsArticle(BaseModel):
     processed_at: Optional[str] = None
     processing_attempts: Optional[int] = 1
     last_seen_at: Optional[str] = None
+    primary_subject: Optional[str] = None
+    is_opinion_or_allegation: Optional[bool] = False
 
 class NewsUpdatesResponse(BaseModel):
     server_time: str
@@ -299,6 +301,62 @@ class IntelligenceResponse(BaseModel):
     tamil_variations: List[TamilVariation]
     analysis_provider: str
     is_live_ai: bool
+    primary_subject: Optional[str] = None
+    is_opinion_or_allegation: Optional[bool] = False
+    matched_keywords: Optional[List[str]] = []
+
+class DiscoveredKeyword(BaseModel):
+    id: str
+    name_en: str
+    name_ta: str
+    category: str
+    suggested_party_code: Optional[str] = None
+    suggested_leader_name: Optional[str] = None
+    frequency: int
+    relevance_score: float
+    sample_article_id: Optional[str] = None
+    sample_headline: Optional[str] = None
+    status: str = "pending"  # "pending", "approved", "rejected"
+    discovered_at: str
+    reviewed_at: Optional[str] = None
+
+class DiscoveredKeywordsResponse(BaseModel):
+    count: int
+    candidates: List[DiscoveredKeyword]
+
+class KeywordAnalyticsResponse(BaseModel):
+    total_articles: int
+    party_distribution: List[Dict[str, Any]]
+    leader_distribution: List[Dict[str, Any]]
+    topic_distribution: List[Dict[str, Any]]
+    source_distribution: List[Dict[str, Any]]
+    primary_subject_distribution: List[Dict[str, Any]]
+    high_frequency_keywords: List[Dict[str, Any]]
+    anomaly_flags: List[str]
+
+class ReclassificationRequest(BaseModel):
+    dry_run: bool = True
+    batch_size: int = 100
+    offset: int = 0
+
+class ReclassificationSampleDiff(BaseModel):
+    article_id: str
+    title: str
+    old_parties: List[str]
+    new_parties: List[str]
+    old_leaders: List[str]
+    new_leaders: List[str]
+    old_topics: List[str]
+    new_topics: List[str]
+    primary_subject: Optional[str] = None
+
+class ReclassificationResponse(BaseModel):
+    dry_run: bool
+    total_articles: int
+    examined: int
+    changed_count: int
+    sample_diffs: List[ReclassificationSampleDiff]
+    summary_message: str
 
 class CardTemplate(BaseModel):
     id: str

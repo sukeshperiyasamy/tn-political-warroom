@@ -5,10 +5,18 @@ from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
-from backend.app.data.db import get_connection, DB_PATH
+from backend.app.data.db import get_connection, DB_PATH, is_postgres
 from backend.app.services.entity_matcher import SEED_TOPICS, entity_matcher
 from backend.app.services.source_registry import source_registry
 from backend.app.services.client_config import client_config_service
+from backend.app.models import (
+    DiscoveredKeyword,
+    DiscoveredKeywordsResponse,
+    KeywordAnalyticsResponse,
+    ReclassificationRequest,
+    ReclassificationSampleDiff,
+    ReclassificationResponse
+)
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -389,6 +397,324 @@ def delete_keyword(keyword_id: str):
         conn.commit()
 
     return {"status": "deleted", "id": keyword_id, "name_en": row["name_en"]}
+
+class CandidateApproveRequest(BaseModel):
+    category: Optional[str] = None
+    related_party_code: Optional[str] = None
+    related_leader_name: Optional[str] = None
+
+
+# --- Discovered Candidate Keywords Review Queue ---
+
+@router.get("/keywords/candidates", response_model=DiscoveredKeywordsResponse)
+def get_candidate_keywords(candidate_status: Optional[str] = Query(default=None, alias="status")):
+    """Returns discovered candidate keywords from the ingestion discovery queue."""
+    entity_matcher.ensure_initialized()
+    with get_connection() as conn:
+        cur = conn.cursor()
+        if candidate_status:
+            cur.execute("""
+                SELECT * FROM discovered_keywords
+                WHERE status = ?
+                ORDER BY frequency DESC, discovered_at DESC
+                LIMIT 100
+            """, (candidate_status.lower(),))
+        else:
+            cur.execute("""
+                SELECT * FROM discovered_keywords
+                ORDER BY CASE WHEN status = 'pending' THEN 0 ELSE 1 END, frequency DESC, discovered_at DESC
+                LIMIT 100
+            """)
+        rows = cur.fetchall()
+        candidates = []
+        for r in rows:
+            d = dict(r)
+            candidates.append(DiscoveredKeyword(
+                id=d["id"],
+                name_en=d["name_en"],
+                name_ta=d["name_ta"],
+                category=d.get("category") or "Emerging Entity",
+                suggested_party_code=d.get("suggested_party_code"),
+                suggested_leader_name=d.get("suggested_leader_name"),
+                frequency=d.get("frequency") or 1,
+                relevance_score=d.get("relevance_score") or 0.5,
+                sample_article_id=d.get("sample_article_id"),
+                sample_headline=d.get("sample_headline"),
+                status=d.get("status") or "pending",
+                discovered_at=d["discovered_at"],
+                reviewed_at=d.get("reviewed_at")
+            ))
+    return DiscoveredKeywordsResponse(count=len(candidates), candidates=candidates)
+
+
+@router.post("/keywords/candidates/{candidate_id}/approve")
+def approve_candidate_keyword(candidate_id: str, req: Optional[CandidateApproveRequest] = None):
+    """Approves a candidate keyword and registers it into active topic taxonomy."""
+    now_iso = datetime.now(timezone.utc).isoformat()
+    with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM discovered_keywords WHERE id = ?", (candidate_id,))
+        cand = cur.fetchone()
+        if not cand:
+            raise HTTPException(status_code=404, detail="Candidate keyword not found.")
+
+        cand_dict = dict(cand)
+        topic_id = _slugify(cand_dict["name_en"])
+        if not topic_id:
+            topic_id = f"cand_{candidate_id}"
+
+        category = (req.category.strip() if req and req.category else None) or cand_dict.get("category") or "Emerging Topic"
+        parties = [req.related_party_code] if (req and req.related_party_code) else ([cand_dict["suggested_party_code"]] if cand_dict.get("suggested_party_code") else [])
+        leaders = [req.related_leader_name] if (req and req.related_leader_name) else ([cand_dict["suggested_leader_name"]] if cand_dict.get("suggested_leader_name") else [])
+
+        kw_en = [cand_dict["name_en"].lower().strip()]
+        kw_ta = [cand_dict["name_ta"].strip()]
+        hashtags = [cand_dict["name_en"]] if cand_dict["name_en"].startswith("#") else [f"#{cand_dict['name_en'].replace(' ', '')}"]
+
+        use_pg = is_postgres()
+        if use_pg:
+            cur.execute("""
+                INSERT INTO topic_registry (
+                    id, name, tamil_name, name_en, name_ta, category,
+                    keywords_en, keywords_ta, hashtags,
+                    negative_keywords, related_party_codes, related_leader_names,
+                    last_reviewed_at, is_active
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', ?, ?, ?, 1)
+                ON CONFLICT (id) DO UPDATE SET
+                    name = EXCLUDED.name,
+                    category = EXCLUDED.category,
+                    keywords_en = EXCLUDED.keywords_en,
+                    keywords_ta = EXCLUDED.keywords_ta,
+                    is_active = 1
+            """, (
+                topic_id, cand_dict["name_en"], cand_dict["name_ta"], cand_dict["name_en"], cand_dict["name_ta"], category,
+                json.dumps(kw_en, ensure_ascii=False), json.dumps(kw_ta, ensure_ascii=False),
+                json.dumps(hashtags, ensure_ascii=False), json.dumps(parties), json.dumps(leaders), now_iso
+            ))
+        else:
+            cur.execute("""
+                INSERT OR REPLACE INTO topic_registry (
+                    id, name, tamil_name, name_en, name_ta, category,
+                    keywords_en, keywords_ta, hashtags,
+                    negative_keywords, related_party_codes, related_leader_names,
+                    last_reviewed_at, is_active
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', ?, ?, ?, 1)
+            """, (
+                topic_id, cand_dict["name_en"], cand_dict["name_ta"], cand_dict["name_en"], cand_dict["name_ta"], category,
+                json.dumps(kw_en, ensure_ascii=False), json.dumps(kw_ta, ensure_ascii=False),
+                json.dumps(hashtags, ensure_ascii=False), json.dumps(parties), json.dumps(leaders), now_iso
+            ))
+
+        # Mark candidate approved
+        cur.execute("UPDATE discovered_keywords SET status = 'approved', reviewed_at = ? WHERE id = ?", (now_iso, candidate_id))
+        conn.commit()
+
+    return {"status": "approved", "id": candidate_id, "topic_id": topic_id}
+
+
+@router.post("/keywords/candidates/{candidate_id}/reject")
+def reject_candidate_keyword(candidate_id: str):
+    """Rejects a candidate keyword so it is not added to taxonomy."""
+    now_iso = datetime.now(timezone.utc).isoformat()
+    with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT id FROM discovered_keywords WHERE id = ?", (candidate_id,))
+        if not cur.fetchone():
+            raise HTTPException(status_code=404, detail="Candidate keyword not found.")
+
+        cur.execute("UPDATE discovered_keywords SET status = 'rejected', reviewed_at = ? WHERE id = ?", (now_iso, candidate_id))
+        conn.commit()
+
+    return {"status": "rejected", "id": candidate_id}
+
+
+# --- Keyword Pipeline Analytics & Diagnostics ---
+
+@router.get("/keywords/analytics", response_model=KeywordAnalyticsResponse)
+def get_keyword_analytics():
+    """Returns comprehensive analytics on keyword distributions, party mentions, and bias anomalies."""
+    with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM articles")
+        total_articles = cur.fetchone()[0]
+
+        cur.execute("""
+            SELECT party_codes, leader_names, topics, source_name, primary_subject, is_opinion_or_allegation
+            FROM articles
+        """)
+        rows = cur.fetchall()
+
+    party_counts = {}
+    leader_counts = {}
+    topic_counts = {}
+    source_counts = {}
+    subject_counts = {}
+    opinion_count = 0
+
+    for r in rows:
+        d = dict(r)
+        parties = json.loads(d["party_codes"]) if isinstance(d["party_codes"], str) else (d["party_codes"] or [])
+        leaders = json.loads(d["leader_names"]) if isinstance(d["leader_names"], str) else (d["leader_names"] or [])
+        topics = json.loads(d["topics"]) if isinstance(d["topics"], str) else (d["topics"] or [])
+        src = d.get("source_name") or "Unknown"
+        subject = d.get("primary_subject") or "General News"
+        if d.get("is_opinion_or_allegation"):
+            opinion_count += 1
+
+        for p in parties:
+            party_counts[p] = party_counts.get(p, 0) + 1
+        for l in leaders:
+            leader_counts[l] = leader_counts.get(l, 0) + 1
+        for t in topics:
+            topic_counts[t] = topic_counts.get(t, 0) + 1
+        source_counts[src] = source_counts.get(src, 0) + 1
+        subject_counts[subject] = subject_counts.get(subject, 0) + 1
+
+    total_safe = max(total_articles, 1)
+
+    party_dist = [
+        {"party_code": p, "count": c, "percentage": round((c / total_safe) * 100, 1)}
+        for p, c in sorted(party_counts.items(), key=lambda kv: kv[1], reverse=True)
+    ]
+    leader_dist = [
+        {"leader_name": l, "count": c, "percentage": round((c / total_safe) * 100, 1)}
+        for l, c in sorted(leader_counts.items(), key=lambda kv: kv[1], reverse=True)
+    ]
+    topic_dist = [
+        {"topic": t, "count": c, "percentage": round((c / total_safe) * 100, 1)}
+        for t, c in sorted(topic_counts.items(), key=lambda kv: kv[1], reverse=True)
+    ]
+    source_dist = [
+        {"source_name": s, "count": c, "percentage": round((c / total_safe) * 100, 1)}
+        for s, c in sorted(source_counts.items(), key=lambda kv: kv[1], reverse=True)
+    ]
+    subject_dist = [
+        {"subject": s, "count": c, "percentage": round((c / total_safe) * 100, 1)}
+        for s, c in sorted(subject_counts.items(), key=lambda kv: kv[1], reverse=True)[:15]
+    ]
+
+    # Bias diagnostics
+    anomaly_flags = []
+    if party_dist and party_dist[0]["percentage"] > 50:
+        anomaly_flags.append(f"Imbalance Detected: {party_dist[0]['party_code']} is tagged in {party_dist[0]['percentage']}% of articles. Run reclassification preview to audit.")
+    unassigned_count = total_articles - sum(1 for r in rows if (json.loads(dict(r)["party_codes"]) if isinstance(dict(r)["party_codes"], str) else dict(r)["party_codes"]))
+    unassigned_pct = round((unassigned_count / total_safe) * 100, 1)
+    if unassigned_pct > 80:
+        anomaly_flags.append(f"Notice: {unassigned_pct}% of articles are general/non-partisan state news.")
+
+    return KeywordAnalyticsResponse(
+        total_articles=total_articles,
+        party_distribution=party_dist,
+        leader_distribution=leader_dist,
+        topic_distribution=topic_dist,
+        source_distribution=source_dist,
+        primary_subject_distribution=subject_dist,
+        high_frequency_keywords=party_dist[:10],
+        anomaly_flags=anomaly_flags
+    )
+
+
+# --- Safe Batch Reclassification Tooling ---
+
+@router.post("/reclassify", response_model=ReclassificationResponse)
+def reclassify_articles(req: ReclassificationRequest):
+    """
+    Safely audits and reclassifies existing articles using the unbiased taxonomy engine.
+    When `dry_run=True` (default), returns preview diffs and impact analysis without modifying database.
+    When `dry_run=False`, applies updates in safe batches.
+    """
+    entity_matcher.ensure_initialized()
+    with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM articles")
+        total_articles = cur.fetchone()[0]
+
+        cur.execute("""
+            SELECT id, title, summary, party_codes, leader_names, topics, primary_subject
+            FROM articles
+            ORDER BY published_at DESC
+            LIMIT ? OFFSET ?
+        """, (req.batch_size, req.offset))
+        rows = cur.fetchall()
+
+    examined = len(rows)
+    changed_count = 0
+    sample_diffs = []
+    updates = []
+
+    for r in rows:
+        d = dict(r)
+        old_parties = json.loads(d["party_codes"]) if isinstance(d["party_codes"], str) else (d["party_codes"] or [])
+        old_leaders = json.loads(d["leader_names"]) if isinstance(d["leader_names"], str) else (d["leader_names"] or [])
+        old_topics = json.loads(d["topics"]) if isinstance(d["topics"], str) else (d["topics"] or [])
+
+        match_res = entity_matcher.match_entities(text=d.get("summary") or "", title=d.get("title") or "")
+        new_parties = match_res["party_codes"]
+        new_leaders = match_res["leader_names"]
+        new_topics = match_res["topics"]
+        new_primary_subject = match_res.get("primary_subject")
+        new_is_opinion = 1 if match_res.get("is_opinion_or_allegation") else 0
+
+        has_changed = (
+            set(old_parties) != set(new_parties) or
+            set(old_leaders) != set(new_leaders) or
+            set(old_topics) != set(new_topics) or
+            d.get("primary_subject") != new_primary_subject
+        )
+
+        if has_changed:
+            changed_count += 1
+            if len(sample_diffs) < 15:
+                sample_diffs.append(ReclassificationSampleDiff(
+                    article_id=d["id"],
+                    title=d.get("title") or "",
+                    old_parties=old_parties,
+                    new_parties=new_parties,
+                    old_leaders=old_leaders,
+                    new_leaders=new_leaders,
+                    old_topics=old_topics,
+                    new_topics=new_topics,
+                    primary_subject=new_primary_subject
+                ))
+
+            if not req.dry_run:
+                updates.append((
+                    json.dumps(new_parties),
+                    json.dumps(new_leaders),
+                    json.dumps(new_topics),
+                    new_primary_subject,
+                    new_is_opinion,
+                    d["id"]
+                ))
+
+    if not req.dry_run and updates:
+        with get_connection() as conn:
+            cur = conn.cursor()
+            cur.executemany("""
+                UPDATE articles SET
+                    party_codes = ?,
+                    leader_names = ?,
+                    topics = ?,
+                    primary_subject = ?,
+                    is_opinion_or_allegation = ?
+                WHERE id = ?
+            """, updates)
+            conn.commit()
+
+    if req.dry_run:
+        summary_msg = f"Dry Run Preview: {changed_count} of {examined} evaluated articles would be updated. Zero database changes made."
+    else:
+        summary_msg = f"Reclassification Applied: Successfully updated {changed_count} of {examined} articles in the database."
+
+    return ReclassificationResponse(
+        dry_run=req.dry_run,
+        total_articles=total_articles,
+        examined=examined,
+        changed_count=changed_count,
+        sample_diffs=sample_diffs,
+        summary_message=summary_msg
+    )
+
 
 
 # --- Trending Algorithm Configuration Endpoints ---

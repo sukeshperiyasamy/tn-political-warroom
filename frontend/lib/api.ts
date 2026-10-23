@@ -40,6 +40,11 @@ import {
   TrendingConfig,
   SafeSettingsResponse,
   NewsUpdatesResponse,
+  DiscoveredKeyword,
+  DiscoveredKeywordsResponse,
+  KeywordAnalyticsResponse,
+  ReclassificationRequest,
+  ReclassificationResponse,
 } from "../types/political";
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -815,3 +820,69 @@ export async function updateSafeSettings(
 
 
 
+
+
+export async function fetchCandidateKeywords(status?: string): Promise<DiscoveredKeywordsResponse> {
+  const url = `${API_BASE}/api/admin/keywords/candidates${status ? `?status=${encodeURIComponent(status)}` : ""}`;
+  const res = await fetchWithTimeout(url, {}, 30000);
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => "");
+    throw new Error(`Failed to fetch candidate keywords (${res.status} ${res.statusText}${errorText ? `: ${errorText}` : ""})`);
+  }
+  return await res.json();
+}
+
+export async function approveCandidateKeyword(
+  candidateId: string,
+  params?: { category?: string; related_party_code?: string; related_leader_name?: string }
+): Promise<any> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/admin/keywords/candidates/${encodeURIComponent(candidateId)}/approve`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params || {}),
+  }, 30000);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Failed to approve candidate" }));
+    throw new Error(err.detail || `Failed to approve candidate (${res.status})`);
+  }
+  return await res.json();
+}
+
+export async function rejectCandidateKeyword(candidateId: string): Promise<any> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/admin/keywords/candidates/${encodeURIComponent(candidateId)}/reject`, {
+    method: "POST",
+  }, 30000);
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => "");
+    throw new Error(`Failed to reject candidate (${res.status} ${res.statusText}${errorText ? `: ${errorText}` : ""})`);
+  }
+  return await res.json();
+}
+
+export async function fetchKeywordAnalytics(): Promise<KeywordAnalyticsResponse> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/admin/keywords/analytics`, {}, 30000);
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => "");
+    throw new Error(`Failed to fetch keyword analytics (${res.status} ${res.statusText}${errorText ? `: ${errorText}` : ""})`);
+  }
+  return await res.json();
+}
+
+export async function runReclassification(
+  params: { dry_run?: boolean; batch_size?: number; offset?: number }
+): Promise<ReclassificationResponse> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/admin/reclassify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      dry_run: params.dry_run !== undefined ? params.dry_run : true,
+      batch_size: params.batch_size || 50,
+      offset: params.offset || 0,
+    }),
+  }, 60000);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Failed to run reclassification" }));
+    throw new Error(err.detail || `Failed to run reclassification (${res.status})`);
+  }
+  return await res.json();
+}
