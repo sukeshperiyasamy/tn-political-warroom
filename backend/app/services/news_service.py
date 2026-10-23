@@ -1,12 +1,13 @@
 import json
 from typing import List, Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 from ..models import (
     NewsArticle, PoliticalParty, PoliticalLeader, FilterParams,
     DashboardMetrics, SentimentDistribution, PartyMetric, LeaderMetric,
     DailyTrendItem, CompareResponse, EntityComparison, SentimentType,
     DataStatus, CardTemplate, TamilVariation, SourceType,
-    EditorialVersionItem, ArticleEditorialVersionsResponse, EditorialFinalizeRequest
+    EditorialVersionItem, ArticleEditorialVersionsResponse, EditorialFinalizeRequest,
+    NewsUpdatesResponse
 )
 from ..data.seed_data import PARTIES, LEADERS, ARTICLES, CARD_TEMPLATES
 from ..data.db import get_connection, is_postgres
@@ -74,9 +75,8 @@ class NewsService:
             live_dicts = source_registry.get_live_articles()
             return [self._dict_to_article(d) for d in live_dicts]
 
-    def filter_articles(self, params: FilterParams) -> List[NewsArticle]:
-        pool = self._get_articles_pool(params.mode)
-        results = pool
+    def _apply_filters(self, articles: List[NewsArticle], params: FilterParams) -> List[NewsArticle]:
+        results = articles
 
         if params.q:
             query = params.q.lower().strip()
@@ -116,9 +116,40 @@ class NewsService:
         if params.date_to:
             results = [a for a in results if a.published_at <= params.date_to]
 
-        # Sort newest first
         results.sort(key=lambda x: x.published_at, reverse=True)
         return results
+
+    def filter_articles(self, params: FilterParams) -> List[NewsArticle]:
+        pool = self._get_articles_pool(params.mode)
+        return self._apply_filters(pool, params)
+
+    def get_news_updates(
+        self,
+        since: Optional[str] = None,
+        params: Optional[FilterParams] = None,
+        limit: int = 50
+    ) -> NewsUpdatesResponse:
+        current_time = datetime.now(timezone.utc).isoformat()
+        mode = params.mode if params else "live"
+
+        if mode == "demo":
+            raw_articles: List[NewsArticle] = []
+        else:
+            raw_dicts = source_registry.get_live_articles_since(since=since, limit=limit)
+            raw_articles = [self._dict_to_article(d) for d in raw_dicts]
+
+        if params:
+            filtered = self._apply_filters(raw_articles, params)
+        else:
+            filtered = raw_articles
+            filtered.sort(key=lambda x: x.published_at, reverse=True)
+
+        return NewsUpdatesResponse(
+            server_time=current_time,
+            cursor=current_time,
+            count=len(filtered),
+            articles=filtered
+        )
 
     def get_article_by_id(self, article_id: str) -> Optional[Dict[str, Any]]:
         # First check live database

@@ -24,6 +24,13 @@ export interface TamilVariation {
   caption: string;
 }
 
+export interface NewsUpdatesResponse {
+  server_time: string;
+  cursor: string;
+  count: number;
+  articles: NewsArticle[];
+}
+
 export interface NewsArticle {
   id: string;
   title: string;

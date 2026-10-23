@@ -2,7 +2,7 @@ import sqlite3
 import json
 import os
 from typing import List, Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 from ..data.db import get_connection, is_postgres
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "warroom.db")
@@ -542,6 +542,8 @@ class SourceRegistry:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_articles_content_hash ON articles(content_hash)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_articles_source_id ON articles(source_id)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_articles_published_at ON articles(published_at)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_articles_first_seen ON articles(first_seen_at)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_articles_processed_at ON articles(processed_at)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_sources_is_enabled ON sources(is_enabled)")
 
             # Backfill existing articles
@@ -1143,25 +1145,55 @@ class SourceRegistry:
                     return False
                 raise
 
+    def _row_to_article_dict(self, r: Any) -> Dict[str, Any]:
+        d = dict(r)
+        d["party_codes"] = json.loads(d["party_codes"]) if isinstance(d["party_codes"], str) else d["party_codes"]
+        d["leader_names"] = json.loads(d["leader_names"]) if isinstance(d["leader_names"], str) else d["leader_names"]
+        d["topics"] = json.loads(d["topics"]) if isinstance(d["topics"], str) else d["topics"]
+        d["tamil_variations"] = json.loads(d["tamil_variations"]) if isinstance(d["tamil_variations"], str) else d["tamil_variations"]
+        d["engagement_estimated"] = json.loads(d["engagement_estimated"]) if isinstance(d["engagement_estimated"], str) else d["engagement_estimated"]
+        st = d.get("source_type") or "NEWS_MEDIA"
+        d["source_type"] = st
+        d["source_category"] = "News Media" if st == "NEWS_MEDIA" else "Influencers & Social Media"
+        d["platform"] = d.get("platform") or "web"
+        return d
+
     def get_live_articles(self) -> List[Dict[str, Any]]:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM articles ORDER BY published_at DESC")
             rows = cursor.fetchall()
-            articles = []
-            for r in rows:
-                d = dict(r)
-                d["party_codes"] = json.loads(d["party_codes"]) if isinstance(d["party_codes"], str) else d["party_codes"]
-                d["leader_names"] = json.loads(d["leader_names"]) if isinstance(d["leader_names"], str) else d["leader_names"]
-                d["topics"] = json.loads(d["topics"]) if isinstance(d["topics"], str) else d["topics"]
-                d["tamil_variations"] = json.loads(d["tamil_variations"]) if isinstance(d["tamil_variations"], str) else d["tamil_variations"]
-                d["engagement_estimated"] = json.loads(d["engagement_estimated"]) if isinstance(d["engagement_estimated"], str) else d["engagement_estimated"]
-                st = d.get("source_type") or "NEWS_MEDIA"
-                d["source_type"] = st
-                d["source_category"] = "News Media" if st == "NEWS_MEDIA" else "Influencers & Social Media"
-                d["platform"] = d.get("platform") or "web"
-                articles.append(d)
-            return articles
+            return [self._row_to_article_dict(r) for r in rows]
+
+    def get_live_articles_since(self, since: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if since and since.strip():
+                clean_since = since.strip().replace("Z", "+00:00")
+                try:
+                    dt = datetime.fromisoformat(clean_since)
+                    if dt.tzinfo is None:
+                        dt = dt.replace(tzinfo=timezone.utc)
+                    else:
+                        dt = dt.astimezone(timezone.utc)
+                    norm_since = dt.isoformat()
+                except Exception:
+                    norm_since = clean_since
+
+                cursor.execute("""
+                    SELECT * FROM articles 
+                    WHERE (first_seen_at > ? OR processed_at > ?)
+                    ORDER BY published_at DESC 
+                    LIMIT ?
+                """, (norm_since, norm_since, limit))
+            else:
+                cursor.execute("""
+                    SELECT * FROM articles 
+                    ORDER BY published_at DESC 
+                    LIMIT ?
+                """, (limit,))
+            rows = cursor.fetchall()
+            return [self._row_to_article_dict(r) for r in rows]
 
     def get_live_article_by_id(self, article_id: str) -> Optional[Dict[str, Any]]:
         with self.get_connection() as conn:
@@ -1170,17 +1202,7 @@ class SourceRegistry:
             row = cursor.fetchone()
             if not row:
                 return None
-            d = dict(row)
-            d["party_codes"] = json.loads(d["party_codes"]) if isinstance(d["party_codes"], str) else d["party_codes"]
-            d["leader_names"] = json.loads(d["leader_names"]) if isinstance(d["leader_names"], str) else d["leader_names"]
-            d["topics"] = json.loads(d["topics"]) if isinstance(d["topics"], str) else d["topics"]
-            d["tamil_variations"] = json.loads(d["tamil_variations"]) if isinstance(d["tamil_variations"], str) else d["tamil_variations"]
-            d["engagement_estimated"] = json.loads(d["engagement_estimated"]) if isinstance(d["engagement_estimated"], str) else d["engagement_estimated"]
-            st = d.get("source_type") or "NEWS_MEDIA"
-            d["source_type"] = st
-            d["source_category"] = "News Media" if st == "NEWS_MEDIA" else "Influencers & Social Media"
-            d["platform"] = d.get("platform") or "web"
-            return d
+            return self._row_to_article_dict(row)
 
     def get_system_freshness(self) -> Dict[str, Any]:
         with self.get_connection() as conn:

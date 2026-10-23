@@ -2,7 +2,8 @@ from fastapi import APIRouter, HTTPException, Query
 from typing import Optional, List
 from ..models import (
     NewsArticle, FilterParams, PoliticalParty, PoliticalLeader,
-    ArticleEditorialVersionsResponse, EditorialFinalizeRequest
+    ArticleEditorialVersionsResponse, EditorialFinalizeRequest,
+    NewsUpdatesResponse
 )
 from ..services.news_service import news_service
 
@@ -32,6 +33,33 @@ def get_news(
         mode=mode
     )
     return news_service.filter_articles(params)
+
+@router.get("/updates", response_model=NewsUpdatesResponse)
+def get_news_updates(
+    since: Optional[str] = Query(None, description="ISO timestamp cursor to fetch articles added/processed since"),
+    limit: Optional[int] = Query(50, ge=1, le=200, description="Max updates to return"),
+    q: Optional[str] = Query(None, description="Search keyword"),
+    party: Optional[str] = Query(None, description="Filter by party code"),
+    leader: Optional[str] = Query(None, description="Filter by leader name"),
+    sentiment: Optional[str] = Query(None, description="Filter by sentiment (positive, neutral, negative)"),
+    topic: Optional[str] = Query(None, description="Filter by topic"),
+    source: Optional[str] = Query(None, description="Filter by media source"),
+    date_from: Optional[str] = Query(None, description="From date (ISO string)"),
+    date_to: Optional[str] = Query(None, description="To date (ISO string)"),
+    mode: Optional[str] = Query("live", description="Mode: 'live', 'demo', or 'all'")
+):
+    params = FilterParams(
+        q=q,
+        party=party,
+        leader=leader,
+        sentiment=sentiment,
+        topic=topic,
+        source=source,
+        date_from=date_from,
+        date_to=date_to,
+        mode=mode
+    )
+    return news_service.get_news_updates(since=since, params=params, limit=limit or 50)
 
 @router.get("/parties", response_model=List[PoliticalParty])
 def get_parties():

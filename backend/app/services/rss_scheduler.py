@@ -9,7 +9,7 @@ class RSSBackgroundScheduler:
     Runs every N minutes (configurable via RSS_POLL_INTERVAL_MINUTES).
     Can be enabled/disabled via ENABLE_RSS_SCHEDULER environment variable.
     """
-    def __init__(self, interval_seconds: int = 20 * 60):
+    def __init__(self, interval_seconds: int = 5 * 60):
         self.interval_seconds = interval_seconds
         self._task: Optional[asyncio.Task] = None
         self._stop_event = asyncio.Event()
@@ -20,7 +20,7 @@ class RSSBackgroundScheduler:
             print("RSS Scheduler: Disabled via configuration.")
             return
 
-        interval_min = int(os.getenv("RSS_POLL_INTERVAL_MINUTES", "20"))
+        interval_min = int(os.getenv("RSS_POLL_INTERVAL_MINUTES", "5"))
         self.interval_seconds = max(interval_min * 60, 60)
         self._stop_event.clear()
         self._task = asyncio.create_task(self._run_loop())

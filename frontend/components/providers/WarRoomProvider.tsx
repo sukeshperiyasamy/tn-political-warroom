@@ -27,6 +27,7 @@ import {
   fetchParties,
   fetchTemplates,
   triggerIngest,
+  fetchNewsUpdates,
 } from "../../lib/api";
 import { ArticleIntelligenceDrawer } from "../news/ArticleIntelligenceDrawer";
 
@@ -84,6 +85,20 @@ export function useWarRoom(): WarRoomContextValue {
   return ctx;
 }
 
+function mergeArticles(existing: NewsArticle[], incoming: NewsArticle[]): NewsArticle[] {
+  if (!incoming || incoming.length === 0) return existing;
+  const map = new Map<string, NewsArticle>();
+  for (const a of existing) {
+    map.set(a.id, a);
+  }
+  for (const a of incoming) {
+    map.set(a.id, a);
+  }
+  const merged = Array.from(map.values());
+  merged.sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
+  return merged;
+}
+
 export function WarRoomProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
@@ -98,6 +113,7 @@ export function WarRoomProvider({ children }: { children: React.ReactNode }) {
   const [polling, setPolling] = useState(false);
   const [pollStatus, setPollStatus] = useState<PollStatusInfo>({ state: "idle" });
   const pollStatusTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastCursorRef = useRef<string | null>(null);
 
   const [drawerArticle, setDrawerArticle] = useState<NewsArticle | null>(null);
   const [studioArticle, setStudioArticle] = useState<NewsArticle | null>(null);
@@ -116,22 +132,95 @@ export function WarRoomProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    if (articles.length === 0) {
+      setLoading(true);
+    }
+
     Promise.all([fetchArticles(filters), fetchMetrics(filters)])
       .then(([arts, mets]) => {
         if (!mounted) return;
-        setArticles(arts);
-        setMetrics(mets);
-        if (!studioSeeded.current && arts.length > 0) {
+        if (arts) {
+          setArticles(arts);
+          if (!lastCursorRef.current) {
+            lastCursorRef.current = new Date().toISOString();
+          }
+        }
+        if (mets) {
+          setMetrics(mets);
+        }
+        if (!studioSeeded.current && arts && arts.length > 0) {
           studioSeeded.current = true;
           setStudioArticle(arts[0]);
         }
       })
-      .catch((err) => console.error("Failed to load articles:", err))
-      .finally(() => mounted && setLoading(false));
+      .catch((err) => {
+        console.warn("Failed to load articles/metrics (retaining existing view):", err);
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
     return () => {
       mounted = false;
     };
   }, [filters]);
+
+  // Background non-disruptive update loop (every 25 seconds)
+  useEffect(() => {
+    let mounted = true;
+    let inFlight = false;
+
+    const checkBackgroundUpdates = async () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      if (inFlight || polling) return;
+
+      const cursor = lastCursorRef.current;
+      if (!cursor) return;
+
+      inFlight = true;
+      try {
+        const updates = await fetchNewsUpdates(cursor, filters);
+        if (!mounted) return;
+
+        lastCursorRef.current = updates.cursor || updates.server_time;
+
+        if (updates.articles && updates.articles.length > 0) {
+          setArticles((prev) => mergeArticles(prev, updates.articles));
+          fetchMetrics(filters)
+            .then((freshMets) => {
+              if (mounted && freshMets) {
+                setMetrics(freshMets);
+              }
+            })
+            .catch(() => {});
+        }
+      } catch (err) {
+        console.debug("Background news updates check failed (retaining existing view):", err);
+      } finally {
+        inFlight = false;
+      }
+    };
+
+    const intervalId = setInterval(checkBackgroundUpdates, 25000);
+
+    const handleVisibilityChange = () => {
+      if (typeof document !== "undefined" && !document.hidden) {
+        checkBackgroundUpdates();
+      }
+    };
+
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+    }
+
+    return () => {
+      mounted = false;
+      clearInterval(intervalId);
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+      }
+    };
+  }, [filters, polling]);
 
   const resetFilters = useCallback(
     () => setFilters((prev) => ({ ...EMPTY_FILTERS, mode: prev.mode })),
@@ -159,9 +248,39 @@ export function WarRoomProvider({ children }: { children: React.ReactNode }) {
           newItems: jobStatus.total_new_items_added,
         });
       });
-      const [arts, mets] = await Promise.all([fetchArticles(filters), fetchMetrics(filters)]);
-      setArticles(arts);
-      setMetrics(mets);
+
+      const cursor = lastCursorRef.current;
+      if (cursor) {
+        try {
+          const updates = await fetchNewsUpdates(cursor, filters);
+          lastCursorRef.current = updates.cursor || updates.server_time;
+          if (updates.articles && updates.articles.length > 0) {
+            setArticles((prev) => mergeArticles(prev, updates.articles));
+          }
+        } catch (err) {
+          console.warn("Failed to fetch incremental updates post-poll, refreshing full feed:", err);
+          const arts = await fetchArticles(filters);
+          if (arts && arts.length > 0) {
+            setArticles(arts);
+          }
+        }
+      } else {
+        const arts = await fetchArticles(filters);
+        if (arts && arts.length > 0) {
+          setArticles(arts);
+          lastCursorRef.current = new Date().toISOString();
+        }
+      }
+
+      // Refresh metrics silently
+      try {
+        const mets = await fetchMetrics(filters);
+        if (mets) {
+          setMetrics(mets);
+        }
+      } catch (err) {
+        console.warn("Failed to refresh metrics post-poll:", err);
+      }
 
       const added = res.total_new_items_added || 0;
       const msg = added > 0 ? `Synced! ${added} new stories` : "Feeds up to date (no new stories)";

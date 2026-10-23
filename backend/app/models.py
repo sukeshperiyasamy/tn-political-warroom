@@ -153,6 +153,12 @@ class NewsArticle(BaseModel):
     processing_attempts: Optional[int] = 1
     last_seen_at: Optional[str] = None
 
+class NewsUpdatesResponse(BaseModel):
+    server_time: str
+    cursor: str
+    count: int
+    articles: List[NewsArticle]
+
 class EditorialVersionItem(BaseModel):
     version_type: str  # "summary" | "detailed" | "social"
     version_label: str # "Version 1: Summarized News" | "Version 2: Detailed News" | "Version 3: Social Media / Influencer Format"

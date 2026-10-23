@@ -39,6 +39,7 @@ import {
   AdminSystemStatus,
   TrendingConfig,
   SafeSettingsResponse,
+  NewsUpdatesResponse,
 } from "../types/political";
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -99,14 +100,34 @@ export async function fetchArticles(filters: FilterState): Promise<NewsArticle[]
   if (filters.source) params.append("source", filters.source);
   params.append("mode", "live");
 
-  try {
-    const res = await fetchWithTimeout(`${API_BASE}/api/news?${params.toString()}`);
-    if (res.ok) return await res.json();
-  } catch (err) {
-    console.warn("Failed to fetch live articles from API:", err);
+  const res = await fetchWithTimeout(`${API_BASE}/api/news?${params.toString()}`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch live articles from API: ${res.statusText}`);
   }
+  return await res.json();
+}
 
-  return [];
+export async function fetchNewsUpdates(
+  since: string,
+  filters: FilterState,
+  limit = 50
+): Promise<NewsUpdatesResponse> {
+  const params = new URLSearchParams();
+  if (since) params.append("since", since);
+  params.append("limit", limit.toString());
+  if (filters.search) params.append("q", filters.search);
+  if (filters.party) params.append("party", filters.party);
+  if (filters.leader) params.append("leader", filters.leader);
+  if (filters.sentiment) params.append("sentiment", filters.sentiment);
+  if (filters.topic) params.append("topic", filters.topic);
+  if (filters.source) params.append("source", filters.source);
+  params.append("mode", "live");
+
+  const res = await fetchWithTimeout(`${API_BASE}/api/news/updates?${params.toString()}`, {}, 20000);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch live news updates: ${res.statusText}`);
+  }
+  return await res.json();
 }
 
 export async function fetchMetrics(filters: FilterState): Promise<DashboardMetrics | null> {
@@ -119,14 +140,11 @@ export async function fetchMetrics(filters: FilterState): Promise<DashboardMetri
   if (filters.source) params.append("source", filters.source);
   params.append("mode", "live");
 
-  try {
-    const res = await fetchWithTimeout(`${API_BASE}/api/metrics?${params.toString()}`);
-    if (res.ok) return await res.json();
-  } catch (err) {
-    console.warn("Failed to fetch live metrics from API:", err);
+  const res = await fetchWithTimeout(`${API_BASE}/api/metrics?${params.toString()}`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch live metrics from API: ${res.statusText}`);
   }
-
-  return null;
+  return await res.json();
 }
 
 export async function compareEntities(entity_type: string, entity_ids: string[], mode: string = "live"): Promise<CompareResponse> {
