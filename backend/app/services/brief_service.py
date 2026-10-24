@@ -84,8 +84,8 @@ class BriefService:
                 })
             return results
         else:
-            # Strictly live_rss from SQLite
-            return source_registry.get_live_articles()
+            # Strictly live_rss; narrow projection (no tamil_variations) keeps database egress small
+            return source_registry.get_live_articles_for_brief()
 
     def get_topic_trends(
         self,

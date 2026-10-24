@@ -64,16 +64,42 @@ class NewsService:
             analysis_provider=d.get("analysis_provider", "tamil_nlp_engine")
         )
 
-    def _get_articles_pool(self, mode: Optional[str] = "live") -> List[NewsArticle]:
+    def _lite_dict_to_article(self, d: Dict[str, Any]) -> NewsArticle:
+        """NewsArticle built from the narrow stats projection. Fields that were not read are placeholders and
+        tamil_variations is empty, so these objects are only for counting/filtering, never returned to clients."""
+        return NewsArticle(
+            id=d["id"],
+            title=d.get("title", ""),
+            tamil_title=d.get("tamil_title", ""),
+            summary=d.get("summary", ""),
+            tamil_summary=d.get("tamil_summary", ""),
+            tamil_variations=[],
+            source=d.get("source_name") or d.get("source", "Live Media"),
+            source_url="",
+            published_at=d["published_at"],
+            party_codes=d.get("party_codes", []),
+            leader_names=d.get("leader_names", []),
+            sentiment=SentimentType(d["sentiment"]) if isinstance(d["sentiment"], str) else d["sentiment"],
+            sentiment_score=float(d["sentiment_score"]),
+            topics=d.get("topics", []),
+            engagement_estimated=d.get("engagement_estimated", {"reach": 1000, "shares": 50}),
+            data_status=DataStatus.LIVE_RSS,
+            analysis_provider="tamil_nlp_engine",
+        )
+
+    def _get_articles_pool(self, mode: Optional[str] = "live", lite: bool = False, include_text: bool = False) -> List[NewsArticle]:
+        """Article pool for the requested mode. lite=True reads only the narrow stats columns (metrics/compare)."""
         if mode == "demo":
             return list(self.articles)
-        elif mode == "all":
-            live_dicts = source_registry.get_live_articles()
-            live_arts = [self._dict_to_article(d) for d in live_dicts]
-            return live_arts + list(self.articles)
-        else: # "live"
-            live_dicts = source_registry.get_live_articles()
-            return [self._dict_to_article(d) for d in live_dicts]
+
+        def live() -> List[NewsArticle]:
+            if lite:
+                return [self._lite_dict_to_article(d) for d in source_registry.get_live_articles_lite(include_text=include_text)]
+            return [self._dict_to_article(d) for d in source_registry.get_live_articles_list()]
+
+        if mode == "all":
+            return live() + list(self.articles)
+        return live()  # "live"
 
     def _apply_filters(self, articles: List[NewsArticle], params: FilterParams) -> List[NewsArticle]:
         results = articles
@@ -156,7 +182,8 @@ class NewsService:
         live_dict = source_registry.get_live_article_by_id(article_id)
         if live_dict:
             article = self._dict_to_article(live_dict)
-            all_live = self._get_articles_pool("live")
+            # Related articles are chosen from the narrow stats read, then only those few are loaded in full.
+            all_live = self._get_articles_pool("live", lite=True)
             related = [
                 a for a in all_live
                 if a.id != article.id and (
@@ -164,6 +191,7 @@ class NewsService:
                     or any(t in a.topics for t in article.topics)
                 )
             ][:4]
+            related = self._hydrate_recent(related, {a.id for a in related})
             return {
                 "article": article,
                 "related_articles": related
@@ -188,9 +216,10 @@ class NewsService:
         }
 
     def calculate_metrics(self, params: FilterParams) -> DashboardMetrics:
-        pool = self._get_articles_pool(params.mode)
+        # One narrow read: the free-text columns are only fetched when a q search needs them.
+        pool = self._get_articles_pool(params.mode, lite=True, include_text=bool(params.q))
         total_pool_count = len(pool)
-        filtered = self.filter_articles(params)
+        filtered = self._apply_filters(pool, params)
         total_filtered = len(filtered)
 
         # Sentiment Distribution
@@ -314,8 +343,22 @@ class NewsService:
             polling_interval_desc="Periodic 15-minute automated RSS polling cycles with HTTP 304 conditional validation"
         )
 
+    def _hydrate_recent(self, articles: List[NewsArticle], lite_ids: set) -> List[NewsArticle]:
+        """Swap narrow (lite) live articles for their full versions; seeded demo articles are already complete."""
+        need = [a.id for a in articles if a.id in lite_ids]
+        full = source_registry.get_live_articles_by_ids(need) if need else {}
+        out: List[NewsArticle] = []
+        for a in articles:
+            if a.id in lite_ids and a.id in full:
+                out.append(self._dict_to_article(full[a.id]))
+            else:
+                out.append(a)
+        return out
+
     def compare_entities(self, entity_type: str, entity_ids: List[str], mode: Optional[str] = "live") -> CompareResponse:
-        pool = self._get_articles_pool(mode)
+        pool = self._get_articles_pool(mode, lite=True)
+        seed_ids = {a.id for a in self.articles}
+        lite_ids = {a.id for a in pool if a.id not in seed_ids}
         comparisons: List[EntityComparison] = []
 
         if entity_type == "party":
@@ -356,7 +399,7 @@ class NewsService:
                     average_sentiment_score=round(avg_score, 2),
                     estimated_total_reach=total_reach,
                     top_topics=top_topics,
-                    recent_articles=p_articles[:3]
+                    recent_articles=self._hydrate_recent(p_articles[:3], lite_ids)
                 ))
         else: # leader
             for lid in entity_ids:
@@ -396,7 +439,7 @@ class NewsService:
                     average_sentiment_score=round(avg_score, 2),
                     estimated_total_reach=total_reach,
                     top_topics=top_topics,
-                    recent_articles=l_articles[:3]
+                    recent_articles=self._hydrate_recent(l_articles[:3], lite_ids)
                 ))
 
         return CompareResponse(

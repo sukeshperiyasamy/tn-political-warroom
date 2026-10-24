@@ -95,6 +95,21 @@ export async function fetchTemplates(): Promise<CardTemplate[]> {
   return [];
 }
 
+/**
+ * The article list intentionally omits `tamil_variations` (about two thirds of each article's data). Fetch the full
+ * article, including those variations, only when someone opens its AI panel or sends it to the card studio.
+ */
+export async function fetchArticleDetail(articleId: string): Promise<NewsArticle | null> {
+  try {
+    const res = await fetchWithTimeout(`${API_BASE}/api/news/${encodeURIComponent(articleId)}`, {}, 15000);
+    if (!res.ok) return null;
+    const body = await res.json();
+    return (body?.article as NewsArticle) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchArticles(filters: FilterState): Promise<NewsArticle[]> {
   const params = new URLSearchParams();
   if (filters.search) params.append("q", filters.search);

@@ -7,6 +7,24 @@ from ..data.db import get_connection, is_postgres
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "warroom.db")
 
+# Columns the RSS ingestion dedupe step actually reads from an already-stored article.
+EXISTING_LOOKUP_COLUMNS = "id, canonical_url, source_url, publisher_guid, content_hash, processing_hash, processing_status"
+
+# Columns needed to compute metrics / comparisons / filters (no tamil_variations, URLs, hashes or timestamps).
+LITE_STATS_COLUMNS = ("id, source_name, published_at, party_codes, leader_names, sentiment, sentiment_score, topics, "
+                      "engagement_estimated")
+# Added only when a free-text search (q) must be evaluated.
+LITE_TEXT_COLUMNS = "title, tamil_title, summary, tamil_summary"
+
+# Everything the article LIST / updates feed returns to clients, minus tamil_variations (about two thirds of a row;
+# it is loaded on demand through the article detail endpoint).
+LIST_COLUMNS = ("id, source_name, title, tamil_title, summary, tamil_summary, source_url, published_at, party_codes, "
+                "leader_names, sentiment, sentiment_score, topics, engagement_estimated, analysis_provider, source_type, platform")
+
+# Everything the intelligence-brief service reads (it never uses tamil_variations or engagement estimates).
+BRIEF_COLUMNS = ("id, source_id, source_name, title, tamil_title, summary, tamil_summary, source_url, canonical_url, "
+                 "published_at, party_codes, leader_names, sentiment, sentiment_score, topics, content_hash, data_status")
+
 DEFAULT_SOURCES = [
     # Group A — News Media
     {
@@ -899,15 +917,12 @@ class SourceRegistry:
 
                 where_sql = " OR ".join(clauses)
                 cursor = conn.cursor()
-                cursor.execute(f"SELECT * FROM articles WHERE {where_sql}", params)
+                # Egress guard: ingestion only needs the lookup keys and the hashes/status it compares. Selecting whole rows
+                # (tamil_variations alone is ~65% of a row) re-downloaded every stored article on every feed poll.
+                cursor.execute(f"SELECT {EXISTING_LOOKUP_COLUMNS} FROM articles WHERE {where_sql}", params)
                 rows = cursor.fetchall()
                 for row in rows:
                     d = dict(row)
-                    d["party_codes"] = json.loads(d["party_codes"]) if isinstance(d["party_codes"], str) else d["party_codes"]
-                    d["leader_names"] = json.loads(d["leader_names"]) if isinstance(d["leader_names"], str) else d["leader_names"]
-                    d["topics"] = json.loads(d["topics"]) if isinstance(d["topics"], str) else d["topics"]
-                    d["tamil_variations"] = json.loads(d["tamil_variations"]) if isinstance(d["tamil_variations"], str) else d["tamil_variations"]
-                    d["engagement_estimated"] = json.loads(d["engagement_estimated"]) if isinstance(d["engagement_estimated"], str) else d["engagement_estimated"]
 
                     if d.get("canonical_url"):
                         result_map[d["canonical_url"]] = d
@@ -1192,12 +1207,78 @@ class SourceRegistry:
         d["is_opinion_or_allegation"] = bool(d.get("is_opinion_or_allegation"))
         return d
 
+    def _row_to_list_dict(self, r: Any) -> Dict[str, Any]:
+        """Like _row_to_article_dict for rows selected with LIST_COLUMNS: tamil_variations is intentionally empty."""
+        d = dict(r)
+        for k in ("party_codes", "leader_names", "topics", "engagement_estimated"):
+            d[k] = json.loads(d[k]) if isinstance(d[k], str) else d[k]
+        d["tamil_variations"] = []
+        st = d.get("source_type") or "NEWS_MEDIA"
+        d["source_type"] = st
+        d["source_category"] = "News Media" if st == "NEWS_MEDIA" else "Influencers & Social Media"
+        d["platform"] = d.get("platform") or "web"
+        return d
+
+    def get_live_articles_list(self) -> List[Dict[str, Any]]:
+        """All live articles for the list view, newest first, without tamil_variations."""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT {LIST_COLUMNS} FROM articles ORDER BY published_at DESC")
+            return [self._row_to_list_dict(r) for r in cursor.fetchall()]
+
+    def get_live_articles_for_brief(self) -> List[Dict[str, Any]]:
+        """All live articles with only the fields the brief service reads (newest first)."""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT {BRIEF_COLUMNS} FROM articles ORDER BY published_at DESC")
+            out: List[Dict[str, Any]] = []
+            for r in cursor.fetchall():
+                d = dict(r)
+                for k in ("party_codes", "leader_names", "topics"):
+                    d[k] = json.loads(d[k]) if isinstance(d[k], str) else d[k]
+                out.append(d)
+            return out
+
     def get_live_articles(self) -> List[Dict[str, Any]]:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM articles ORDER BY published_at DESC")
             rows = cursor.fetchall()
             return [self._row_to_article_dict(r) for r in rows]
+
+    def get_live_articles_lite(self, include_text: bool = False) -> List[Dict[str, Any]]:
+        """Narrow read of every live article for metrics/compare/filter maths (newest first, same order as get_live_articles).
+
+        Returns only the columns in LITE_STATS_COLUMNS (plus the text columns when include_text=True, needed for q search).
+        Heavy columns such as tamil_variations are never read; fetch full rows with get_live_articles_by_ids when needed."""
+        cols = LITE_STATS_COLUMNS + (", " + LITE_TEXT_COLUMNS if include_text else "")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT {cols} FROM articles ORDER BY published_at DESC")
+            out: List[Dict[str, Any]] = []
+            for r in cursor.fetchall():
+                d = dict(r)
+                for k in ("party_codes", "leader_names", "topics", "engagement_estimated"):
+                    d[k] = json.loads(d[k]) if isinstance(d[k], str) else d[k]
+                out.append(d)
+            return out
+
+    def get_live_articles_by_ids(self, article_ids: List[str]) -> Dict[str, Dict[str, Any]]:
+        """Full article dicts for a small set of ids (chunked), keyed by id."""
+        result: Dict[str, Dict[str, Any]] = {}
+        ids = list(dict.fromkeys(i for i in article_ids if i))
+        if not ids:
+            return result
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            for i in range(0, len(ids), 40):
+                chunk = ids[i:i + 40]
+                placeholders = ", ".join(["?"] * len(chunk))
+                cursor.execute(f"SELECT * FROM articles WHERE id IN ({placeholders})", chunk)
+                for r in cursor.fetchall():
+                    d = self._row_to_article_dict(r)
+                    result[d["id"]] = d
+        return result
 
     def get_live_articles_since(self, since: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
         with self.get_connection() as conn:
@@ -1214,20 +1295,20 @@ class SourceRegistry:
                 except Exception:
                     norm_since = clean_since
 
-                cursor.execute("""
-                    SELECT * FROM articles 
+                cursor.execute(f"""
+                    SELECT {LIST_COLUMNS} FROM articles 
                     WHERE (first_seen_at > ? OR processed_at > ?)
                     ORDER BY published_at DESC 
                     LIMIT ?
                 """, (norm_since, norm_since, limit))
             else:
-                cursor.execute("""
-                    SELECT * FROM articles 
+                cursor.execute(f"""
+                    SELECT {LIST_COLUMNS} FROM articles 
                     ORDER BY published_at DESC 
                     LIMIT ?
                 """, (limit,))
             rows = cursor.fetchall()
-            return [self._row_to_article_dict(r) for r in rows]
+            return [self._row_to_list_dict(r) for r in rows]
 
     def get_live_article_by_id(self, article_id: str) -> Optional[Dict[str, Any]]:
         with self.get_connection() as conn:

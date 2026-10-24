@@ -38,7 +38,9 @@ export function ArticleIntelligenceDrawer({
 
   if (!article) return null;
 
-  const currentVariation = article.tamil_variations[selectedVariationIndex] || article.tamil_variations[0];
+  // The list view omits tamil_variations; they arrive a moment later when the full article loads.
+  const variations = article.tamil_variations ?? [];
+  const currentVariation = variations[selectedVariationIndex] || variations[0];
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);

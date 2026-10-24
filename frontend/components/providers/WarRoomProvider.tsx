@@ -21,6 +21,7 @@ import {
 } from "../../types/political";
 import {
   fetchArticles,
+  fetchArticleDetail,
   fetchClientConfig,
   fetchLeaders,
   fetchMetrics,
@@ -99,6 +100,14 @@ function mergeArticles(existing: NewsArticle[], incoming: NewsArticle[]): NewsAr
   return merged;
 }
 
+/** Replace a list article (no tamil_variations) with its full version once loaded, if it is still the active one. */
+function loadFullArticle(article: NewsArticle, set: React.Dispatch<React.SetStateAction<NewsArticle | null>>) {
+  if (article.tamil_variations && article.tamil_variations.length > 0) return;
+  fetchArticleDetail(article.id).then((full) => {
+    if (full) set((cur) => (cur && cur.id === article.id ? full : cur));
+  });
+}
+
 export function WarRoomProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
@@ -151,6 +160,7 @@ export function WarRoomProvider({ children }: { children: React.ReactNode }) {
         if (!studioSeeded.current && arts && arts.length > 0) {
           studioSeeded.current = true;
           setStudioArticle(arts[0]);
+          loadFullArticle(arts[0], setStudioArticle);
         }
       })
       .catch((err) => {
@@ -303,11 +313,17 @@ export function WarRoomProvider({ children }: { children: React.ReactNode }) {
   const openInStudio = useCallback(
     (article: NewsArticle) => {
       setStudioArticle(article);
+      loadFullArticle(article, setStudioArticle);
       setDrawerArticle(null);
       router.push("/studio");
     },
     [router],
   );
+
+  const openInsights = useCallback((article: NewsArticle) => {
+    setDrawerArticle(article);
+    loadFullArticle(article, setDrawerArticle);
+  }, []);
 
   const drillInto = useCallback(
     (dimension: "party" | "leader" | "topic", value: string) => {
@@ -334,7 +350,7 @@ export function WarRoomProvider({ children }: { children: React.ReactNode }) {
       polling,
       pollStatus,
       pollFeeds,
-      openInsights: setDrawerArticle,
+      openInsights,
       openInStudio,
       studioArticle,
       drillInto,
