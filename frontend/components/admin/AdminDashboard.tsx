@@ -8,6 +8,7 @@ import {
   Database,
   TrendingUp,
   Sliders,
+  FlaskConical,
   LogOut,
   ArrowLeft,
   ShieldCheck,
@@ -20,13 +21,14 @@ import { AdminIngestionSection } from "./AdminIngestionSection";
 import { AdminTrendingSection } from "./AdminTrendingSection";
 import { AdminSettingsSection } from "./AdminSettingsSection";
 import { SourceManagementView } from "./SourceManagementView";
+import { AdminSocialTrialSection } from "./AdminSocialTrialSection";
 
 interface AdminDashboardProps {
   onLogout: () => void;
   onBackToWarroom?: () => void;
   clientConfig?: ClientConfig | null;
   onConfigUpdated?: (cfg: ClientConfig) => void;
-  initialSubTab?: "overview" | "sources" | "keywords" | "ingestion" | "trending" | "settings";
+  initialSubTab?: "overview" | "sources" | "keywords" | "ingestion" | "trending" | "social" | "settings";
 }
 
 export function AdminDashboard({
@@ -37,7 +39,7 @@ export function AdminDashboard({
   initialSubTab = "overview",
 }: AdminDashboardProps) {
   const [activeAdminTab, setActiveAdminTab] = useState<
-    "overview" | "sources" | "keywords" | "ingestion" | "trending" | "settings"
+    "overview" | "sources" | "keywords" | "ingestion" | "trending" | "social" | "settings"
   >(initialSubTab);
 
   const tabs = [
@@ -70,6 +72,12 @@ export function AdminDashboard({
       label: "Trending Configuration",
       tamilLabel: "போக்குக் கணிப்பு முறை",
       icon: TrendingUp,
+    },
+    {
+      id: "social" as const,
+      label: "Social Trial",
+      tamilLabel: "சமூக ஊடகச் சோதனை",
+      icon: FlaskConical,
     },
     {
       id: "settings" as const,
@@ -178,6 +186,8 @@ export function AdminDashboard({
         {activeAdminTab === "ingestion" && <AdminIngestionSection />}
 
         {activeAdminTab === "trending" && <AdminTrendingSection />}
+
+        {activeAdminTab === "social" && <AdminSocialTrialSection />}
 
         {activeAdminTab === "settings" && (
           <AdminSettingsSection

@@ -2,7 +2,7 @@ import os
 from datetime import datetime, timezone
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import news, metrics, intelligence, cards, sources, social_intelligence, client_config, admin
+from .routers import news, metrics, intelligence, cards, sources, social_intelligence, client_config, admin, social_trial
 import sqlite3
 from .data.migrations import DB_PATH
 from .data.db import get_database_url
@@ -29,6 +29,13 @@ async def lifespan(app: FastAPI):
         print("Startup: SQLite database migrations applied successfully.")
     except Exception as e:
         print(f"Startup: Warning running SQLite migrations: {e}")
+
+    # 2b. Social trial tables (SQLite, additive) + clear runs orphaned by a restart
+    try:
+        from .social_trial import store as social_trial_store
+        social_trial_store.fail_stale_runs()
+    except Exception as e:
+        print(f"Startup: Warning preparing social trial tables: {e}")
 
     # 3. Post-migration deterministic service initialization
     try:
@@ -93,6 +100,7 @@ app.include_router(sources.router)
 app.include_router(social_intelligence.router)
 app.include_router(client_config.router)
 app.include_router(admin.router)
+app.include_router(social_trial.router)
 
 @app.api_route("/health", methods=["GET", "HEAD"])
 @app.api_route("/api/health", methods=["GET", "HEAD"])

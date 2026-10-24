@@ -58,3 +58,10 @@ Thumbs.db
 !.vscode/settings.json
 !.vscode/extensions.json
 .idea/
+
+# Local credential files (keep these outside the repo, e.g. C:\Users\<you>\.secrets\)
+brightdata*.txt
+*apikey*.txt
+*service-account*.json
+adcproject-*.json
+.secrets/
